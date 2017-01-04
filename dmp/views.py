@@ -494,6 +494,8 @@ def grant_uploader(request):
 
             else:
                 # User has uploaded a DataMad file
+                # TODO: Task is long running, have some form of information for the user about progress or some sign that it is doing something.
+                # TODO: Allow script to pass any failed situations, eg. no matching regex.
 
                 # build dictionary of dictionaries to give access to all grant numbers in the file plus their column attributes
                 file = request.FILES['grantfile']
@@ -584,13 +586,14 @@ def grant_uploader(request):
                         p_added += 1
 
                         # make new programme if one found
-                        # TODO: for some reason there are some grants which arrive at this point with a NULL value!
+
                         progs = ProjectGroup.objects.filter(name=programme)
-                        if not progs:
+                        if not progs and programme:
                             pg = ProjectGroup(name=programme)
                             pg.save()
                             pg.projects.add(new_proj)
-                        else:
+
+                        elif progs:
                             progs[0].projects.add(new_proj)
 
                         # add note to the project
@@ -613,6 +616,7 @@ def grant_uploader(request):
                     current_grant_obj.save()
 
                     # Check project details for grants such as start, end date, dmp/contact dates
+                    # TODO find out what exactly is likely to change that would be useful to auto update.
                     date_fields = (
                         ('startdate','Actual Start Date'),
                         ('enddate','Actual End Date'),
