@@ -22,7 +22,7 @@ def migrate_project_notes(apps, schema_editor):
 
             instance.added = datetime.now()
             #instance.creator = User.objects.get(username='rsmith')
-            instance.notes = "Notes migrated from previous version\n\n %s" % (project.notes)
+            instance.notes = "Notes migrated from previous version\n\n%s" % (project.notes)
             instance.content_type =  ContentType.objects.get(app_label="dmp", model="project")
             instance.object_id = project.pk
             instance.save()
@@ -39,7 +39,7 @@ def migrate_data_product_notes(apps,schema_editor):
 
             instance.added = datetime.now()
             #instance.creator =  User.objects.get(username='rsmith')
-            instance.notes = "Notes migrated from previous version\n\n %s" % (product.notes)
+            instance.notes = "Notes migrated from previous version\n\n%s" % (product.notes)
             instance.content_type = ContentType.objects.get(app_label="dmp", model="dataproduct")
             instance.object_id = product.pk
             instance.save()
