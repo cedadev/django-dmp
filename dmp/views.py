@@ -382,10 +382,11 @@ def mail_template(request, project_id):
 
         cc = ''
         for i,grant in enumerate(Grant.objects.filter(project_id=project.id).exclude(data_email=project.PIemail)):
-            if i < 1:
-                cc += grant.data_email
-            else:
-                cc += "," + grant.data_email
+            if grant.data_email is not None:
+                if i < 1:
+                    cc += grant.data_email
+                else:
+                    cc += "," + grant.data_email
 
         message.fields['cc'].initial = cc
         template_obj = Template(EmailTemplate.objects.get(template_ref=type).content)

@@ -44,16 +44,6 @@
 
     <div style="padding: 20px 0px 20px 0px; border-bottom: groove 1px rgba(0, 0, 0, 0.42)">
         <p>Select email template to use:</p>
-{#        <form method="get">#}
-{##}
-{#            <select>#}
-{#                <option value="---">---</option>#}
-{#                <option value="No Data Email">No Data</option>#}
-{#                <option value="Initial Contact Email">Initial Contact Email</option>#}
-{#                <option value="DMP Draft Email">DMP Draft Email</option>#}
-{#            </select>#}
-{#            <input type="submit" value="Submit">#}
-{#        </form>#}
 
         <form action="" method="GET">
             {% for f in form_select %}
@@ -99,7 +89,7 @@
                                 {{ form_message.attachments.errors }}</td>
                         </tr>
                         <tr >
-                            <td>{{ form_message.template_type }}</td>
+                            <td class="hidden">{{ form_message.template_type }}</td>
                         </tr>
                         <tr>
                             <td colspan="2">{{ form_message.message }}
