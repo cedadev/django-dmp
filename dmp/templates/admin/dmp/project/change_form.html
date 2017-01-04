@@ -1,0 +1,81 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_modify static admin_urls %}
+
+
+{% block object-tools %}
+
+
+<img style="height:40px; align:right" src="/static/projecticon.jpg"/>
+
+
+    {% if change %}{% if not is_popup %}
+        <ul class="object-tools">
+            {% block object-tools-items %}
+                {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+                <li><a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a></li>
+                <li><a href="/dmp/myprojects" class="historylink">My projects</a></li>
+                <li><a href="/dmp/projectsvis?listall=1&show={{ object_id }}" class="historylink">Vis</a></li>
+                {% for g in original.grants %}
+                    <li>{{ g.gotw|safe }}</li>
+                {% endfor %}
+                {% for pg in original.project_groups %}
+                    <li><a style="background-color:#ccdd99" href="/admin/dmp/projectgroup/{{ pg.pk }}">{{ pg.name }}</a>
+                    </li>
+                {% endfor %}
+                <li><a href="/dmp/project/{{ original.id }}" class="historylink">Draft DMP</a></li>
+                <li><a href="{% url "email_templates" object_id %}" class="historylink">Email Templates</a></li>
+                {% if has_absolute_url %}
+                    <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/"
+                           class="viewsitelink">{% trans "View on site" %}</a></li>{% endif %}
+            {% endblock %}
+        </ul>
+    {% endif %}{% endif %}
+
+
+
+
+{% endblock %}
+
+
+
+{% block field_sets %}
+    {% for fieldset in adminform %}
+        {% if fieldset.name == "" %}
+            {% for inline_admin_formset in inline_admin_formsets %}
+                {% if inline_admin_formset.opts.opts.model_name == "note" %}
+                    {% include inline_admin_formset.opts.template %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% include "admin/includes/fieldset.html" %}
+
+    {% endfor %}
+{% endblock %}
+
+
+{% block inline_field_sets %}
+    {% for inline_admin_formset in inline_admin_formsets %}
+        {% if not inline_admin_formset.opts.opts.model_name == "note" %}
+            {% include inline_admin_formset.opts.template %}
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+{% block after_related_objects %}
+
+<table style="background-color:#ddddff; margin:10px 10px 10px 10px">
+<tr><td>Data Products</td><td>contact</td><td>status</td><td>Delivery date</td></tr>
+{% for d in original.data_outputs %} 
+<tr>
+  <td><a href="/admin/dmp/dataproduct/{{d.id}}">{{d}}</a></td>
+  <td>{{d.contact1}}</td>
+  <td>{{d.status}}</td>
+  <td>{{d.deliverydate}}</td>
+</tr>
+{% endfor %}
+</table>
+
+<a style="margin:10px 10px 10px 10px; border:2px solid #333399; background-color:#ccccff; border-radius:5px" href="/dmp/project/{{original.id}}/adddataproduct">Add new data product</a>
+
+{% endblock %}
+

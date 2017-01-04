@@ -1,0 +1,43 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_modify admin_urls %}
+
+<!--
+{#% block extrastyle %#}
+<link type="text/css" href="/static/dmp.css" rel="stylesheet" />
+{#% endblock %#}
+-->
+
+{% block object-tools %}
+
+<img style="height:30px; align:right" src="/static/granticon.jpg"/>
+
+    {% if change %}{% if not is_popup %}
+        <ul class="object-tools">
+            {% block object-tools-items %}
+                {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+                <li><a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a></li>
+                <li>{{ original.gotw|safe }}</li>
+                {% if original.project %}
+                    <li>
+                        <a style="background-color:#99ddcc" href="/admin/dmp/project/{{ original.project.id }}"
+                           class="historylink">{{ original.project.title|truncatechars:30 }}</a>
+                    </li>
+                {% else %}
+                    <li><a href="/dmp/grant/{{ original.id }}/scrape" class="historylink">Make new project from scrape</a></li>
+                    <li><a href="/dmp/grant/{{ original.id }}/link?search={{ original.title }}" class="historylink">search for project</a></li>
+                {% endif %}
+                {% if has_absolute_url %}
+                    <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/"
+                           class="viewsitelink">{% trans "View on site" %}</a></li>{% endif %}
+
+            {% endblock %}
+
+
+        </ul>
+    {% endif %}{% endif %}
+
+
+{% endblock %}
+
+
+

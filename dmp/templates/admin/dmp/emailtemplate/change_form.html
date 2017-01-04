@@ -1,0 +1,16 @@
+{% extends 'admin/change_form.html' %}
+{% load static %}
+
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static 'css/dmp.css' %}" type="text/css" />
+{% endblock %}
+
+{% block form_top %}
+    <div class="email_template_info">
+        <p>These email templates require some basic html and <a href="https://docs.djangoproject.com/en/1.10/topics/templates/#the-django-template-language">Django template</a> formatting in order to work properly.</p>
+        <p>Please click <a href="{% url 'email_help' %}">here</a> to view available variables</p>
+
+    </div>
+
+
+{% endblock %}

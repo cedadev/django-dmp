@@ -1,0 +1,51 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_modify admin_urls%}
+
+
+{% block object-tools %}
+    {% if change %}{% if not is_popup %}
+        <ul class="object-tools">
+            {% block object-tools-items %}
+                {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+                <li><a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a></li>
+                <li><a style="background-color:#99ddcc" href="/admin/dmp/project/{{ original.project.id }}"
+                       class="historylink">{{ original.project.title|truncatechars:30 }}</a></li>
+                {% if has_absolute_url %}
+                    <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/"
+                           class="viewsitelink">{% trans "View on site" %}</a></li>{% endif %}
+            {% endblock %}
+        </ul>
+    {% endif %}{% endif %}
+{% endblock %}
+
+{% block field_sets %}
+    {% for fieldset in adminform %}
+        {% if fieldset.name == "" %}
+            {% for inline_admin_formset in inline_admin_formsets %}
+                {% if inline_admin_formset.opts.opts.model_name == "note" %}
+                    {% include inline_admin_formset.opts.template %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% include "admin/includes/fieldset.html" %}
+
+    {% endfor %}
+{% endblock %}
+
+
+{% block inline_field_sets %}
+    {% for inline_admin_formset in inline_admin_formsets %}
+        {% if not inline_admin_formset.opts.opts.model_name == "note" %}
+            {% include inline_admin_formset.opts.template %}
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+{% block after_related_objects %}
+
+DMP where this is a required third party dataset: 
+{% for project in original.project_where_thirdparty %} 
+<a href="/admin/dmp/project/{{project.id}}">{{project.title}}</a>
+{% endfor %}
+
+{% endblock %}

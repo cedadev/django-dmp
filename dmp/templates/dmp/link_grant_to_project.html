@@ -1,0 +1,42 @@
+
+
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+
+{% block content %}
+
+
+
+<h1>Link a grant to a project</h1>
+
+Selected grant: <br>
+Title: {{grant.title}} <br>
+PI: {{grant.pi}} <br>
+Grant Ref: {{grant.number}}
+
+<form>
+<input type="text" name="search" value="{{search}}"/>
+<input type="submit" value="Search"/>
+</form>
+
+<a href="/dmp/grant/{{grant.id}}/project_from_rss_export">Make new project from DataMAD</a>
+
+
+<h3>Projects matching</h3>
+
+
+<table>
+{% for p, s in projectscores %}
+ <tr> 
+ <td> <a href="/admin/dmp/project/{{p.pk}}">{{p.title}}</a></td>
+ <td> {{p.PI}} </td>
+ <td> <a href=?project={{p.pk}}>Link grant to project</a></td>
+ <td>{{s}}</td>
+ </tr>
+{% endfor %}
+</table>
+
+
+	
+{% endblock %}

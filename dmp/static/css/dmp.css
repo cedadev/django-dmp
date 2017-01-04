@@ -1,0 +1,65 @@
+a:link.gotwlink {color:red; background-color:blue}
+a:hover.gotwlink {color:red; background-color:blue}
+a:visited.gotwlink {color:red; background-color:blue}
+
+#dataproducts {background-color:blue}
+.project {width:60px; 
+          height:30px; 
+          border-color:#000000;
+          border-width:5px;
+          border-style:solid;
+          border-radius:10px;
+          font-size:8px;
+          padding:1px;
+          margin:2px;
+          clear:none;
+          float:left;
+          }
+
+.nodata {border-color:#00ccff; }
+.active {border-color:#000000; }
+.proposal {border-color:#cccccc; }
+.defaulted {border-color:#ff0000; }
+.notfunded {border-color:#0099ff; }
+.complete {border-color:#0000ff;  }
+.notstarted {border-color:#777777; }
+.endedwithdatatocome {border-color:#ffff00;  }
+
+.green {background-color:#22ff22;}
+.ambar {background-color:#ffff22;}
+.red {background-color:#ff5555;}
+
+.selected {
+          border-width:8px;
+          padding:0px;
+          margin:0px;          
+          }
+
+#showproj {background-color:#fffff0; width:400px; 
+          height:400px; 
+          border-color:#000000;
+          border-width:2px;
+          border-style:solid;
+          border-radius:10px;
+          font-size:16px;
+          float: right;
+          margin:20px;
+          padding:5px;
+          }
+
+.nodivider td {
+    border: hidden;
+}
+
+.email_template_info {
+    background-color: rgba(255, 1, 15, 0.13);
+    border-radius: 10px;
+    padding: 1px 5px 1px 5px;
+
+}
+
+.edit_email_template_button {
+    background-color: #999999;
+    border-radius: 10px;
+    padding: 1px 5px 1px 5px;
+}

@@ -1,0 +1,48 @@
+
+
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+
+{% block content %}
+
+
+
+<h1>Project for review my {{user}}</h1>
+
+{%if listall %}
+<a href='?listall='>List active projects</a>
+{% else %}
+<a href='?listall=1'>List all project</a>
+{% endif %}
+
+<a href='/dmp/projectsbyperson'>Projects summary</a>
+
+<table>
+<tr>
+ <th> Project </th>
+ <th> Status</th>
+ <th> Start date</th>
+ <th> End date</th>
+ <th> Modified</th>
+ <th> PI</th>
+ <th> Grants</th>
+ <th> Data products</th>
+</tr>
+
+{% for p in projects %}
+ <tr {%if p.modified < modchecktime %}style="border:solid 5px red; border-radius:5px; padding:2px; background-color:#ffcccc;" {%endif%}>
+ <td> <a href="/admin/dmp/project/{{ p.id }}">{{p}}</a> </td>
+ <td> {{p.status}} </td>
+ <td> {{p.startdate}} </td>
+ <td> {{p.enddate}} </td>
+ <td> {{p.modified}} </td>
+ <td> {{p.PI}} </td>
+ <td> {% for g in p.grants %} {{g.gotw|safe}} {% endfor %}</td>
+ <td> {% for dp in p.data_outputs %} <a style="border:solid 1px red; border-radius:5px; padding:2px; background-color:pink; font-size:8px" href="/admin/dmp/dataproduct/{{dp.pk}}">{{dp}}</a> {% endfor %}</td>
+ </tr>
+{% endfor %}
+</table>
+
+	
+{% endblock %}

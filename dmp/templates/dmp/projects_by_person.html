@@ -1,0 +1,31 @@
+
+
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+
+{% block content %}
+
+
+
+<h1>Project Summary</h1>
+
+
+<table>
+<tr>
+ <th> Science support contact</a> </th>
+ <th> Project count </th>
+ <th> Project groups</th>
+</tr>
+{% for username, list in summary.iteritems %}
+ <tr> 
+ <td> <a href="/dmp/myprojects?scisupcontact={{ username }}">{{username}}</a> </td>
+ <td> <a href="/dmp/projectsvis?scisupcontact={{ username }}">{{list.0}}</a> </td>
+ <td> {% for pg in list.1 %} 
+     <a style="background-color:#ccdd99; font-size:8px" href="/admin/dmp/projectgroup/{{pg.pk}}">{{pg.name}}</a>{%endfor%}</td>
+ </tr>
+{% endfor %}
+</table>
+
+	
+{% endblock %}

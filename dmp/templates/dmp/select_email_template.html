@@ -1,0 +1,122 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_urls %}
+
+{% block extrahead %}
+    <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+    <script>tinymce.init({selector: 'textarea'});</script>
+    <link rel="stylesheet" href="{% static 'css/dmp.css' %}" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+{% endblock %}
+
+
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        ﻿<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+        ﻿&rsaquo;
+         <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+        ﻿&rsaquo;
+         <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+        ﻿&rsaquo;
+        ﻿<a href="/admin/dmp/project/{{ project.id }}/change">{{ project.title|capfirst }}</a>
+        ﻿&rsaquo;
+        Email Templates
+
+</div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% block object-tools %}
+        <ul class="object-tools">
+        {% block object-tools-items %}
+            <li>
+                <a class="historylink" href="/admin/dmp/emailtemplate/">EDIT EMAIL TEMPLATES</a>
+            </li>
+        {% endblock %}
+        </ul>
+    {% endblock %}
+
+
+    <div>
+{#        {% include 'dmp/showproject.html' %}#}
+    </div>
+
+    <div style="padding: 20px 0px 20px 0px; border-bottom: groove 1px rgba(0, 0, 0, 0.42)">
+        <p>Select email template to use:</p>
+{#        <form method="get">#}
+{##}
+{#            <select>#}
+{#                <option value="---">---</option>#}
+{#                <option value="No Data Email">No Data</option>#}
+{#                <option value="Initial Contact Email">Initial Contact Email</option>#}
+{#                <option value="DMP Draft Email">DMP Draft Email</option>#}
+{#            </select>#}
+{#            <input type="submit" value="Submit">#}
+{#        </form>#}
+
+        <form action="" method="GET">
+            {% for f in form_select %}
+                {{ f }}
+            {% endfor %}
+            <input type="submit", value="Submit">
+        </form>
+        </div>
+        <div>
+        {% if template_type %}
+            <div style="padding-top: 15px;width: 60%">
+                <form action="{% url "email_templates" project.id %}" method="POST">
+                    {% csrf_token %}
+                    <table class="nodivider">
+                        <col width="10%">
+                        <col wisth="80%">
+                        <tr>
+                            {{ form_message.non_field_errors }}
+                        </tr>
+                        <tr>
+                            <td>{{ form_message.receiver.label_tag }}</td>
+                            <td>{{ form_message.receiver }}
+                                {{ form_message.receiver.errors }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ form_message.sender.label_tag }}</td>
+                            <td>{{ form_message.sender }}
+                                {{ form_message.sender.errors }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ form_message.cc.label_tag }}</td>
+                            <td>{{ form_message.cc }}
+                                {{ form_message.cc.errors }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ form_message.subject.label_tag }}</td>
+                            <td>{{ form_message.subject }}
+                                {{ form_message.subject.errors }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ form_message.attachments.label_tag }}</td>
+                            <td>{{ form_message.attachments }}
+                                {{ form_message.attachments.errors }}</td>
+                        </tr>
+                        <tr >
+                            <td>{{ form_message.template_type }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">{{ form_message.message }}
+                                            {{ form_message.message.errors }}</td>
+                        </tr>
+                        <tr>
+                            <input type="submit" value="Send">
+                        </tr>
+                    </table>
+
+
+                </form>
+            </div>
+        {% endif %}
+
+    </div>
+
+
+{% endblock %}
+

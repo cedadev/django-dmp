@@ -1,0 +1,31 @@
+
+
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+
+{% block content %}
+
+
+
+<h1>Group Virtual Machines and Workspaces on JASMIN/CEMS</h1>
+
+<table>
+<tr>
+  <td>Project</td>
+  <td>VMs</TD>
+  <td>Group Workspaces</td>
+  <td>Apply for access</td>
+</tr>
+{% for p in projects %}
+<tr> 
+ <td> {{p.title}}</a> </td>
+ <td> {% for vm in p.vms.all %}{{vm}} {% endfor %} </td>
+ <td> {% for gws in p.groupworkspaces.all %}{{gws.path}} {% endfor %} </td>
+ <td> <a href="http://badc.nerc.ac.uk/dataset_info?datasetid={{p.project_usergroup}}{% if p.is_jasmin %}&datasetid=jasmin-login{% endif %}{% if p.is_cems %}&datasetid=cems-login{% endif %}">Apply for Access</a> </td>
+</tr>
+{% endfor %}
+</table>
+
+
+{% endblock %}

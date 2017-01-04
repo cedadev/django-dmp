@@ -1,0 +1,14 @@
+{% extends 'admin/base_site.html' %}
+{% load static i18n %}
+
+{% block content %}
+    <h1>Formatting information for email templates</h1>
+
+    <p> The email templates require some specific formatting in order to be pulled through properly. </p>
+    <p>Each paragraph should start with &#60p&#62 and end with &#60/p&#62. This makes sure that paragraphs are correctly spaced. </p>
+    <p>This site has the ability to automatically add information such as the project title, name of the PI and so on.
+        The format for this is &#123&#123 variable_name &#125&#125</p>
+    <p>Below are a list of the variables which are available to the templates and can be automatically filled if desired.</p>
+
+
+{% endblock %}

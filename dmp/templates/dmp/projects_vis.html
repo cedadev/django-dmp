@@ -1,0 +1,67 @@
+
+
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/dmp.css' %}" />
+<script type="text/javascript" src="{% static 'js/jquery-1.11.0.min.js' %}"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    var currentdiv = 'xx';
+    $("div.project").click(function() {
+        if (currentdiv !== 'xx') {
+            console.log('hi')
+            currentdiv.toggleClass("selected"); 
+        };
+        currentdiv = $(this);
+        var projectdivid = $(this).attr("id")
+        projectdivid = projectdivid.slice(4)
+        $( "#showproj" ).load( "/dmp/project/".concat(projectdivid).concat("/show") );
+        currentdiv.toggleClass("selected"); 
+    });
+    $("div.project").dblclick(function() {
+        var projectdivid = $(this).attr("id")
+        projectdivid = projectdivid.slice(4)
+        location.href = "/dmp/project/".concat(projectdivid);
+    });
+    {% if show %}$("#showproj").load( "/admin/dmp/project/".concat({{show}}).concat("/show") ); {%endif%}
+});
+</script>
+  
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Project for review my {{user}}</h1>
+
+
+<div>
+{%if listall %}
+<a href='?listall='>List active projects</a>
+{% else %}
+<a href='?listall=1'>List all project</a>
+{% endif %}
+
+| <a href="{% url 'projects_by_person' %}">Projects summary</a>
+| <a href="?order=PI">by PI</a>
+| <a href="?order=modified">by modified date</a>
+| <a href="?order=status">by status</a>
+</div>
+
+<div id="showproj">
+
+</div>
+
+
+{% for p in projects %}
+<div title="{{p.title}} - {{p.PI}} ------- {{p.alert_text}}" id="proj{{p.pk}}" class="project {{p.status|lower}} {{p.alert_type}}">
+{{p.summary_text}} {{p.datastatecount}} {{p.status}}
+</div>
+
+{% endfor %}
+</table>
+	
+{% endblock %}

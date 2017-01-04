@@ -1,0 +1,36 @@
+{% extends "base_site.html" %}
+
+
+{% block title %}
+CEDA Information Database
+{% endblock %}
+
+
+
+{% block content %}
+
+<h2>DMP DB</h2>
+ 
+The DMP DB contains various internal data related to the management of
+data projects. The interface uses both customised database views and the
+Django admin interface. The admin interface can be accessed using the
+link below, or using the <a href="/admin">Admin</a> link on the bar
+above.
+
+
+<p>
+<p>
+
+<a href="/admin">View using Django admin interface</a>
+               
+	<ul>
+        <li><h4>DMP</h4>
+			<ul>
+				<li><a href="/dmp/myprojects">My projects</a></li>
+				<li><a href="/dmp/datamad_update">DataMAD update list</a></li>
+				<li><a href="/dmp/projectsbyperson">Project summary</a></li>
+			</ul>
+		</li>
+    </ul>
+
+{% endblock %}

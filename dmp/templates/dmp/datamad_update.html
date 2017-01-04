@@ -1,0 +1,45 @@
+
+
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+
+{% block content %}
+
+
+
+<h1>DataMAD update view</h1>
+
+
+Order by:<a href='?order=status'>Status</a>
+<a href='?order=modified'>modified</a>
+<a href='?order=PI'>PI</a>
+<a href='?order=initial_contact'>Contact date</a>
+<a href='?order=dmp_agreed'>DMP agreed</a>
+
+<a href='/dmp/projectsbyperson'>Projects summary</a>
+
+<table>
+<tr>
+ <th>Project </th>
+ <th>Status</th>
+ <th>PI</th>
+ <th>PI contacted date</th>
+ <th>DMP agreed date</th>
+ <th>Grants</th>
+</tr>
+
+{% for p in projects %}
+ <tr {%if p.modified < modchecktime %}style="border:solid 5px red; border-radius:5px; padding:2px; background-color:#ffcccc;" {%endif%}>
+ <td> <a href="/admin/dmp/project/{{ p.id }}">{{p}}</a> </td>
+ <td> {{p.status}} </td>
+ <td> {{p.PI}} </td>
+ <td> {{p.initial_contact}} </td>
+ <td> {{p.dmp_agreed}} </td>
+ <td> {% for g in p.grants %} {{g.gotw|safe}} {% endfor %}</td>
+ </tr>
+{% endfor %}
+</table>
+
+	
+{% endblock %}

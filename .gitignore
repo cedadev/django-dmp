@@ -1,0 +1,6 @@
+# ignore pyc files
+*.pyc
+
+#ignore subversion tracking files
+*.svn-base
+*.svn*

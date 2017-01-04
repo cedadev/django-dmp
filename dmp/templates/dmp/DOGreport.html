@@ -1,0 +1,275 @@
+{% extends 'admin/base_site.html' %}
+{% load static i18n %}
+
+{% block extrahead %}{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/dogreport.css' %}" type="text/css"/>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+            function openTab(evt, tabName) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the link that opened the tab
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+
+            // Draw charts
+                drawSummaryCharts()
+
+        }
+    </script>
+
+{% endblock %}
+
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+        ﻿&rsaquo;
+        <a href="/admin/dmp/project">Projects</a>
+        ﻿&rsaquo;
+        DOG Report
+    </div>
+{% endblock %}
+
+{% block content %}
+    <h1>Data Operations Group Report</h1>
+
+    <ul class="tab">
+        <li><a id="defaultOpen" href="javascript:void(0)" class="tablinks" onclick="openTab(event,'dog-report')" >DOG Report</a></li>
+        <li><a href="javascript:void(0)" class="tablinks" onclick="openTab(event,'snapshot')">Current Statistics</a></li>
+    </ul>
+
+    <div id="dog-report" class="tabcontent">
+        <h1>New Grants: April 2014 - Present</h1>
+        <div style="border: groove">
+                    <table style="width:98%">
+
+                        <tr>
+                            <th>Date</th>
+                            <th>Active</th>
+                            <th>Contacted</th>
+                            <th>DMPs Accepted</th>
+                            <th>No Data</th>
+                            <th>Completed</th>
+                            <th>Ended (Awaiting Data)</th>
+                            <th>Total</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                Present
+                            </td>
+                            {% for value in new_grant_snapshot %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% for row in new_grant_report %}
+                            <tr>
+                                {% for value in row %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    <div style="width:99%; height:420px;" >
+                        <table style="width:98%; height: 98%">
+                            <tr>
+                                <td><div id="NewGrant_Chart1_div" style="height:100%;width: 100%"></div></td>
+                                <td><div id="NewGrant_Chart2_div" style="height:100%;width: 100%"></div></td>
+                            </tr>
+                        </table>
+                    </div>
+        </div>
+
+        <h1>Legacy Grants: January 2010 - April 2014</h1>
+        <div style="border: groove">
+            <table style="width:98%">
+                <tr>
+                    <th>Date</th>
+                    <th>Active</th>
+                    <th>No Data</th>
+                    <th>Completed</th>
+                    <th>Ended (Awaiting Data)</th>
+                    <th>Total</th>
+                </tr>
+                <tr>
+                    <td>
+                        Present
+                    </td>
+                    {% for value in legacy_grant_snapshot %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% for row in legacy_grant_report %}
+                    <tr>
+                        {% for value in row %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+            <div id="LegacyGrant_Chart1_div"></div>
+        </div>
+    </div>
+
+
+    <div id="snapshot" class="tabcontent">
+
+        <h1>New Grants: April 2014 - Present</h1>
+        <div style="border: groove">
+            <table>
+                <tr>
+                    <th>Active</th>
+                    <th>Contacted</th>
+                    <th>DMPs Accepted</th>
+                    <th>No Data</th>
+                    <th>Completed</th>
+                    <th>Ended (Awaiting Data)</th>
+                    <th>Total</th>
+                </tr>
+                <tr>
+                    {% for value in new_grant_snapshot %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            </table>
+        </div>
+
+        <h1>Legacy Grants: January 2010 - April 2014</h1>
+        <div style="border: groove">
+            <table>
+                <tr>
+                    <th>Active</th>
+                    <th>No Data</th>
+                    <th>Complete</th>
+                    <th>Ended (Awaiting Data)</th>
+                    <th>Total</th>
+                </tr>
+                <tr>
+                    {% for value in legacy_grant_snapshot %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            </table>
+        </div>
+    </div>
+
+
+
+{% endblock %}
+{% block footer %}
+        <script type="text/javascript">
+        // Load Charts and the corechart package.
+        google.charts.load('current', {'packages': ['corechart']});
+
+        // Callback that draws the chart.
+        function drawSummaryCharts() {
+
+            // // Create the data table for newGrant Data
+            var data = new google.visualization.DataTable();
+
+            var titlelist = {
+                'Active':'Active',
+                'Contacted':'Contacted',
+                'Accepted':'Accepted',
+                'No Data':'No Data',
+                'Completed':'Completed',
+                'Ended':'Ended',
+                'Total':'Total'
+            };
+
+            data.addColumn('string','Date')
+            for (title in titlelist)
+                data.addColumn('number', titlelist[title]);
+
+            var newGrantData = {{ new_grant_report |safe}};
+
+            var numRows = newGrantData.length;
+            data.addRow(['Present',{% for value in new_grant_snapshot %}{{ value }},{% endfor %}]);
+            for (i = 0; i < numRows; i++)
+                data.addRow(newGrantData[i]);
+
+
+            // Set options for all charts.
+            var options = {
+                width: 600,
+                height: 400,
+                chartArea: {
+                    width:'55%'
+                },
+                hAxis: {
+                    slantedText: true,
+                    direction: -1
+                },
+                animation: {
+                    startup: true,
+                    duration: 1000
+                },
+                isStacked: true,
+            };
+
+           var view1 = new google.visualization.DataView(data);
+           view1.setColumns([0,1,4,5]);
+            var new_view1 = new google.visualization.DataView(view1)
+
+
+
+            // Instantiate and draw the charts.
+            var chart = new google.visualization.ColumnChart(document.getElementById('NewGrant_Chart1_div'));
+            chart.draw(new_view1, options);
+
+            var view2 = new google.visualization.DataView(data);
+            view2.setColumns([0,2,3]);
+            var new_view2 = new google.visualization.DataView(view2);
+            var chart2 = new google.visualization.ColumnChart(document.getElementById('NewGrant_Chart2_div'));
+            chart2.draw(new_view2,options)
+
+            // Setup legacy grant chart
+            var LegacyGrant_data = new google.visualization.DataTable();
+
+            var titlelist = {
+                'Active':'Active',
+                'No Data':'No Data',
+                'Completed':'Completed',
+                'Ended':'Ended',
+                'Total':'Total'
+            };
+
+            LegacyGrant_data.addColumn('string','Date')
+            for (title in titlelist)
+                LegacyGrant_data.addColumn('number', titlelist[title]);
+
+            var legacyGrantData = {{ legacy_grant_report |safe}};
+
+            var numRows = legacyGrantData.length;
+
+            LegacyGrant_data.addRow(['Present',{% for value in legacy_grant_snapshot %}{{ value }},{% endfor %}]);
+            for (i = 0; i < numRows; i++)
+                LegacyGrant_data.addRow(legacyGrantData[i]);
+
+           var view3 = new google.visualization.DataView(LegacyGrant_data);
+           view3.setColumns([0,1,2,3,4]);
+            var new_view3 = new google.visualization.DataView(view3)
+
+
+
+            // Instantiate and draw the charts.
+            var legacychart = new google.visualization.ColumnChart(document.getElementById('LegacyGrant_Chart1_div'));
+            legacychart.draw(new_view3, options);
+
+        }
+
+    </script>
+{% endblock %}

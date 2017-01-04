@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    ﻿&rsaquo;
+    <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    ﻿&rsaquo;
+    <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+        ﻿&rsaquo;
+    Grant Uploader
+    </div>
+{% endblock %}
+
+{% block content %}
+    <h1>Grant Upload Tool</h1>
+    <div>
+        <p>This tool can be used to batch process grant numbers. There are two options:</p>
+        <ol type="1">
+            <li>Upload <a href="">DataMad</a> download in csv format</li>
+            <li>Copy and past text containing grant numbers into the textfield</li>
+        </ol>
+    </div>
+
+    <form action="{% url 'grant_uploader' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <p>{{ form.non_field_errors }}</p>
+        <br>
+        <h3>DataMad Uploader</h3>
+        <p>{{ form.grantfile.label_tag }}</p>
+        <p>
+            {{ form.grantfile.errors }}
+            {{ form.grantfile }}
+        </p>
+        <h3> Text Based Uploader </h3>
+        <p>{{ form.grant_text.label_tag }}</p>
+        <p>
+            {{ form.grant_text.errors }}
+            {{ form.grant_text }}
+        </p>
+
+
+
+        <input type="submit" value="Go">
+    </form>
+{% endblock %}
