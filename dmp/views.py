@@ -15,6 +15,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.contrib import messages
 from django.utils.html import strip_tags
 
+import requests
 import datetime
 import subprocess
 import re
@@ -462,7 +463,6 @@ def mail_template(request, project_id):
 def grant_uploader(request):
 
     opts = Grant()._meta
-    grant_set = set()
     g_added = 0
     p_added = 0
     g_updated = 0
@@ -473,7 +473,8 @@ def grant_uploader(request):
         if form.is_valid():
 
             # Check if user has posted data in the text box
-            if not request.POST['grant_text'] == '':
+            if request.POST['grant_text'] != '':
+                grants = set()
                 search_text = request.POST['grant_text']
 
                 # search text for strings matching format of grant reference and add to set for processing.
@@ -481,21 +482,21 @@ def grant_uploader(request):
                     grant_ref = re.search('(NE/\w{3,10}/\w{0,2})', line)
                     if grant_ref:
                         number = grant_ref.groups()[0]
-                        grant_set.add(number)
+                        grants.add(number)
 
-                if grant_set:
+                if grants:
                     # check to see if grants already exists. If not, add them.
-                    for grant in grant_set:
+                    for grant in grants:
                         if not Grant.objects.filter(number=grant):
                             instance = Grant(
                                 number=grant
                             )
                             instance.save()
                             g_added+=1
+                updated = False
 
             else:
                 # User has uploaded a DataMad file
-                # TODO: Task is long running, have some form of information for the user about progress or some sign that it is doing something.
                 # TODO: Allow script to pass any failed situations, eg. no matching regex.
 
                 # build dictionary of dictionaries to give access to all grant numbers in the file plus their column attributes
@@ -539,8 +540,7 @@ def grant_uploader(request):
                         start_date = datetime.datetime(3000, 1, 1)
                         end_date = datetime.datetime(1900, 1, 1)
                         url = 'http://gotw.nerc.ac.uk/list_full.asp?pcode=%s&cookieConsent=A' % lead_grant
-                        wget_cmd = 'wget -t 1 -O - %s' % url
-                        content = subprocess.check_output(wget_cmd, shell=True)
+                        content = requests.get(url).text
 
                         # find abstract
                         m = re.search('<p class="small"><b>Abstract:</b> (.*?)</p>', content, re.S)
@@ -635,9 +635,9 @@ def grant_uploader(request):
                     proj.save()
 
             # display appropriate completion message
-            if (g_added > 0 or p_added > 0) and (grant_set or grants):
+            if (g_added > 0 or p_added > 0) and  grants:
                 messages.success(request,"Successfully added "+ str(g_added) + " grants and "+ str(p_added) + " projects.")
-            elif g_added < 1 and (grant_set or grants):
+            elif g_added < 1 and grants:
                 messages.info(request,"No new grants were found")
             else:
                 messages.error(request,"No grant numbers found")
@@ -647,7 +647,7 @@ def grant_uploader(request):
 
 
 
-            return render(request,'dmp/grant_uploader.html',{'form':form,'grant_set':grant_set, 'opts':opts})
+            return render(request,'dmp/grant_uploader.html',{'form':form, 'opts':opts})
     else:
         form = GrantUploadForm() #empty unbound form
 
