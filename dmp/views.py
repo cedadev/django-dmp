@@ -17,7 +17,6 @@ from django.utils.html import strip_tags
 
 import requests
 import datetime
-import subprocess
 import re
 import string
 import time
@@ -239,8 +238,7 @@ def gotw_scrape(request, id):
 
     # find split grant info from grants on the web
     url = "http://gotw.nerc.ac.uk/list_split.asp?awardref=%s" % grant.number
-    wget_cmd = 'wget -t 1 -O - %s' % url
-    split_content = subprocess.check_output(wget_cmd, shell=True)
+    split_content = requests.get(url).text
     numbers = set()
     lead_number = grant.number
     start_date = datetime.datetime(3000, 1, 1)
@@ -278,8 +276,7 @@ def gotw_scrape(request, id):
     # read grant info from lead grant
     if not grant.number: redirect('/admin/dmp/grant/%s' % id)
     url = 'http://gotw.nerc.ac.uk/list_full.asp?pcode=%s&cookieConsent=A' % lead_number
-    wget_cmd = 'wget -t 1 -O - %s' % url
-    content = subprocess.check_output(wget_cmd, shell=True)
+    content = requests.get(url).text
     pi = ''
     title = ''
     filtered_desc = ''
