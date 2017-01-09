@@ -154,3 +154,13 @@ class EmailTemplateAdmin(admin.ModelAdmin):
             return True
 
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
+
+class draftDmpAdmin(admin.ModelAdmin):
+    list_display = ('draft_dmp_name',)
+
+    def has_add_permission(self, request):
+        if self.model.objects.count() > 0:
+            return False
+        else:
+            return True
+admin.site.register(draftDmp,draftDmpAdmin)

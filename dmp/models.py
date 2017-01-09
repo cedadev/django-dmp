@@ -353,3 +353,10 @@ class DOGstats(models.Model):
     ended_with_outstanding_data = models.IntegerField(null=True)
     total_grants = models.IntegerField(null=True)
 
+class draftDmp(models.Model):
+    '''html template for the draft dmp stored in a place editable by the user and not just hardcoded.'''
+    draft_dmp_name = models.CharField(max_length=200, default='Draft DMP')
+    draft_dmp_content = models.TextField(blank=True)
+
+    class Meta():
+        verbose_name_plural = 'Draft DMP'

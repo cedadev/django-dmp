@@ -7,7 +7,7 @@ from views import *
 
 
 urlpatterns = [
-     url(r'^project/(?P<project_id>\d+)$', dmp_draft),
+     url(r'^project/(?P<project_id>\d+)$', dmp_draft, name="dmp_draft"),
      url(r'^project/(?P<project_id>\d+)/adddataproduct$', add_dataproduct),
      url(r'^project/(?P<project_id>\d+)/show$', showproject),
      url(r'^myprojects$', my_projects),
@@ -21,5 +21,5 @@ urlpatterns = [
      url(r'^DOG_report/$', DOG_report, name="DOG_report"),
      url(r'^$', home, name='index'),
      url(r'^home/$', home, name='home'),
-     url(r'^emailhelp/$',email_help,name="email_help")
+     url(r'^emailhelp/$',email_help,name="email_help"),
 ]

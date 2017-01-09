@@ -4,12 +4,15 @@ from django.http.response import HttpResponse
 from dmp.forms import *
 from django.core.exceptions import ValidationError
 
+# upload draft dmp to google
+import cStringIO as StringIO
+from httplib2 import Http
+from apiclient.discovery import build
+from oauth2client import file, client, tools
+
+
 from django.contrib.auth.models import *
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.decorators import login_required
-from django.template.loader import render_to_string
-from dateutil.relativedelta import relativedelta
-import json
+
 from django.template import Context, Template
 from django.core.mail import EmailMultiAlternatives
 from django.contrib import messages
@@ -32,10 +35,79 @@ def home(request):
     # Home page view
     return render_to_response('dmp/home.html', {'user': request.user})
 
+def google_drive_upload(request):
+    ''' this is the action of uploading a file.'''
+    # check to see if user has a token
+    # if token perform upload
+    # if no token send to authentication
+    pass
+    # add success message
+    messages.success(request,"DMP successfully uploaded")
+    return render(request, 'dmp/dmp_draft.html')
+
+def oauth_authentication(request):
+    pass
+
+def google_drive_token_exchange(request):
+    # exchange nonce token from authorisation for an Oauth2 token.
+    # store this against the user so that subsequent requests for the same action can be varified.
+    action = ''
+    return redirect(action)
+
+
 def dmp_draft(request, project_id):
     # a summary of a single project
     project = get_object_or_404(Project, pk=project_id)
-    return render_to_response('dmp/dmp_draft.html', {'project': project,})
+    opts = Project()._meta
+    form = DraftDmpForm()
+
+    template_obj = Template(draftDmp.objects.all()[0].draft_dmp_content)
+    form.fields['draft_dmp'].initial = template_obj.render(Context({'project': project}))
+
+    if request.method == 'POST':
+        form = DraftDmpForm(request.POST)
+        if form.is_valid():
+            filename = project.title + '_DraftDMP.html'
+            template = Template(draftDmp.objects.all()[0].draft_dmp_content)
+            context = Context({'project':project})
+            html = template.render(context)
+            result = StringIO.StringIO()
+            result.write(html.encode("ISO-8859-1"))
+
+
+
+            SCOPES = 'https://www.googleapis.com/auth/drive.file'
+            store = file.Storage('dmp/static/storage.json')
+            creds = store.get()
+            if not creds or creds.invalid:
+                flow = client.flow_from_clientsecrets('dmp/static/client_secret.json', SCOPES)
+                return redirect(flow.auth_uri)
+                # creds = tools.run_flow(flow, store, flags=None)
+            DRIVE = build('drive', 'v3', http=creds.authorize(Http()))
+            FILES = (
+                (result.getvalue(),'application/vnd.google-apps.document'),
+            )
+
+            for filename, mimeType in FILES:
+                metadata = {'name': filename}
+                if mimeType:
+                    metadata['mimeType'] = mimeType
+                res = DRIVE.files().create(body=metadata, media_body=filename).execute()
+                if res:
+                    messages.success(request, "Uploaded " + filename + " to Google Drive")
+            if res:
+                print(DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute())
+
+
+            return redirect("/admin/dmp/project/%s/change" % project_id)
+
+
+            # print "i did something"
+            # messages.success(request,"Uploaded DMP")
+            # return redirect("/admin/dmp/project/%s/change" % project_id)
+
+
+    return render(request,'dmp/dmp_draft.html', {'project': project,'opts':opts, 'form':form})
 
 
 def add_dataproduct(request, project_id):
@@ -234,6 +306,7 @@ def showproject(request, project_id):
 
 def gotw_scrape(request, id):
     """Scrape grants on the web for grant info then make a project. """
+    #TODO add ODMP URL guess when new project created as in the grant uploader.
     grant = get_object_or_404(Grant, pk=id)
 
     # find split grant info from grants on the web
@@ -423,9 +496,13 @@ def mail_template(request, project_id):
             msg.send()
             messages.success(request, "Your email was sent successfully")
 
-            email_note = '"' + str(EmailTemplate.objects.get(template_ref=type).template_name) + '" email was sent to ' + request.POST['receiver'] + " with " + \
-                request.POST['cc'] + " ccd in."
-
+            if request.POST['cc']:
+                email_note = '"' + str(EmailTemplate.objects.get(template_ref=type).template_name) + '" email was sent to ' + request.POST['receiver'] + " with " + \
+                    request.POST['cc'] + " ccd in."
+            else:
+                email_note = '"' + str(
+                    EmailTemplate.objects.get(template_ref=type).template_name) + '" email was sent to ' + request.POST[
+                                 'receiver'] +"."
 
             Note(
                 creator=request.user,
@@ -582,6 +659,8 @@ def grant_uploader(request):
                             sciSupContact=request.user,
                             primary_dataCentre = grants[grant]['Assigned Data Centre'],
                             other_dataCentres = grants[grant]["Other DC's  Datasets"],
+                            # have an educated guess at the ODMP url
+                            ODMP_URL = "https://systems.apps.nerc.ac.uk/grants/datamad/Outline%20DMPs/"+lead_grant.replace("/", "_")+"%20DMP.pdf"
                         )
                         new_proj.save()
                         p_added += 1

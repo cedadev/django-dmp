@@ -88,3 +88,5 @@ class EmailMessageForm(forms.Form):
     message = forms.CharField(widget=forms.Textarea(attrs={'rows': 20}))
     template_type = forms.CharField(max_length=200)
 
+class DraftDmpForm(forms.Form):
+    draft_dmp = forms.CharField(widget=forms.Textarea(attrs={'style': 'height:700px'}))
