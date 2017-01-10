@@ -614,22 +614,23 @@ def grant_uploader(request):
                     current_grant_obj.save()
 
                     # Check project details for grants such as start, end date, dmp/contact dates
-                    # TODO find out what exactly is likely to change that would be useful to auto update.
-                    date_fields = (
-                        ('startdate','Actual Start Date'),
-                        ('enddate','Actual End Date'),
-                        ('initial_contact','DateContact with PI'),
-                        ('dmp_agreed','Date DMP signoff'),
-                    )
-
-                    proj = Grant.objects.get(number=grant).project
-                    updated = False
-                    for field in date_fields:
-                        if grants[grant][field[1]] is not '' and getattr(proj,field[0]) != datetime.datetime.strptime(grants[grant][field[1]],"%d/%m/%Y"):
-                            setattr(proj,field[0],datetime.datetime.strptime(grants[grant][field[1]],"%d/%m/%Y"))
-                            updated = True
-                            g_updated += 1
-                    proj.save()
+                    updated= False
+                    # TODO find out what exactly is likely to change that would be useful to auto update, currently not a working feature for data integrity.
+                    # date_fields = (
+                    #     ('startdate','Actual Start Date'),
+                    #     ('enddate','Actual End Date'),
+                    #     ('initial_contact','DateContact with PI'),
+                    #     ('dmp_agreed','Date DMP signoff'),
+                    # )
+                    #
+                    # proj = Grant.objects.get(number=grant).project
+                    # updated = False
+                    # for field in date_fields:
+                    #     if grants[grant][field[1]] is not '' and getattr(proj,field[0]) != datetime.datetime.strptime(grants[grant][field[1]],"%d/%m/%Y"):
+                    #         setattr(proj,field[0],datetime.datetime.strptime(grants[grant][field[1]],"%d/%m/%Y"))
+                    #         updated = True
+                    #         g_updated += 1
+                    # proj.save()
 
             # display appropriate completion message
             if (g_added > 0 or p_added > 0) and  grants:
