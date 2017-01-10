@@ -164,3 +164,8 @@ class draftDmpAdmin(admin.ModelAdmin):
         else:
             return True
 admin.site.register(draftDmp,draftDmpAdmin)
+
+class OAuth_tokenAdmin(admin.ModelAdmin):
+    list_display = ('user','token_type',)
+
+admin.site.register(OAuthToken, OAuth_tokenAdmin)

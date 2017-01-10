@@ -33,7 +33,7 @@
 
 {% endblock %}
 {% block content %}
-    <form action="{% url 'dmp_draft' project.id %}" method="POST">
+    <form action="{% url 'google_authorise' %}" method="POST">
         {% csrf_token %}
 
         <input type="submit" value="Upload to Google Docs">

@@ -9,6 +9,8 @@ from datetime import datetime, timedelta, date
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.fields import PositiveIntegerField
+from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 
 import re
 
@@ -353,6 +355,7 @@ class DOGstats(models.Model):
     ended_with_outstanding_data = models.IntegerField(null=True)
     total_grants = models.IntegerField(null=True)
 
+
 class draftDmp(models.Model):
     '''html template for the draft dmp stored in a place editable by the user and not just hardcoded.'''
     draft_dmp_name = models.CharField(max_length=200, default='Draft DMP')
@@ -360,3 +363,35 @@ class draftDmp(models.Model):
 
     class Meta():
         verbose_name_plural = 'Draft DMP'
+
+
+class OAuthToken(models.Model):
+    """
+    Model representing an OAuth token from the CEDA OAuth server for a user. A
+    user may have at most one token at any one time.
+    """
+    class Meta:
+        verbose_name = 'OAuth Token'
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                models.CASCADE, related_name = 'oauth_token')
+    token_type = models.CharField(max_length = 20)
+    # NOTE: ArrayField is **Postgres specific**
+    scope = models.CharField(max_length = 250)
+    access_token = models.CharField(max_length = 50)
+    refresh_token = models.CharField(max_length = 50)
+    expires_at = models.FloatField()
+    expires_in = models.IntegerField()
+
+    def as_dict(self):
+        """
+        Returns a token dict representing the token for use with `requests-oauthlib`.
+        """
+        return {
+            'token_type' : self.token_type,
+            'scope' : self.scope,
+            'access_token' : self.access_token,
+            'refresh_token' : self.refresh_token,
+            'expires_at' : self.expires_at,
+            'expires_in' : self.expires_in,
+        }

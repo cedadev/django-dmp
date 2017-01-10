@@ -9,12 +9,15 @@ import cStringIO as StringIO
 from httplib2 import Http
 from apiclient.discovery import build
 from oauth2client import file, client, tools
+from django.urls import reverse
+from requests_oauthlib import OAuth2Session
 
 
 from django.contrib.auth.models import *
 
 from django.template import Context, Template
 from django.core.mail import EmailMultiAlternatives
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.utils.html import strip_tags
 
@@ -35,24 +38,89 @@ def home(request):
     # Home page view
     return render_to_response('dmp/home.html', {'user': request.user})
 
-def google_drive_upload(request):
-    ''' this is the action of uploading a file.'''
-    # check to see if user has a token
-    # if token perform upload
-    # if no token send to authentication
-    pass
-    # add success message
-    messages.success(request,"DMP successfully uploaded")
-    return render(request, 'dmp/dmp_draft.html')
 
-def oauth_authentication(request):
-    pass
+
+def google_drive_upload(request, project_id):
+
+    # put project id in the session when coming from form submit
+    if project_id:
+        request.session['project_id'] = project_id
+
+    if request.POST:
+        form = DraftDmpForm(request.POST)
+        if form.is_valid():
+            try:
+                token = request.user.oauth_token.as_dict()
+            except ObjectDoesNotExist:
+                redirect('google_authorise')
+            else:
+                # Upload file to google drive if there is a current token
+
+                # Retrieve and consume the project for the session
+                session_project = request.session.pop('project_id', None)
+                project = get_object_or_404(Project, pk= session_project)
+
+                # Render DMP template and create string
+                filename = project.title + '_DraftDMP.html'
+                template = Template(draftDmp.objects.all()[0].draft_dmp_content)
+                context = Context({'project': project})
+                html = template.render(context)
+                result = StringIO.StringIO()
+                result.write(html.encode("ISO-8859-1"))
+
+                # Build drive object
+                DRIVE = build('drive', 'v3', http=token.authorize(Http()))
+                FILES = (
+                    (result.getvalue(), 'application/vnd.google-apps.document'),
+                )
+
+                for filename, mimeType in FILES:
+                    metadata = {'name': filename}
+                    if mimeType:
+                        metadata['mimeType'] = mimeType
+                    res = DRIVE.files().create(body=metadata, media_body=filename).execute()
+                    if res:
+                        messages.success(request, "Uploaded " + filename + " to Google Drive")
+                # Document link to be added to project
+                if res:
+                    print(DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute())
+
+                return redirect("/admin/dmp/project/%s/change" % session_project)
+
+
+
+def google_drive_authorise(request):
+
+    SCOPES = ('https://www.googleapis.com/auth/drive.file',)
+    flow = client.flow_from_clientsecrets('dmp/static/client_secret.json', SCOPES)
+
+    google = OAuth2Session(
+        client_id=flow.client_id,
+        scope=SCOPES,
+        redirect_uri='http://localhost:8000/dmp/google_drive_token_exchange/'
+    )
+    auth_url, state = google.authorization_url(
+        flow.auth_uri,
+        access_type='offline',
+        approval_prompt='force'
+    )
+
+    return redirect(auth_url)
 
 def google_drive_token_exchange(request):
-    # exchange nonce token from authorisation for an Oauth2 token.
-    # store this against the user so that subsequent requests for the same action can be varified.
-    action = ''
-    return redirect(action)
+    # TODO handle any error messages
+    # Store the token against the user
+    SCOPES = ('https://www.googleapis.com/auth/drive.file',)
+    flow = client.flow_from_clientsecrets('dmp/static/client_secret.json', SCOPES)
+
+    token = OAuth2Session(
+        flow.client_id,
+        redirect_uri='http://localhost:8000/dmp/google_drive_token_exchange',
+                          )
+
+
+    print "this is the exchange phase"
+    return redirect('google_drive_upload',project_id=None)
 
 
 def dmp_draft(request, project_id):

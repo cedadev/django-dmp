@@ -5,7 +5,6 @@ from django.contrib import admin
 from views import *
 
 
-
 urlpatterns = [
      url(r'^project/(?P<project_id>\d+)$', dmp_draft, name="dmp_draft"),
      url(r'^project/(?P<project_id>\d+)/adddataproduct$', add_dataproduct),
@@ -22,4 +21,10 @@ urlpatterns = [
      url(r'^$', home, name='index'),
      url(r'^home/$', home, name='home'),
      url(r'^emailhelp/$',email_help,name="email_help"),
+
+
+     # Google drive draft DMP upload authorisation process
+     url(r'^google_drive_authorise/$', google_drive_authorise, name='google_authorise'),
+     url(r'^google_drive_token_exchange/$', google_drive_token_exchange, name='google_token_exchange'),
+     url(r'^google_drive_upload/(?P<project_id>\d+)/$', google_drive_upload, name='dmp_upload'),
 ]
