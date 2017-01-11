@@ -97,7 +97,7 @@ def google_drive_authorise(request):
     google = OAuth2Session(
         client_id=flow.client_id,
         scope=SCOPES,
-        redirect_uri='http://localhost:8000/dmp/google_drive_token_exchange/'
+        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/'
     )
     auth_url, state = google.authorization_url(
         flow.auth_uri,
@@ -116,8 +116,13 @@ def google_drive_token_exchange(request):
     token = OAuth2Session(
         flow.client_id,
         redirect_uri='http://localhost:8000/dmp/google_drive_token_exchange',
-                          )
-
+        scope=SCOPES,
+    ).fetch_token(
+        flow.token_uri,
+        client_secret=flow.client_secret,
+        authorization_response="http://localhost:8000" + request.get_full_path()
+    )
+    print token
 
     print "this is the exchange phase"
     return redirect('google_drive_upload',project_id=None)

@@ -4,8 +4,8 @@ from django.contrib import admin
 
 from views import *
 
-
 urlpatterns = [
+
      url(r'^project/(?P<project_id>\d+)$', dmp_draft, name="dmp_draft"),
      url(r'^project/(?P<project_id>\d+)/adddataproduct$', add_dataproduct),
      url(r'^project/(?P<project_id>\d+)/show$', showproject),

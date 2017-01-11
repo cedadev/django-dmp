@@ -54,11 +54,13 @@ class GrantUploadForm(forms.Form):
 
 
 class EmailTemplateSelectorForm(forms.Form):
-    available_templates = EmailTemplate.objects.all().order_by("template_name")
-    CHOICES = []
-    for template in available_templates:
-        CHOICES.append((template.template_ref,template.template_name))
-    template_type = forms.ChoiceField(label='Select email template to use ', choices=CHOICES)
+    def __init__(self, *args, **kwargs):
+        super(EmailTemplateSelectorForm,self).__init__(*args, **kwargs)
+        available_templates = EmailTemplate.objects.all().order_by("template_name")
+        CHOICES = []
+        for template in available_templates:
+            CHOICES.append((template.template_ref,template.template_name))
+        self.fields['template_type'] = forms.ChoiceField(label='Select email template to use ', choices=CHOICES)
 
 
 class EmailMessageForm(forms.Form):
