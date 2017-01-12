@@ -270,7 +270,7 @@ class Grant(models.Model):
     title = models.CharField(max_length=800, blank=True, null=True)
     pi = models.CharField(max_length=200, blank=True, null=True)
     desc = models.TextField(blank=True, null=True)
-    # if grant is a child grant, enter email. This is used as a CC  when emails are sent.
+    # This is used as a CC  when emails are sent.
     data_email = models.EmailField(blank=True, null=True)
 
     def __unicode__(self):

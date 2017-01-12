@@ -8,9 +8,11 @@ from django.core.exceptions import ValidationError
 import cStringIO as StringIO
 from httplib2 import Http
 from apiclient.discovery import build
-from oauth2client import file, client, tools
-from django.urls import reverse
+from oauth2client import file, client
+from oauth2client import GOOGLE_TOKEN_URI, GOOGLE_REVOKE_URI, GOOGLE_AUTH_URI
 from requests_oauthlib import OAuth2Session
+import tempfile
+from contextlib import contextmanager
 
 
 from django.contrib.auth.models import *
@@ -41,91 +43,117 @@ def home(request):
 
 
 def google_drive_upload(request, project_id):
-
+    # TODO  handle token refresh and revoke
     # put project id in the session when coming from form submit
-    if project_id:
+    if request.POST:
         request.session['project_id'] = project_id
 
-    if request.POST:
-        form = DraftDmpForm(request.POST)
-        if form.is_valid():
-            try:
-                token = request.user.oauth_token.as_dict()
-            except ObjectDoesNotExist:
-                redirect('google_authorise')
-            else:
-                # Upload file to google drive if there is a current token
+    try:
+        token = request.user.oauth_token.as_dict()
+    except ObjectDoesNotExist:
+        return redirect('google_authorise')
+    else:
+        # Upload file to google drive if there is a current token
 
-                # Retrieve and consume the project for the session
-                session_project = request.session.pop('project_id', None)
-                project = get_object_or_404(Project, pk= session_project)
+        # Retrieve and consume the project for the session
+        session_project = request.session.pop('project_id', None)
+        project = get_object_or_404(Project, pk= session_project)
 
-                # Render DMP template and create string
-                filename = project.title + '_DraftDMP.html'
-                template = Template(draftDmp.objects.all()[0].draft_dmp_content)
-                context = Context({'project': project})
-                html = template.render(context)
-                result = StringIO.StringIO()
-                result.write(html.encode("ISO-8859-1"))
+        # Render DMP template and create string
+        filename = project.title + '_DraftDMP.html'
+        template = Template(draftDmp.objects.all()[0].draft_dmp_content)
+        context = Context({'project': project})
+        html = template.render(context)
+        result = StringIO.StringIO()
+        result.write(html.encode("ISO-8859-1"))
+        creds = client.GoogleCredentials(
+            access_token=token['access_token'],
+            client_secret=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+            client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+            refresh_token=token['refresh_token'],
+            token_expiry=token['expires_at'],
+            token_uri=GOOGLE_TOKEN_URI,
+            user_agent=None
+        )
 
-                # Build drive object
-                DRIVE = build('drive', 'v3', http=token.authorize(Http()))
-                FILES = (
-                    (result.getvalue(), 'application/vnd.google-apps.document'),
-                )
+        # Create temporary file for google to upload
+        @contextmanager
+        def tempinput(data):
+            temp = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
+            temp.write(data)
+            temp.close()
+            yield temp.name
+            os.remove(temp.name)
 
-                for filename, mimeType in FILES:
-                    metadata = {'name': filename}
-                    if mimeType:
-                        metadata['mimeType'] = mimeType
-                    res = DRIVE.files().create(body=metadata, media_body=filename).execute()
-                    if res:
-                        messages.success(request, "Uploaded " + filename + " to Google Drive")
-                # Document link to be added to project
+        desired_name = filename
+        with tempinput(result.getvalue()) as tempfilename:
+
+            # Build drive object
+            DRIVE = build('drive', 'v3', http=creds.authorize(Http()))
+            FILES = (
+                (tempfilename, 'application/vnd.google-apps.document'),
+            )
+            # Upload file
+            for filename, mimeType in FILES:
+                metadata = {'name': desired_name}
+                if mimeType:
+                    metadata['mimeType'] = mimeType
+                res = DRIVE.files().create(body=metadata, media_body=filename).execute()
                 if res:
-                    print(DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute())
+                    messages.success(
+                        request,
+                        "Uploaded " +
+                        desired_name +
+                        " to Google Drive"
+                    )
+            # Document link to be added to project
+            if res:
+                google_doc_url = DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute()['webViewLink']
+                project.dmp_URL = google_doc_url
+                project.save()
 
-                return redirect("/admin/dmp/project/%s/change" % session_project)
-
+        return redirect("/admin/dmp/project/%s/change" % session_project)
 
 
 def google_drive_authorise(request):
 
     SCOPES = ('https://www.googleapis.com/auth/drive.file',)
-    flow = client.flow_from_clientsecrets('dmp/static/client_secret.json', SCOPES)
 
     google = OAuth2Session(
-        client_id=flow.client_id,
+        client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
         scope=SCOPES,
         redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/'
     )
     auth_url, state = google.authorization_url(
-        flow.auth_uri,
+        auth_url = GOOGLE_AUTH_URI,
         access_type='offline',
         approval_prompt='force'
     )
+    request.session['oauth_state'] = state
 
     return redirect(auth_url)
 
 def google_drive_token_exchange(request):
     # TODO handle any error messages
-    # Store the token against the user
+    # Exchange code for token
     SCOPES = ('https://www.googleapis.com/auth/drive.file',)
-    flow = client.flow_from_clientsecrets('dmp/static/client_secret.json', SCOPES)
 
     token = OAuth2Session(
-        flow.client_id,
-        redirect_uri='http://localhost:8000/dmp/google_drive_token_exchange',
+        client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/',
         scope=SCOPES,
+        state=request.session.pop('oauth_state')
     ).fetch_token(
-        flow.token_uri,
-        client_secret=flow.client_secret,
-        authorization_response="http://localhost:8000" + request.get_full_path()
+        token_url= GOOGLE_TOKEN_URI,
+        client_secret=settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
+        code=request.GET['code']
     )
-    print token
 
-    print "this is the exchange phase"
-    return redirect('google_drive_upload',project_id=None)
+    # save token against the current logged in user.
+    OAuthToken.objects.update_or_create(user=request.user, defaults=token)
+
+    # return to google_drive_upload with arbitary project_id. Correct id stored in session.
+    return redirect('dmp_upload',project_id=0)
 
 
 def dmp_draft(request, project_id):
@@ -136,49 +164,6 @@ def dmp_draft(request, project_id):
 
     template_obj = Template(draftDmp.objects.all()[0].draft_dmp_content)
     form.fields['draft_dmp'].initial = template_obj.render(Context({'project': project}))
-
-    if request.method == 'POST':
-        form = DraftDmpForm(request.POST)
-        if form.is_valid():
-            filename = project.title + '_DraftDMP.html'
-            template = Template(draftDmp.objects.all()[0].draft_dmp_content)
-            context = Context({'project':project})
-            html = template.render(context)
-            result = StringIO.StringIO()
-            result.write(html.encode("ISO-8859-1"))
-
-
-
-            SCOPES = 'https://www.googleapis.com/auth/drive.file'
-            store = file.Storage('dmp/static/storage.json')
-            creds = store.get()
-            if not creds or creds.invalid:
-                flow = client.flow_from_clientsecrets('dmp/static/client_secret.json', SCOPES)
-                return redirect(flow.auth_uri)
-                # creds = tools.run_flow(flow, store, flags=None)
-            DRIVE = build('drive', 'v3', http=creds.authorize(Http()))
-            FILES = (
-                (result.getvalue(),'application/vnd.google-apps.document'),
-            )
-
-            for filename, mimeType in FILES:
-                metadata = {'name': filename}
-                if mimeType:
-                    metadata['mimeType'] = mimeType
-                res = DRIVE.files().create(body=metadata, media_body=filename).execute()
-                if res:
-                    messages.success(request, "Uploaded " + filename + " to Google Drive")
-            if res:
-                print(DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute())
-
-
-            return redirect("/admin/dmp/project/%s/change" % project_id)
-
-
-            # print "i did something"
-            # messages.success(request,"Uploaded DMP")
-            # return redirect("/admin/dmp/project/%s/change" % project_id)
-
 
     return render(request,'dmp/dmp_draft.html', {'project': project,'opts':opts, 'form':form})
 
@@ -645,6 +630,7 @@ def grant_uploader(request):
             else:
                 # User has uploaded a DataMad file
                 # TODO: Allow script to pass any failed situations, eg. no matching regex.
+                # TODO: If script fails, give an informative error message to help the user correct the input.
 
                 # build dictionary of dictionaries to give access to all grant numbers in the file plus their column attributes
                 file = request.FILES['grantfile']
@@ -728,7 +714,7 @@ def grant_uploader(request):
                             status='Active',
                             sciSupContact=request.user,
                             primary_dataCentre = grants[grant]['Assigned Data Centre'],
-                            other_dataCentres = grants[grant]["Other DC's  Datasets"],
+                            other_dataCentres = grants[grant]["Other DC's Expecting Datasets"],
                             # have an educated guess at the ODMP url
                             ODMP_URL = "https://systems.apps.nerc.ac.uk/grants/datamad/Outline%20DMPs/"+lead_grant.replace("/", "_")+"%20DMP.pdf"
                         )
@@ -755,8 +741,9 @@ def grant_uploader(request):
                         note.save()
 
                         # link grant and new project
-                        grant_instance.project = new_proj
-                        grant_instance.save()
+                        link_grant = Grant.objects.get(number=grant)
+                        link_grant.project = new_proj
+                        link_grant.save()
 
                     # Add project to grant, works if new grant and project created or if just linking existing
                     # grants and projects
