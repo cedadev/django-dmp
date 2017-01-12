@@ -463,6 +463,7 @@ def grant_uploader(request):
     g_added = 0
     p_added = 0
     g_updated = 0
+    p_updated = 0
 
     if request.method == 'POST':
 
@@ -511,8 +512,8 @@ def grant_uploader(request):
                 for grant in grants:
                     if not Grant.objects.filter(number=grant):
                         grant_instance = Grant(
-                            number= grant,
-                            data_email= grants[grant]['Data Contact Email']
+                            number=grant,
+                            data_email=grants[grant]['Data Contact Email']
                         )
                         grant_instance.save()
                         g_added += 1
@@ -578,13 +579,12 @@ def grant_uploader(request):
                             status='Active',
                             sciSupContact=request.user,
                             primary_dataCentre = grants[grant]['Assigned Data Centre'],
-                            other_dataCentres = grants[grant]["Other DC's  Datasets"],
+                            other_dataCentres = grants[grant]["Other DC's Expecting Datasets"],
                         )
                         new_proj.save()
                         p_added += 1
 
                         # make new programme if one found
-
                         progs = ProjectGroup.objects.filter(name=programme)
                         if not progs and programme:
                             pg = ProjectGroup(name=programme)
@@ -602,34 +602,58 @@ def grant_uploader(request):
                         )
                         note.save()
 
-                        # link grant and new project
-                        grant_instance.project = new_proj
-                        grant_instance.save()
-
-                    # Add project to grant, works if new grant and project created or if just linking existing
+                    # Link grants and projects, works if new grant and project created or if just linking existing
                     # grants and projects
-
                     current_grant_obj = Grant.objects.get(number=grant)
-                    current_grant_obj.project = Project.objects.get(title=grants[grant]['Title'])
-                    current_grant_obj.save()
 
-                    # Check project details for grants such as start, end date, dmp/contact dates
-                    # TODO find out what exactly is likely to change that would be useful to auto update.
-                    date_fields = (
-                        ('startdate','Actual Start Date'),
-                        ('enddate','Actual End Date'),
-                        ('initial_contact','DateContact with PI'),
-                        ('dmp_agreed','Date DMP signoff'),
-                    )
+                    # Link grant if not currently linked to project
+                    if not current_grant_obj.project:
+                        current_grant_obj.project = Project.objects.get(title=grants[grant]['Title'])
+                        current_grant_obj.save()
 
-                    proj = Grant.objects.get(number=grant).project
-                    updated = False
-                    for field in date_fields:
-                        if grants[grant][field[1]] is not '' and getattr(proj,field[0]) != datetime.datetime.strptime(grants[grant][field[1]],"%d/%m/%Y"):
-                            setattr(proj,field[0],datetime.datetime.strptime(grants[grant][field[1]],"%d/%m/%Y"))
-                            updated = True
-                            g_updated += 1
-                    proj.save()
+                    # Boolean switches to handle update counting and saving.
+                    p_change = False
+                    g_change = False
+
+                    # Check and update project fields.
+                    proj = current_grant_obj.project
+
+                    # Check end date
+                    if grants[grant]['Actual End Date'] \
+                        and proj.enddate < datetime.datetime.strptime(grants[grant]['Actual End Date'],"%d/%m/%Y").date():
+                        proj.enddate = datetime.datetime.strptime(grants[grant]['Actual End Date'],"%d/%m/%Y").date()
+                        p_change = True
+
+                    # Check primary and secondary data centre fields
+                    if grants[grant]['Assigned Data Centre'] \
+                        and proj.primary_dataCentre != grants[grant]['Assigned Data Centre']:
+                        proj.primary_dataCentre = grants[grant]['Assigned Data Centre']
+                        p_change = True
+
+                    if grants[grant]["Other DC's Expecting Datasets"] \
+                        and proj.other_dataCentres != grants[grant]["Other DC's Expecting Datasets"]:
+                        proj.other_dataCentres = grants[grant]["Other DC's Expecting Datasets"]
+                        p_change = True
+
+                    # Have a guess at ODMP url if one is not already entered.
+                    if not proj.ODMP_URL:
+                        proj.ODMP_URL = "https://systems.apps.nerc.ac.uk/grants/datamad/Outline%20DMPs/" + grant.replace(
+                            "/", "_") + "%20DMP.pdf"
+                        p_change = True
+
+                    # Check to see if grant has an email address, these are used for a CC field when sending email.
+                    if grants[grant]['Data Contact Email'] \
+                        and not current_grant_obj.data_email:
+                        current_grant_obj.data_email = grants[grant]['Data Contact Email']
+                        g_change
+
+                    # Save changes and update count to track changes
+                    if p_change:
+                        proj.save()
+                        p_updated += 1
+                    if g_change:
+                        current_grant_obj.save()
+                        g_updated += 1
 
             # display appropriate completion message
             if (g_added > 0 or p_added > 0) and  grants:
@@ -638,17 +662,12 @@ def grant_uploader(request):
                 messages.info(request,"No new grants were found")
             else:
                 messages.error(request,"No grant numbers found")
-            if updated:
-                messages.success(request,"Successfully updated " + str(g_updated) + " grants.")
-
-
-
+            if p_change or g_change:
+                messages.success(request,"Successfully updated " + str(g_updated) + " grants and " + str(p_updated) + " projects.")
 
             return render(request,'dmp/grant_uploader.html',{'form':form, 'opts':opts})
     else:
         form = GrantUploadForm() #empty unbound form
-
-
 
     return render(request,"dmp/grant_uploader.html",{'form':form, 'opts':opts})
 
