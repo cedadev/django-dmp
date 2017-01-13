@@ -31,7 +31,7 @@ class Project(models.Model):
 
     title = models.CharField(max_length=200)
     date_added = models.DateTimeField(auto_now_add=True)
-    desc = models.TextField(blank=True, null=True)
+    desc = models.TextField(blank=True, null=True, verbose_name="Description")
     notes = GenericRelation("Note")
     data_activities = models.TextField(blank=True, null=True, help_text="Short description of data generation activities. eg Data will be collected by FAAM aircraft/ground instruments. Are there intensive measurement campaigns?")
     startdate = models.DateField(blank=True, null=True,verbose_name="Start Date",help_text="Date format dd/mm/yyyy")
@@ -46,8 +46,8 @@ class Project(models.Model):
     Contact2 = models.CharField(max_length=200, blank=True, null=True)
     projectcost = models.IntegerField(blank=True, null=True)
     services = models.TextField(blank=True, null=True)
-    primary_dataCentre = models.CharField(max_length=200,blank=True, null=True)
-    other_dataCentres = models.CharField(max_length=200, blank=True, null=True)
+    primary_dataCentre = models.CharField(max_length=200,blank=True, null=True, verbose_name="Primary Datacentre")
+    other_dataCentres = models.CharField(max_length=200, blank=True, null=True, verbose_name="Other Datacentres")
     status = models.CharField(max_length=200, blank=True, null=True,
             choices=(("Proposal","Proposal"),
                  ("NotFunded","Not Funded"),

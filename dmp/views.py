@@ -460,10 +460,15 @@ def mail_template(request, project_id):
 def grant_uploader(request):
 
     opts = Grant()._meta
+
+    # Counters and boolean switches to handle counting and saving of changes
     g_added = 0
     p_added = 0
     g_updated = 0
     p_updated = 0
+
+    p_change = False
+    g_change = False
 
     if request.method == 'POST':
 
@@ -507,6 +512,30 @@ def grant_uploader(request):
                     for key, value in zip(header, row):
                         row_dict[key] = value
                     grants[row[0]] = row_dict
+
+                # check arbitary grant ref
+                if grants.keys()[0]:
+                    errors = []
+                    # Check necessary keys are in dictionary and flag errors
+                    keys = (
+                        'Data Contact Email',
+                        'Grant Holder',
+                        'Parent Grant',
+                        'Assigned Data Centre',
+                        "Other DC's Expecting Datasets",
+                        'Actual End Date',
+                        'Title'
+                    )
+                    for k in keys:
+                        try:
+                            grants[grants.keys()[0]][k]
+                        except KeyError:
+                            errors.append(k)
+
+                    if errors:
+                        for e in errors:
+                            messages.error(request, 'Unexpected or missing column name in input file, was expecting "' + e +'". Correct header and retry.' )
+                        return render(request,'dmp/grant_uploader.html',{'form':form, 'opts':opts})
 
                 # loop through grants, check if they are in the database and add if not
                 for grant in grants:
@@ -611,10 +640,6 @@ def grant_uploader(request):
                         current_grant_obj.project = Project.objects.get(title=grants[grant]['Title'])
                         current_grant_obj.save()
 
-                    # Boolean switches to handle update counting and saving.
-                    p_change = False
-                    g_change = False
-
                     # Check and update project fields.
                     proj = current_grant_obj.project
 
@@ -624,12 +649,12 @@ def grant_uploader(request):
                         proj.enddate = datetime.datetime.strptime(grants[grant]['Actual End Date'],"%d/%m/%Y").date()
                         p_change = True
 
-                    # Check primary and secondary data centre fields
+                    # Check Primary data centre field
                     if grants[grant]['Assigned Data Centre'] \
                         and proj.primary_dataCentre != grants[grant]['Assigned Data Centre']:
                         proj.primary_dataCentre = grants[grant]['Assigned Data Centre']
                         p_change = True
-
+                    # Check "Other Datacentres" field
                     if grants[grant]["Other DC's Expecting Datasets"] \
                         and proj.other_dataCentres != grants[grant]["Other DC's Expecting Datasets"]:
                         proj.other_dataCentres = grants[grant]["Other DC's Expecting Datasets"]
@@ -645,7 +670,7 @@ def grant_uploader(request):
                     if grants[grant]['Data Contact Email'] \
                         and not current_grant_obj.data_email:
                         current_grant_obj.data_email = grants[grant]['Data Contact Email']
-                        g_change
+                        g_change = True
 
                     # Save changes and update count to track changes
                     if p_change:
