@@ -497,6 +497,7 @@ def gotw_scrape(request, id):
     # redirect to new project in admin view
     return redirect('/admin/dmp/project/%s' % p.pk)
 
+@login_required
 def mail_template(request, project_id):
 
     project = Project.objects.get(pk=project_id)
@@ -600,7 +601,7 @@ def mail_template(request, project_id):
                        'form_select':type_select,
                        'form_message': message
                        })
-
+@login_required
 def grant_uploader(request):
 
     opts = Grant()._meta
@@ -842,6 +843,7 @@ def grant_uploader(request):
 
     return render(request,"dmp/grant_uploader.html",{'form':form, 'opts':opts})
 
+@login_required
 def DOG_report(request):
     todays_date = datetime.datetime.date(datetime.datetime.now())
 
@@ -908,6 +910,7 @@ def DOG_report(request):
                                                   'legacy_grant_report':legacy_grant_report
                                                   })
 
+@login_required
 def email_help(request):
     project_fields = Project._meta.get_fields()
     dataProduct_fields = DataProduct._meta.get_fields()
