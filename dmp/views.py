@@ -10,9 +10,10 @@ from httplib2 import Http
 from apiclient.discovery import build
 from oauth2client import file, client
 from oauth2client import GOOGLE_TOKEN_URI, GOOGLE_REVOKE_URI, GOOGLE_AUTH_URI
-from requests_oauthlib import OAuth2Session
+from oauth2client.client import HttpAccessTokenRefreshError
 import tempfile
 from contextlib import contextmanager
+import ast
 
 
 from django.contrib.auth.models import *
@@ -43,21 +44,20 @@ def home(request):
 
 
 def google_drive_upload(request, project_id):
-    # TODO  handle token refresh and revoke
-    # put project id in the session when coming from form submit
+    # TODO  handle token revoke
+    # Put project id in the session when coming from form submit
     if request.POST:
         request.session['project_id'] = project_id
 
     try:
-        token = request.user.oauth_token.as_dict()
+        token = request.user.oauth_token
     except ObjectDoesNotExist:
         return redirect('google_authorise')
     else:
         # Upload file to google drive if there is a current token
 
-        # Retrieve and consume the project for the session
-        session_project = request.session.pop('project_id', None)
-        project = get_object_or_404(Project, pk= session_project)
+        # Load the project for the upload
+        project = get_object_or_404(Project, pk= project_id)
 
         # Render DMP template and create string
         filename = project.title + '_DraftDMP.html'
@@ -66,12 +66,14 @@ def google_drive_upload(request, project_id):
         html = template.render(context)
         result = StringIO.StringIO()
         result.write(html.encode("ISO-8859-1"))
+
+        # Create google credentials object
         creds = client.GoogleCredentials(
-            access_token=token['access_token'],
+            access_token=token.access_token,
             client_secret=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
             client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
-            refresh_token=token['refresh_token'],
-            token_expiry=token['expires_at'],
+            refresh_token=token.refresh_token,
+            token_expiry=token.token_expiry,
             token_uri=GOOGLE_TOKEN_URI,
             user_agent=None
         )
@@ -85,7 +87,7 @@ def google_drive_upload(request, project_id):
             yield temp.name
             os.remove(temp.name)
 
-        desired_name = filename
+        desired_name = filename # name which will be displayed in the Google Drive
         with tempinput(result.getvalue()) as tempfilename:
 
             # Build drive object
@@ -98,7 +100,10 @@ def google_drive_upload(request, project_id):
                 metadata = {'name': desired_name}
                 if mimeType:
                     metadata['mimeType'] = mimeType
-                res = DRIVE.files().create(body=metadata, media_body=filename).execute()
+                try:
+                    res = DRIVE.files().create(body=metadata, media_body=filename).execute()
+                except HttpAccessTokenRefreshError:
+                    return redirect('google_authorise')
                 if res:
                     messages.success(
                         request,
@@ -106,54 +111,58 @@ def google_drive_upload(request, project_id):
                         desired_name +
                         " to Google Drive"
                     )
-            # Document link to be added to project
+            # Add document link to project
             if res:
                 google_doc_url = DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute()['webViewLink']
                 project.dmp_URL = google_doc_url
                 project.save()
 
-        return redirect("/admin/dmp/project/%s/change" % session_project)
+        return redirect("/admin/dmp/project/%s/change" % project_id)
 
 
 def google_drive_authorise(request):
 
     SCOPES = ('https://www.googleapis.com/auth/drive.file',)
 
-    google = OAuth2Session(
+    flow = client.OAuth2WebServerFlow(
         client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/',
         scope=SCOPES,
-        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/'
-    )
-    auth_url, state = google.authorization_url(
-        auth_url = GOOGLE_AUTH_URI,
+        approval_prompt='force',
         access_type='offline',
-        approval_prompt='force'
     )
-    request.session['oauth_state'] = state
+
+    # Get authorisation URL
+    auth_url = flow.step1_get_authorize_url()
 
     return redirect(auth_url)
+
 
 def google_drive_token_exchange(request):
     # TODO handle any error messages
     # Exchange code for token
     SCOPES = ('https://www.googleapis.com/auth/drive.file',)
 
-    token = OAuth2Session(
+    flow = client.OAuth2WebServerFlow(
         client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
-        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/',
-        scope=SCOPES,
-        state=request.session.pop('oauth_state')
-    ).fetch_token(
-        token_url= GOOGLE_TOKEN_URI,
         client_secret=settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
-        code=request.GET['code']
+        scope=SCOPES,
+        approval_prompt='force',
+        access_type='offline',
+        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/'
     )
 
+    token = flow.step2_exchange(request.GET['code'])
+
     # save token against the current logged in user.
+    token = {'token_expiry': token.token_expiry,'access_token': token.access_token,'refresh_token':token.refresh_token}
+
     OAuthToken.objects.update_or_create(user=request.user, defaults=token)
 
-    # return to google_drive_upload with arbitary project_id. Correct id stored in session.
-    return redirect('dmp_upload',project_id=0)
+    #  Retrieve the project id and return to google_drive_upload.
+    project_id = request.session.pop('project_id', None)
+
+    return redirect('dmp_upload',project_id)
 
 
 def dmp_draft(request, project_id):
