@@ -3,6 +3,7 @@ from django.shortcuts import redirect, render_to_response, get_object_or_404, re
 from django.http.response import HttpResponse
 from dmp.forms import *
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
 
 # upload draft dmp to google
 import cStringIO as StringIO
@@ -13,7 +14,7 @@ from oauth2client import GOOGLE_TOKEN_URI, GOOGLE_REVOKE_URI, GOOGLE_AUTH_URI
 from oauth2client.client import HttpAccessTokenRefreshError
 import tempfile
 from contextlib import contextmanager
-import ast
+
 
 
 from django.contrib.auth.models import *
@@ -31,6 +32,7 @@ import string
 import time
 import os
 import csv
+import json
 
 
 # set http proxy for wget calls
@@ -40,7 +42,6 @@ import csv
 def home(request):
     # Home page view
     return render_to_response('dmp/home.html', {'user': request.user})
-
 
 
 def google_drive_upload(request, project_id):
@@ -87,7 +88,7 @@ def google_drive_upload(request, project_id):
             yield temp.name
             os.remove(temp.name)
 
-        desired_name = filename # name which will be displayed in the Google Drive
+        desired_name = re.sub('.html','',filename) # name which will be displayed in the Google Drive
         with tempinput(result.getvalue()) as tempfilename:
 
             # Build drive object
@@ -122,7 +123,9 @@ def google_drive_upload(request, project_id):
 
 def google_drive_authorise(request):
 
-    SCOPES = ('https://www.googleapis.com/auth/drive.file',)
+    SCOPES = ('https://www.googleapis.com/auth/drive.file',
+              'https://www.googleapis.com/auth/userinfo.profile',
+              'https://www.googleapis.com/auth/userinfo.email',)
 
     flow = client.OAuth2WebServerFlow(
         client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
@@ -141,7 +144,9 @@ def google_drive_authorise(request):
 def google_drive_token_exchange(request):
     # TODO handle any error messages
     # Exchange code for token
-    SCOPES = ('https://www.googleapis.com/auth/drive.file',)
+    SCOPES = ('https://www.googleapis.com/auth/drive.file',
+              'https://www.googleapis.com/auth/userinfo.profile',
+              'https://www.googleapis.com/auth/userinfo.email',)
 
     flow = client.OAuth2WebServerFlow(
         client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
@@ -174,7 +179,40 @@ def dmp_draft(request, project_id):
     template_obj = Template(draftDmp.objects.all()[0].draft_dmp_content)
     form.fields['draft_dmp'].initial = template_obj.render(Context({'project': project}))
 
-    return render(request,'dmp/dmp_draft.html', {'project': project,'opts':opts, 'form':form})
+    # If there us a google token for the current logged in user, collect user information
+    try:
+        token = request.user.oauth_token
+    except ObjectDoesNotExist:
+        google_user= None
+    else:
+
+
+
+        response = json.loads(requests.get('https://www.googleapis.com/oauth2/v3/userinfo?access_token=%s' % token.access_token).text)
+
+
+
+        r = requests.get("https://www.googleapis.com/oauth2/v4/token", params={"refresh_token":token.refresh_token,
+                                                                               "client_id":settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+                                                                               "client_secret":settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
+                                                                               "grant_type":"refresh_token"})
+
+        if r.status_code != 200:
+            google_user= None
+        else:
+            google_user = json.loads(r.text)
+            google_user['initial'] = google_user['name'][0]
+
+
+    return render(request,
+                  'dmp/dmp_draft.html',
+                  {
+                      'project': project,
+                      'opts': opts,
+                      'form': form,
+                      'google_user': google_user
+                  }
+                  )
 
 
 def add_dataproduct(request, project_id):

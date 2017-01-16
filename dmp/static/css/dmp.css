@@ -76,3 +76,45 @@ a:visited.gotwlink {color:red; background-color:blue}
     margin-bottom: 5px;
 
 }
+
+.google_account_info {
+    margin-right: 0px;
+    margin-left: auto;
+    height: 60px;
+    width: 60px;
+    background-color: #00ccff;
+    line-height: 60px;
+    text-align: center;
+    border-radius: 10px;
+    font-size: x-large;
+    display: block;
+}
+
+.google_account_info:link {
+    color: white
+}
+.google_account_info:active {
+    color: white
+}
+.google_account_info:visited {
+    color: white
+}
+.google_account_info:hover {
+    color: whitesmoke;
+}
+
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    border:lightgrey;
+    border-style: solid;
+    border-width: thin;
+}
+.show {
+    display: block;}

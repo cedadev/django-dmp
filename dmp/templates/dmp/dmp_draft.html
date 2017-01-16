@@ -17,6 +17,7 @@
     </script>
 
 {% endblock %}
+
 {% block breadcrumbs %}
     <div class="breadcrumbs">
         ﻿<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
@@ -32,16 +33,74 @@
     </div>
 
 {% endblock %}
+
 {% block content %}
+    {% if google_user %}
+        <div class="dropdown">
+            <a class="google_account_info dropbtn" onclick="showDetails()">
+                {{ google_user.initial }}
+            </a>
+            <div id="myDropdown" class="dropdown-content">
+                <table>
+                    <tr>
+                        <td>{{ google_user.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ google_user.email }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+
+{#    <table class="google_account_info">#}
+{#        <tr><td colspan="2">Google Account Information {{ google_user.initial }}</td></tr>#}
+{#        <tr>#}
+{#            <td>User Name</td>#}
+{#            <td>{% if google_user %}{{ google_user.name }}{% else %}No Account Connected{% endif %}</td>#}
+{#        </tr>#}
+{#        <tr>#}
+{#            <td>Email</td>#}
+{#            <td>{% if google_user %}{{ google_user.email }}{% else %}No Account Connected{% endif %}</td>#}
+{#        </tr>#}
+{#    </table>#}
     <form action="{% url 'dmp_upload' project.id %}" method="POST">
         {% csrf_token %}
+        <table>
+            <td style="padding-left: 0px"><input type="submit" onclick="show('loading')" value="Upload to Google Docs"></td>
+            <td style="vertical-align: middle"><img id="loading" style="visibility: hidden" src="{% static 'loading.gif' %}"></td>
+        </table>
 
-        <input type="submit" value="Upload to Google Docs">
         {% for field in form %}
             {{ field }}
         {% endfor %}
     </form>
 
+    <script>
+        function show(obj){
+            var loading_img = document.getElementById(obj)
+    loading_img.style.visibility = 'visible'
+    }
+
+    function showDetails() {
+        document.getElementById("myDropdown").classList.toggle("show")
+    }
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(event) {
+        if (!event.target.matches('.dropbtn')) {
+
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            var i;
+            for (i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
+    </script>
 
 {% endblock %}
 
