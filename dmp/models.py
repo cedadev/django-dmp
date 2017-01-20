@@ -16,6 +16,7 @@ import re
 from django.contrib.auth.models import *
 #from cedainfoapp.models import *
 from sizefield.models import FileSizeField
+from picklefield.fields import PickledObjectField
 
 #----- 
 
@@ -353,3 +354,7 @@ class DOGstats(models.Model):
     ended_with_outstanding_data = models.IntegerField(null=True)
     total_grants = models.IntegerField(null=True)
 
+class GrantFile(models.Model):
+    '''when user uploads a file using the grant uploader, temporarily store the contents for use later'''
+    file_contents = PickledObjectField()
+    added = models.DateTimeField(auto_now_add=True)

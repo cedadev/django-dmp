@@ -1,0 +1,130 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static%}
+{% block extrahead %}{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/dmp.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    ﻿&rsaquo;
+    <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    ﻿&rsaquo;
+    <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+        ﻿&rsaquo;
+    Grant Uploader
+    </div>
+{% endblock %}
+
+{% block content %}
+
+
+
+    <h1>Grant Upload Tool</h1>
+    <div>
+        <p>Here are a list of changes which will be made based on the csv file provided:</p>
+        <br>
+
+    </div>
+
+    <div>
+        <h3> New Grants</h3>
+        {% if changes.new_grants %}
+        <table>
+            <tr>
+                <th>Grant Ref</th>
+                <th>Action</th>
+            </tr>
+            {% for grant in changes.new_grants %}
+                <tr>
+                    <td>{{ grant.Grant }}</td>
+                    <td>{{ grant.Message }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+           <p style="color:green">There are no new grants to add</p>
+        {% endif %}
+        <br>
+
+        <h3> New Projects</h3>
+        {% if changes.new_projects %}
+        <table>
+            <tr>
+                <th>Grant Ref</th>
+                <th>Action</th>
+            </tr>
+            {% for proj in changes.new_projects %}
+                <tr>
+                    <td>{{ proj.Grant }}</td>
+                    <td>{{ proj.Message }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p style="color:green">There are no new projects to add</p>
+        {% endif %}
+        <br>
+
+        <h3> New Project-Grant links</h3>
+        {% if changes.linked_projects %}
+        <table>
+            <tr>
+                <th>Grant Ref</th>
+                <th>Action</th>
+            </tr>
+            {% for link in changes.linked_projects %}
+                <tr>
+                    <td>{{ link.Grant }}</td>
+                    <td>{{ link.Message }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p style="color:green">There are no new links</p>
+        {% endif %}
+        <br>
+
+        <h3> Project Field Updates</h3>
+        {% if changes.field_updates %}
+        <table>
+            <tr>
+                <th>Grant Ref</th>
+                <th>Action</th>
+                <th>New Value</th>
+                <th>Current Value</th>
+            </tr>
+            {% for update in changes.field_updates %}
+                <tr>
+                    <td>{{ update.Grant }}</td>
+                    <td>{{ update.Message }}</td>
+                    <td>{{ update.New_value }}</td>
+                    <td>{{ update.Old_value }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p style="color:green">There are no updates to be made</p>
+        {%  endif %}
+    </div>
+    <br>
+
+    <form action="{% url 'grant_upload_complete' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" value="{{ temporary_id }}" name="pk">
+
+        <p>Do you want to apply these changes? </p>
+        <table>
+            <td style="border: none"><input style="background-color: #d31a1a" onclick="show('loading')" type="submit" value="Yes, I accept the changes" href=""></td>
+            <td style="border: none; vertical-align: middle; visibility: hidden" id="loading"><img src="{% static 'loading.gif' %}"></td>
+            <td style="border: none"><input type="submit" value="No, take me back" name="cancel">
+        </table>
+    </form>
+
+    <script>
+    function show(obj){
+            var loading_img = document.getElementById(obj)
+    loading_img.style.visibility = 'visible'
+    }
+    </script>
+{% endblock %}

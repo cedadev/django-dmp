@@ -63,3 +63,27 @@ a:visited.gotwlink {color:red; background-color:blue}
     border-radius: 10px;
     padding: 1px 5px 1px 5px;
 }
+
+.cancel {
+    display: block;
+    width:130px;
+    height: 38px;
+    line-height: 40px;
+    border-radius: 3px;
+    background-color: rgb(121, 174, 200);
+    color: white;
+    text-align: center
+}
+
+.cancel:link{
+    color: white;
+}
+.cancel:visited{
+    color: white;
+}
+.cancel:hover{
+    color: white;
+}
+.cancel:active{
+    color: white;
+}

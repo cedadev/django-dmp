@@ -26,7 +26,7 @@
         </ol>
     </div>
 
-    <form action="{% url 'grant_uploader' %}" method="post" enctype="multipart/form-data">
+    <form action="{% url 'grant_upload_confirm' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
         <p>{{ form.non_field_errors }}</p>
