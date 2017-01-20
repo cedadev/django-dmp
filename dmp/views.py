@@ -576,41 +576,47 @@ def grant_upload_confirm(request):
                         # if none of these conditions met, create a new project
                         else:
                             # avoid message duplication where grants are subsidiary to a lead grant.
-                            if not grants[grant]["Parent Grant"]:
+                            # If there is no parent grant listed, it is either the parent grant or on its own so continue.
+                            # OR If there is a parent grant listed but the parent grants information is not contained in
+                            # the dictionary, then it should be checked.
+                            if not grants[grant]["Parent Grant"] or (grants[grant]["Parent Grant"] not in grants):
                                 new_projects.append({"Grant": grant, "Message": "Create new project called '" + grants[grant]["Title"] + "'"})
 
                     # Check if updates required
                     # Only necessary if grant and project already exist
-                    # TODO: Duplication where there are multiple grants to a project.
                     if current_grant and current_grant.project:
+                        # If there is no parent grant listed, it is either the parent grant or on its own so continue.
+                        # OR If there is a parent grant listed but the parent grants information is not contained in
+                        # the dictionary then it should be checked.
+                        if not grants[grant]["Parent Grant"] or (grants[grant]["Parent Grant"] not in grants):
 
-                        # Check and update project fields.
-                        proj = current_grant.project
+                            # Check and update project fields.
+                            proj = current_grant.project
 
-                        # Check end date
-                        if grants[grant]['Actual End Date'] \
-                                and proj.enddate < datetime.datetime.strptime(grants[grant]['Actual End Date'],
-                                                                              "%d/%m/%Y").date():
-                            field_updates.append({"Grant": grant, "Message": "Extend End Date", "New_value": grants[grant]["Actual End Date"], "Old_value": proj.enddate.strftime('%d/%m/%Y')})
+                            # Check end date
+                            if grants[grant]['Actual End Date'] \
+                                    and proj.enddate < datetime.datetime.strptime(grants[grant]['Actual End Date'],
+                                                                                  "%d/%m/%Y").date():
+                                field_updates.append({"Grant": grant, "Message": "Extend End Date", "New_value": grants[grant]["Actual End Date"], "Old_value": proj.enddate.strftime('%d/%m/%Y')})
 
-                        # Check Primary data centre field
-                        if grants[grant]['Assigned Data Centre'] \
-                                and proj.primary_dataCentre != grants[grant]['Assigned Data Centre']:
-                            field_updates.append({"Grant": grant, "Message": "Change Primary Data Centre", "New_value": grants[grant]['Assigned Data Centre'], "Old_value": proj.primary_dataCentre})
+                            # Check Primary data centre field
+                            if grants[grant]['Assigned Data Centre'] \
+                                    and proj.primary_dataCentre != grants[grant]['Assigned Data Centre']:
+                                field_updates.append({"Grant": grant, "Message": "Change Primary Data Centre", "New_value": grants[grant]['Assigned Data Centre'], "Old_value": proj.primary_dataCentre})
 
-                        # Check "Other Datacentres" field
-                        if grants[grant]["Other DC's Expecting Datasets"] \
-                                and proj.other_dataCentres != grants[grant]["Other DC's Expecting Datasets"]:
-                            field_updates.append({"Grant":grant, "Message": "Change Other Data Centres", "New_value": grants[grant]["Other DC's Expecting Datasets"], "Old_value": proj.other_dataCentres})
+                            # Check "Other Datacentres" field
+                            if grants[grant]["Other DC's Expecting Datasets"] \
+                                    and proj.other_dataCentres != grants[grant]["Other DC's Expecting Datasets"]:
+                                field_updates.append({"Grant":grant, "Message": "Change Other Data Centres", "New_value": grants[grant]["Other DC's Expecting Datasets"], "Old_value": proj.other_dataCentres})
 
-                        # Have a guess at ODMP url if one is not already entered.
-                        if not proj.ODMP_URL:
-                            field_updates.append({"Grant":grant, "Message": "Add ODMP URL"})
+                            # Have a guess at ODMP url if one is not already entered.
+                            if not proj.ODMP_URL:
+                                field_updates.append({"Grant":grant, "Message": "Add ODMP URL"})
 
-                        # Check to see if grant has an email address, these are used for a CC field when sending email.
-                        if grants[grant]['Data Contact Email'] \
-                                and not current_grant.data_email:
-                            field_updates.append({"Grant":grant, "Message":"Add Data Email to grant"})
+                            # Check to see if grant has an email address, these are used for a CC field when sending email.
+                            if grants[grant]['Data Contact Email'] \
+                                    and not current_grant.data_email:
+                                field_updates.append({"Grant":grant, "Message":"Add Data Email to grant"})
 
                 # If there are no changes, escape the process.
                 if not any([new_projects, new_projects, link_projects, field_updates]):
@@ -781,51 +787,53 @@ def grant_upload_complete(request):
                 current_grant_obj.project = Project.objects.get(title=grants[grant]['Title'])
                 current_grant_obj.save()
 
-
-            # TODO: Checks look at each grant, duplictates where there is more than one grant to a project.
             # Check and update project fields.
             proj = current_grant_obj.project
 
-            # Check end date
-            if grants[grant]['Actual End Date'] \
-                    and proj.enddate < datetime.datetime.strptime(grants[grant]['Actual End Date'], "%d/%m/%Y").date():
-                proj.enddate = datetime.datetime.strptime(grants[grant]['Actual End Date'], "%d/%m/%Y").date()
-                p_change = True
+            # If there is no parent grant listed, it is either the parent grant or on its own so continue with checks.
+            # OR If there is a parent grant listed but the parent grants information is not contained in
+            # the dictionary then it should be checked.
+            if not grants[grant]["Parent Grant"] or (grants[grant]["Parent Grant"] not in grants):
 
-            # Check Primary data centre field
-            if grants[grant]['Assigned Data Centre'] \
-                    and proj.primary_dataCentre != grants[grant]['Assigned Data Centre']:
-                proj.primary_dataCentre = grants[grant]['Assigned Data Centre']
-                p_change = True
+                # Check end date
+                if grants[grant]['Actual End Date'] \
+                        and proj.enddate < datetime.datetime.strptime(grants[grant]['Actual End Date'], "%d/%m/%Y").date():
+                    proj.enddate = datetime.datetime.strptime(grants[grant]['Actual End Date'], "%d/%m/%Y").date()
+                    p_change = True
 
-            # Check "Other Datacentres" field
-            if grants[grant]["Other DC's Expecting Datasets"] \
-                    and proj.other_dataCentres != grants[grant]["Other DC's Expecting Datasets"]:
-                proj.other_dataCentres = grants[grant]["Other DC's Expecting Datasets"]
-                p_change = True
+                # Check Primary data centre field
+                if grants[grant]['Assigned Data Centre'] \
+                        and proj.primary_dataCentre != grants[grant]['Assigned Data Centre']:
+                    proj.primary_dataCentre = grants[grant]['Assigned Data Centre']
+                    p_change = True
 
-            # Have a guess at ODMP url if one is not already entered.
-            if not proj.ODMP_URL:
-                proj.ODMP_URL = "https://systems.apps.nerc.ac.uk/grants/datamad/Outline%20DMPs/" + grant.replace(
-                    "/", "_") + "%20DMP.pdf"
-                p_change = True
+                # Check "Other Datacentres" field
+                if grants[grant]["Other DC's Expecting Datasets"] \
+                        and proj.other_dataCentres != grants[grant]["Other DC's Expecting Datasets"]:
+                    proj.other_dataCentres = grants[grant]["Other DC's Expecting Datasets"]
+                    p_change = True
 
-            # Check to see if grant has an email address, these are used for a CC field when sending email.
-            if grants[grant]['Data Contact Email'] \
-                    and not current_grant_obj.data_email:
-                current_grant_obj.data_email = grants[grant]['Data Contact Email']
-                g_change = True
+                # Have a guess at ODMP url if one is not already entered.
+                if not proj.ODMP_URL:
+                    proj.ODMP_URL = "https://systems.apps.nerc.ac.uk/grants/datamad/Outline%20DMPs/" + grant.replace(
+                        "/", "_") + "%20DMP.pdf"
+                    p_change = True
 
-            # Save changes and update count to track changes
-            if p_change:
-                proj.save()
-                p_updated += 1
-            if g_change:
-                current_grant_obj.save()
-                g_updated += 1
+                # Check to see if grant has an email address, these are used for a CC field when sending email.
+                if grants[grant]['Data Contact Email'] \
+                        and not current_grant_obj.data_email:
+                    current_grant_obj.data_email = grants[grant]['Data Contact Email']
+                    g_change = True
 
-                # display appropriate completion message
+                # Save changes and update count to track changes
+                if p_change:
+                    proj.save()
+                    p_updated += 1
+                if g_change:
+                    current_grant_obj.save()
+                    g_updated += 1
 
+        # display appropriate completion message
         if (g_added > 0 or p_added > 0) and grants:
             messages.success(request, "Successfully added " + str(g_added) + " grants and " + str(p_added) + " projects.")
         elif g_added < 1 and grants:
