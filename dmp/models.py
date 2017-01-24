@@ -18,6 +18,7 @@ import re
 from django.contrib.auth.models import *
 #from cedainfoapp.models import *
 from sizefield.models import FileSizeField
+from picklefield.fields import PickledObjectField
 
 #----- 
 
@@ -380,3 +381,9 @@ class OAuthToken(models.Model):
     token_expiry=  models.DateTimeField()
     access_token=models.CharField(max_length=200)
     refresh_token=models.CharField(max_length=200)
+
+class GrantFile(models.Model):
+    '''when user uploads a file using the grant uploader, temporarily store the contents for use later'''
+    file_contents = PickledObjectField()
+    added = models.DateTimeField(auto_now_add=True)
+
