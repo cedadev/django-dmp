@@ -14,7 +14,7 @@ from django.template import Context, Template
 from django.core.mail import EmailMultiAlternatives
 from django.contrib import messages
 from django.utils.html import strip_tags
-from fuzzywuzzy import process, fuzz
+
 
 import requests
 import datetime
