@@ -52,9 +52,10 @@ a:visited.gotwlink {color:red; background-color:blue}
 }
 
 .email_template_info {
-    background-color: rgba(255, 1, 15, 0.13);
-    border-radius: 10px;
+    background: linear-gradient(to right, rgba(255, 0, 0, 0.2), rgba(255,0,0,0.15) ) ;
+    border-radius: 5px;
     padding: 1px 5px 1px 5px;
+
 
 }
 
@@ -79,14 +80,12 @@ a:visited.gotwlink {color:red; background-color:blue}
 }
 
 .google_account_info {
-    margin-right: 0px;
-    margin-left: auto;
     height: 60px;
     width: 60px;
     background-color: #00ccff;
     line-height: 60px;
     text-align: center;
-    border-radius: 10px;
+    border-radius: 30px;
     font-size: x-large;
     display: block;
 }
@@ -104,25 +103,32 @@ a:visited.gotwlink {color:red; background-color:blue}
     color: whitesmoke;
 }
 
-
-.dropdown {
+.google_user_dropdown {
     position: relative;
     display: inline-block;
+    float: right;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
 }
-.dropdown-content {
+.google_user_dropdown-content {
     display: none;
     position: absolute;
+    right: 0px;
+    min-width: 300px;
     background-color: white;
     border:lightgrey;
     border-style: solid;
     border-width: thin;
+    border-radius: 5px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
 }
 .show {
     display: block;}
 
 .cancel {
     display: block;
-    width:130px;
+    min-width:130px;
     height: 38px;
     line-height: 40px;
     border-radius: 3px;

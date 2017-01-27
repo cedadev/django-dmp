@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 import cStringIO as StringIO
 from httplib2 import Http
 from apiclient.discovery import build
+from apiclient.http import BatchHttpRequest
 from oauth2client import file, client
 from oauth2client import GOOGLE_TOKEN_URI, GOOGLE_REVOKE_URI, GOOGLE_AUTH_URI
 from oauth2client.client import HttpAccessTokenRefreshError
@@ -97,34 +98,89 @@ def google_drive_upload(request, project_id):
             FILES = (
                 (tempfilename, 'application/vnd.google-apps.document'),
             )
+
+            # check to see if a folder exists
+            start_year = project.startdate.strftime('%Y')
+            query_string = "'%s'" % start_year
+
+            DMP_Parent_folder = DRIVE.files().list(q="name = 'DMP' and trashed != true and mimeType = 'application/vnd.google-apps.folder'").execute()['files']
+            DMP_Child_folder = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder'" % query_string).execute()['files']
+
+            test = DMP_Child_folder[0]['id']
+            test1 = DRIVE.files().get(fileId=test).execute()
+
+            # if folder doesnt already exist, create one otherwise take folder_id
+            folder_id = {}
+            if DMP_Parent_folder:
+                folder_id['DMP_parent'] = DMP_Parent_folder[0]['id']
+            else:
+                metadata = {
+                    'name': 'DMP',
+                    'mimeType': 'application/vnd.google-apps.folder'
+                }
+                res = DRIVE.files().create(body=metadata,
+                                           fields='id').execute()
+                folder_id['DMP_parent'] = res.get('id')
+
+            if DMP_Child_folder:
+                folder_id['DMP_child'] = DMP_Child_folder[0]['id']
+            else:
+                metadata = {
+                    'name': start_year,
+                    'mimeType': 'application/vnd.google-apps.folder',
+                    'parents': [folder_id['DMP_parent']],
+                }
+                res = DRIVE.files().create(body=metadata,
+                                           fields='id').execute()
+                folder_id['DMP_child'] = res.get('id')
+
             # Upload file
             for filename, mimeType in FILES:
-                metadata = {'name': desired_name}
+                metadata = {
+                    'name': desired_name,
+                    'parents': [folder_id['DMP_child']],
+
+                }
                 if mimeType:
                     metadata['mimeType'] = mimeType
                 try:
                     res = DRIVE.files().create(body=metadata, media_body=filename).execute()
                 except HttpAccessTokenRefreshError:
                     return redirect('google_authorise')
+
                 if res:
                     messages.success(
                         request,
-                        "Uploaded " +
+                        "Uploaded '" +
                         desired_name +
-                        " to Google Drive"
+                        "' to Google Drive"
                     )
-            # Add document link to project
-            if res:
-                google_doc_url = DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute()['webViewLink']
-                project.dmp_URL = google_doc_url
-                project.save()
+                # Add sharing permissions to document
+                if res:
+                    FILE_ID = res.get('id')
+                    batch_request = BatchHttpRequest()
+
+                    batch_entry1 = DRIVE.permissions().create(fileId=FILE_ID, body={
+                        'type': 'anyone',
+                        'role': 'writer',
+                        'withLink': True
+                    })
+                    batch_request.add(batch_entry1, request_id='batch1')
+
+                    batch_request.execute(Http())
+
+                # Add document link to project
+                if res:
+                    google_doc_url = DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute()['webViewLink']
+                    project.dmp_URL = google_doc_url
+                    project.save()
 
         return redirect("/admin/dmp/project/%s/change" % project_id)
 
 
 def google_drive_authorise(request):
 
-    SCOPES = ('https://www.googleapis.com/auth/drive.file',
+    SCOPES = ('https://www.googleapis.com/auth/drive',
               'https://www.googleapis.com/auth/userinfo.profile',
               'https://www.googleapis.com/auth/userinfo.email',)
 
@@ -170,10 +226,24 @@ def google_drive_token_exchange(request):
 
     return redirect('dmp_upload',project_id)
 
+def google_drive_token_revoke(request, project_id):
+    # Delete the current users OAuth token from the database.
+    try:
+        token = request.user.oauth_token
+    except ObjectDoesNotExist:
+        pass
 
+    else:
+        token.delete()
+
+    return redirect('dmp_draft',project_id=project_id)
+
+
+@login_required
 def dmp_draft(request, project_id):
     # a summary of a single project
     project = get_object_or_404(Project, pk=project_id)
+    start_year = datetime.datetime.strftime(project.startdate,'%Y')
     opts = Project()._meta
     form = DraftDmpForm()
 
@@ -187,19 +257,35 @@ def dmp_draft(request, project_id):
         google_user= None
     else:
 
+        ZERO = timedelta(0)
 
+        class UTC(datetime.tzinfo):
+            def utcoffset(selfself, dt):
+                return ZERO
 
-        response = json.loads(requests.get('https://www.googleapis.com/oauth2/v3/userinfo?access_token=%s' % token.access_token).text)
+            def tzname(selfself, dt):
+                return "UTC"
 
+            def dst(self, dt):
+                return ZERO
+        utc = UTC()
 
+        if token.token_expiry < datetime.datetime.now(utc):
 
-        r = requests.get("https://www.googleapis.com/oauth2/v4/token", params={"refresh_token":token.refresh_token,
-                                                                               "client_id":settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
-                                                                               "client_secret":settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
-                                                                               "grant_type":"refresh_token"})
+            r = requests.post("https://www.googleapis.com/oauth2/v4/token",{'client_id':settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+                                                                        'client_secret': settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
+                                                                        'refresh_token':token.refresh_token,
+                                                                        'grant_type':'refresh_token'})
+            if r.status_code != 200:
+                google_user=None
+            else:
+                token.access_token = json.loads(r.text)['access_token']
+                token.save()
+
+        r = requests.get('https://www.googleapis.com/oauth2/v3/userinfo?access_token=%s' % token.access_token)
 
         if r.status_code != 200:
-            google_user= None
+            google_user = None
         else:
             google_user = json.loads(r.text)
             google_user['initial'] = google_user['name'][0]
@@ -211,7 +297,9 @@ def dmp_draft(request, project_id):
                       'project': project,
                       'opts': opts,
                       'form': form,
-                      'google_user': google_user
+                      'google_user': google_user,
+                      'start_year': start_year,
+                      'token':token.access_token
                   }
                   )
 
