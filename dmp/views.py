@@ -50,6 +50,7 @@ def google_drive_upload(request, project_id):
     # Put project id in the session when coming from form submit
     if request.POST:
         request.session['project_id'] = project_id
+        form = DraftDmpForm(request.POST)
 
     try:
         token = request.user.oauth_token
@@ -98,61 +99,62 @@ def google_drive_upload(request, project_id):
                 (tempfilename, 'application/vnd.google-apps.document'),
             )
 
-            # check to see if a folder exists
-            start_year = project.startdate.strftime('%Y')
-            query_string = "'%s'" % start_year
+            file_path = form.data['upload_path'].split('/')
 
-            DMP_Parent_folder = DRIVE.files().list(q="name = 'DMP' and trashed != true and mimeType = 'application/vnd.google-apps.folder'").execute()['files']
+            # Perform check to see which directories need to be created.
+            folder_id = None
+            root_folder_name = "'%s'" % file_path[0]
 
-            folder_id = {}
-            if DMP_Parent_folder:
-                folder_id['DMP_parent'] = DMP_Parent_folder[0]['id']
-                folder_id_string = "'%s'" % folder_id['DMP_parent']
+            DMP_Root_folder = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder'" % (root_folder_name)).execute()['files']
 
-                # see if the start year folder exists in this path.
-                DMP_Child_folder = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder' and %s in parents" % (query_string, folder_id_string)).execute()['files']
-
-                if DMP_Child_folder:
-                    folder_id['DMP_child'] = DMP_Child_folder[0]['id']
-                else:
-                    metadata = {
-                        'name': start_year,
-                        'mimeType': 'application/vnd.google-apps.folder',
-                        'parents': [folder_id['DMP_parent']],
-                    }
-                    res = DRIVE.files().create(body=metadata,
-                                               fields='id').execute()
-                    folder_id['DMP_child'] = res.get('id')
+            if not DMP_Root_folder:
+                # If the parent folder is not there, jump to create the whole path.
+                required_folders = file_path[0:-1]
 
             else:
-            # Parent does not exist so create both parent and child
-                # Parent folder
-                metadata = {
-                    'name': 'DMP',
-                    'mimeType': 'application/vnd.google-apps.folder'
-                }
-                res = DRIVE.files().create(body=metadata,
-                                           fields='id').execute()
-                folder_id['DMP_parent'] = res.get('id')
+                parent_folder_id = DMP_Root_folder[0]['id']
+                # Check which folders already exist.
+                for i, folder in enumerate(file_path[1:-1]):
+                    folder_name = "'%s'" % folder
+                    parent_id = "'%s'" % parent_folder_id
+                    folder_test = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder' and %s in parents" % (folder_name,parent_id)).execute()['files']
+                    if folder_test:
+                        parent_folder_id = folder_test[0]['id']
+                    else:
+                        required_folders = file_path[i+1:-1]
+                        folder_id = parent_folder_id
+                        break
 
-                # Child folder
-                metadata = {
-                    'name': start_year,
-                    'mimeType': 'application/vnd.google-apps.folder',
-                    'parents': [folder_id['DMP_parent']],
-                }
+            # Create the directories
+            for folder in required_folders:
+                if folder_id:
+                    metadata = {
+                            'name': folder,
+                            'mimeType': 'application/vnd.google-apps.folder',
+                            'parents': [folder_id],
+                        }
+                else:
+                    metadata = {
+                        'name': folder,
+                        'mimeType': 'application/vnd.google-apps.folder',
+                    }
                 res = DRIVE.files().create(body=metadata,
                                            fields='id').execute()
-                folder_id['DMP_child'] = res.get('id')
+                folder_id = res.get('id')
 
 
             # Upload file
             for filename, mimeType in FILES:
-                metadata = {
-                    'name': desired_name,
-                    'parents': [folder_id['DMP_child']],
+                if folder_id:
+                    metadata = {
+                        'name': desired_name,
+                        'parents': [folder_id],
+                    }
+                else:
+                    metadata = {
+                        'name': desired_name,
+                    }
 
-                }
                 if mimeType:
                     metadata['mimeType'] = mimeType
                 try:
