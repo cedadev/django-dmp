@@ -521,10 +521,11 @@ def grant_upload_confirm(request):
                 header = next(data)
                 grants = {}
                 for row in data:
-                    row_dict = {}
-                    for key, value in zip(header, row):
-                        row_dict[key] = value
-                    grants[row[0]] = row_dict
+                    if row[0]:
+                        row_dict = {}
+                        for key, value in zip(header, row):
+                            row_dict[key] = value
+                        grants[row[0]] = row_dict
 
                 # check arbitary grant ref to make sure that the necessary headers are in place
                 if grants.keys()[0]:
@@ -647,7 +648,7 @@ def grant_upload_confirm(request):
                                 field_updates.append({"Grant":grant, "Message":"Add Data Email to grant"})
 
                 # If there are no changes, escape the process.
-                if not any([new_projects, new_projects, link_projects, field_updates]):
+                if not any([new_grants, new_projects, link_projects, field_updates]):
                     messages.success(request,"There are no changes to be made.")
                     return render(request, 'dmp/grant_uploader.html',{"form":form, "opts":opts})
 
@@ -723,6 +724,8 @@ def grant_upload_complete(request):
                     # if there is a lead grant and data from the lead grant is in the database, use the lead grant to
                     # create the records.
                     if grants[grant]["Parent Grant"] in grants:
+                        lead_grant = grants[grant]["Parent Grant"]
+                    elif Grant.objects.filter(number=grants[grant]["Parent Grant"]):
                         lead_grant = grants[grant]["Parent Grant"]
                     else:
                         # Parent grant not in uploaded file.
