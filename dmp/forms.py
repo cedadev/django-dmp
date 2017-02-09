@@ -91,4 +91,5 @@ class EmailMessageForm(forms.Form):
     template_type = forms.CharField(max_length=200)
 
 class DraftDmpForm(forms.Form):
+    upload_path = forms.CharField(widget=forms.TextInput(attrs={'class':'hidden'}))
     draft_dmp = forms.CharField(widget=forms.Textarea(attrs={'style': 'height:700px'}))

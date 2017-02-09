@@ -47,7 +47,6 @@ def home(request):
 
 
 def google_drive_upload(request, project_id):
-    # TODO  handle token revoke
     # Put project id in the session when coming from form submit
     if request.POST:
         request.session['project_id'] = project_id
@@ -261,6 +260,7 @@ def dmp_draft(request, project_id):
     form = DraftDmpForm()
 
     template_obj = Template(draftDmp.objects.all()[0].draft_dmp_content)
+    form.fields['upload_path'].initial = "DMP/"+start_year+"/"+project.title+"_draftDMP"
     form.fields['draft_dmp'].initial = template_obj.render(Context({'project': project}))
 
     # If there us a google token for the current logged in user, collect user information

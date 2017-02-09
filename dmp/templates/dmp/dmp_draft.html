@@ -93,15 +93,40 @@
             </tr>
         </table>
 
-        {% for field in form %}
-            {{ field }}
-        {% endfor %}
+        <h2>File will be uploaded to:</h2>
+{#        <table>#}
+{#            <tr>#}
+{#                <td style="border-radius: 5px; border-bottom: none; background-color: #f1f1f1">DMP/{{ start_year }}/{{ project.title }}_draftDMP</td>#}
+{#                <td style="border: none">#}
+{#                    <a id="change-button-upload-path"  onclick="display('id_upload_path')">Change</a>#}
+{#                </td>#}
+{#            </tr>#}
+{#        </table>#}
+{#        <br>#}
+
+        {{ form.non_field_errors }}
+        {{ form.upload_path.errors }}
+        {{ form.upload_path.error_messages }}
+        {{ form.upload_path }}
+        <p style="font-size: smaller; margin-left: 5px; color: #999999">Edit to change destination</p>
+        <h2>Content:</h2>
+        {{ form.draft_dmp.errors }}
+        {{ form.draft_dmp.error_messages }}
+        {{ form.draft_dmp }}
+
+{#        {% for field in form %}#}
+{#            {{ field }}#}
+{#        {% endfor %}#}
     </form>
 
     <script>
         function show(obj){
             var loading_img = document.getElementById(obj)
     loading_img.style.visibility = 'visible'
+    }
+
+    function display(obj){
+        document.getElementById(obj).classList.toggle("hidden")
     }
 
     function showDetails() {
