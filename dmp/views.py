@@ -503,7 +503,7 @@ def grant_upload_confirm(request):
 
                 # add appropriate end message and send back to grant uploader.
                 if grants and g_added > 0:
-                    messages.success(request,"Successfully added " + g_added + " grants.")
+                    messages.success(request,"Successfully added " + str(g_added) + " grants.")
                 if grants and g_added == 0:
                     messages.info(request,"No new grants found")
                 else:
