@@ -147,12 +147,6 @@ class EmailTemplateAdmin(admin.ModelAdmin):
             return self.readonly_fields + ('template_ref',)
         return self.readonly_fields
 
-    def has_add_permission(self, request):
-        if self.model.objects.count() > 4:
-            return False
-        else:
-            return True
-
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 
 class draftDmpAdmin(admin.ModelAdmin):
