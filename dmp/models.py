@@ -336,7 +336,7 @@ class MetadataForm(models.Model):
 
 class EmailTemplate(models.Model):
     template_name = models.CharField(max_length=200)
-    template_ref = models.CharField(max_length=200, null=True)
+    template_ref = models.CharField(max_length=200, null=True, verbose_name="Short Name")
     last_edited = models.DateField(auto_now_add=True)
     edited_by = models.ForeignKey(User,null=True)
     content = models.TextField(blank=True)
