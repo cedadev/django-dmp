@@ -7,6 +7,7 @@
         visual: false,
     });
     </script>
+    <script src="{% static 'js/jquery-1.11.0.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/dmp.css' %}" type="text/css"/>
 
 {% endblock %}
@@ -146,6 +147,14 @@
             }
         }
     }
+
+    $('input').on('keyup',function() {
+        var path = document.getElementById('id_upload_path').value
+        if (path.indexOf('\\') > -1) {
+            alert('Cannot use \\ in file path')
+        }
+
+    })
     </script>
 
 {% endblock %}
