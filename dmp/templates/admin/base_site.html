@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {%  block title %}{{ title }} | {% trans 'DMP Administration' %}{% endblock %}
 
@@ -8,4 +8,41 @@
     <h1 id="site-name">{% trans 'Data Management Plan Administration' %}</h1>
 {% endblock %}
 
-{% block nav-global %}{% endblock %}
+{% block extrahead %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block nav-global %}
+    <li class="dropdown">
+        <a class="dropbtn">Projects</a>
+    </li>
+    <li class="dropdown">
+        <a class="dropbtn">Grants</a>
+    </li>
+
+
+
+
+
+<script>
+function myFunction() {
+    document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Close the dropdown menu if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+</script>
+
+{% endblock %}
