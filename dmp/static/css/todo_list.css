@@ -1,0 +1,83 @@
+/* Style the buttons that are used to open and close the accordion panel */
+button.accordion {
+    color: black;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: 0.4s;
+    border-radius: 5px;
+    font-size: large;
+    font-weight: bold;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+button.accordion:hover {
+    background-color: #ddd;
+}
+
+button.accordion.active {}
+
+button.accordion:after {
+    content: '\02795'; /* Unicode character for "plus" sign (+) */
+    font-size: 13px;
+    color: #777;
+    float: right;
+    margin-left: 5px;
+}
+
+button.accordion.active:after {
+    content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+
+/* Style the accordion panel. */
+div.panel {
+    padding: 0 18px 10px;
+    background-color: white;
+    display: none;
+}
+
+.expired {
+    background-color: rgba(242, 222, 222, 0.73);
+}
+
+.current {
+    background-color: #fcf8e3;
+}
+
+.upcoming {
+    background-color: #dff0d8;
+}
+
+.other {
+    background-color: #eee;
+}
+
+.expired-text {
+    color: #c4000e;
+}
+.current-text{
+    color: #b7b534;
+}
+.upcoming-text {
+    color: #61a05e;
+}
+
+table tr:nth-child(odd) {
+    background-color: #f6f6f6;
+}
+
+.todo-badge {
+    border: solid;
+    border-color: #858585;
+    border-width: 1px;
+    border-radius: 12px;
+    margin-left: 7px;
+    padding: 0 7px 0 7px;
+    background-color: white ;
+    color: black;
+    font-size: medium;
+}

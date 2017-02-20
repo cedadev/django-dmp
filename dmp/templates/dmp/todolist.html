@@ -1,1 +1,123 @@
 {% extends 'admin/base_site.html' %}
+
+{% load static %}
+
+{%  block extrahead %}{{ block.super }}
+ <link rel="stylesheet" href="{% static 'css/todo_list.css' %}" type="text/css"/>
+{% endblock %}
+
+{%  block content %}
+    <h1>Todo List</h1>
+
+    <button class="accordion expired">Expired<span class="todo-badge">{{ expired | length }}</span></button>
+    <div class="panel">
+        <h3 class="expired-text">Reminder due date has passed</h3>
+
+    {% if expired %}
+
+        <table style="width: 100%;">
+            <th style="width: 20%">Reminder Description</th>
+            <th style="width: 60%">Project Name</th>
+            <th style="width: 20%">Reminder Due Date</th>
+            {%  for reminder in expired %}
+            <tr>
+                <td>{{ reminder.description }}</td>
+                <td><a href="{% url 'admin:dmp_project_change' reminder.project.id  %}">{{ reminder.project.title }}</a></td>
+                <td>{{ reminder.due_date }}</td>
+            </tr>
+            {%  endfor %}
+        </table>
+    {% else %}
+        <p>There are currently no expired reminders</p>
+    {% endif %}
+    </div>
+
+    <button class="accordion current">Active<span class="todo-badge">{{ active | length }}</span></button>
+    <div class="panel">
+        <h3 class="current-text">Reminder due date occurs in the next 2 weeks</h3>
+
+        {%  if active %}
+
+        <table style="width: 100%;">
+            <th style="width: 20%">Reminder Description</th>
+            <th style="width: 60%">Project Name</th>
+            <th style="width: 20%">Reminder Due Date</th>
+            {%  for reminder in active %}
+            <tr>
+                <td>{{ reminder.description }}</td>
+                <td><a href="{% url 'admin:dmp_project_change' reminder.project.id  %}">{{ reminder.project.title }}</a></td>
+                <td>{{ reminder.due_date }}</td>
+            </tr>
+            {%  endfor %}
+        </table>
+
+        {% else %}
+            <p>There are currently no active reminders</p>
+        {% endif %}
+    </div>
+
+    <button class="accordion upcoming ">Upcoming<span class="todo-badge">{{ upcoming | length }}</span></button>
+    <div class="panel">
+        <h3 class="upcoming-text">Reminder due date occurs before one month's time</h3>
+
+        {% if upcoming  %}
+
+        <table style="width: 100%;">
+            <th style="width: 20%">Reminder Description</th>
+            <th style="width: 60%">Project Name</th>
+            <th style="width: 20%">Reminder Due Date</th>
+            {%  for reminder in upcoming %}
+            <tr>
+                <td>{{ reminder.description }}</td>
+                <td><a href="{% url 'admin:dmp_project_change' reminder.project.id  %}">{{ reminder.project.title }}</a></td>
+                <td>{{ reminder.due_date }}</td>
+            </tr>
+            {%  endfor %}
+        </table>
+
+        {% else %}
+            <p>There are currently no upcoming reminders</p>
+        {% endif %}
+    </div>
+
+    <button class="accordion">Un-assigned<span class="todo-badge">{{ others | length }}</span></button>
+    <div class="panel other">
+        <h3>Project does not have a reminder assigned</h3>
+
+        {%  if others %}
+
+            <table style="width: 100%;">
+            <th style="width: 20%">Reminder Description</th>
+            <th style="width: 60%">Project Name</th>
+            <th style="width: 20%">Reminder Due Date</th>
+            {%  for project in others %}
+            <tr>
+                <td> -- </td>
+                <td><a href="{% url 'admin:dmp_project_change' project.id  %}">{{ project.title }}</a></td>
+                <td> -- </td>
+            </tr>
+            {%  endfor %}
+        </table>
+
+        {% else %}
+            <p>There are currently no projects without reminders</p>
+        {% endif %}
+    </div>
+
+<script>
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+    acc[i].onclick = function(){
+        this.classList.toggle("active");
+        var panel = this.nextElementSibling;
+        if (panel.style.display === "block") {
+            panel.style.display = "none";
+        } else {
+            panel.style.display = "block";
+        }
+    }
+}
+</script>
+{% endblock %}
