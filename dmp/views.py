@@ -18,6 +18,7 @@ from django.utils.html import strip_tags
 
 import requests
 import datetime
+import dateutil.relativedelta
 import re
 import string
 import time
@@ -1028,3 +1029,23 @@ def email_help(request):
     return render(request,"dmp/email_template_info.html")
 
 
+@login_required
+def todo_list(request):
+    '''Produces a list of items for attention, as designated by the user, hiding items which do not need attention'''
+
+    today = date.today()
+
+
+    # List of projects whose reminders have expired
+    expired = Project.objects.filter(reminder__due_date__lt=today)
+
+    # List of projects reminders which have an expiry in next 2 weeks
+    active = Project.objects.filter(reminder__due_date__range=[today,today + relativedelta(weeks=2)])
+
+    # List of projects reminders have an expiry 2 weeks - 1 month
+    upcoming = Project.objects.filter(reminder__due_date__range=[today + relativedelta(weeks=2), today + relativedelta(months=1)])
+
+    # List of projects with no reminders attached
+    others = Project.objects.filter(reminder__isnull=True)
+
+    return render(request, "dmp/todolist.html")

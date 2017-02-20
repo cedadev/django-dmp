@@ -11,6 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.fields import PositiveIntegerField
 
 import re
+from dateutil.relativedelta import relativedelta
 
 # import users 
 from django.contrib.auth.models import *
@@ -358,3 +359,46 @@ class GrantFile(models.Model):
     '''when user uploads a file using the grant uploader, temporarily store the contents for use later'''
     file_contents = PickledObjectField()
     added = models.DateTimeField(auto_now_add=True)
+
+class Reminder(models.Model):
+
+    project = models.ForeignKey(Project)
+    description = models.CharField(max_length=200, null=True)
+    reminder = models.CharField(max_length=200, verbose_name="Reminder Interval",
+        choices=(('1 week','1 Week'),
+                 ('2 weeks','2 Weeks'),
+                 ('1 month','1 Month'),
+                 ('3 months','3 Months'),
+                 ('-6 months','6 Months before end date'),
+                 ('-3 months','3 Months before end date'),
+                 ('-1 month','1 Month before end date'),
+                 ))
+    due_date = models.DateField()
+
+    def save(self, *args,**kwargs):
+
+        enddate =  self.project.enddate
+        now = date.today()
+
+        delay_periods = {
+            '1 week': {'weeks': 1},
+            '2 weeks': {'weeks': 2},
+            '1 month': {'months': 1},
+            '3 months': {'months': 3},
+            '6 months': {'months': 6},
+            '-6 months': {'months': -6},
+            '-3 months': {'months': -3},
+            '-1 month': {'months': -1}
+        }
+
+        def set_due_date(target_date, **kwargs):
+            self.due_date = target_date + relativedelta(**kwargs)
+
+        if '-' in self.reminder:
+            target_date = enddate
+        else:
+            target_date = now
+
+        set_due_date(target_date, **delay_periods[self.reminder])
+
+        return super(Reminder, self).save(*args, **kwargs)

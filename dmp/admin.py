@@ -26,6 +26,12 @@ class MetadataFormInline(GenericTabularInline):
     readonly_fields = ('modified',)
     classes = ['collapse']
 
+class SchedulerInline(admin.TabularInline):
+    model = Reminder
+    extra = 0
+    readonly_fields = ('due_date',)
+    classes = ['collapse']
+
 
 class DataProductAdmin(admin.ModelAdmin):
     save_on_top = True
@@ -93,7 +99,7 @@ class ProjectAdmin(admin.ModelAdmin):
         }),
     )
 
-    inlines = [NotesInline,MetadataFormInline]
+    inlines = [NotesInline,MetadataFormInline, SchedulerInline]
 
     def save_formset(self, request, form, formset, change):
         if formset.model != Note:
