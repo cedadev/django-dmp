@@ -1,8 +1,9 @@
 from django.forms.widgets import Widget
+from django.forms.extras import widgets
 from django.forms.utils import flatatt
 from django.utils.html import format_html
 from django import forms
-from dmp.models import EmailTemplate
+from dmp.models import EmailTemplate, Reminder
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import validate_email
@@ -88,3 +89,10 @@ class EmailMessageForm(forms.Form):
     message = forms.CharField(widget=forms.Textarea(attrs={'rows': 20}))
     template_type = forms.CharField(max_length=200)
 
+class PostponeReminderForm(forms.ModelForm):
+    class Meta:
+        model = Reminder
+        exclude = ['project']
+
+    description = forms.CharField(widget=forms.TextInput(attrs={'style': 'width:98%'}))
+    due_date =forms.DateField(required=False)

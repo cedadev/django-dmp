@@ -364,14 +364,15 @@ class Reminder(models.Model):
 
     project = models.ForeignKey(Project)
     description = models.CharField(max_length=200, null=True)
-    reminder = models.CharField(max_length=200, verbose_name="Reminder Interval",
-        choices=(('1 week','1 Week'),
-                 ('2 weeks','2 Weeks'),
-                 ('1 month','1 Month'),
-                 ('3 months','3 Months'),
-                 ('-6 months','6 Months before end date'),
-                 ('-3 months','3 Months before end date'),
-                 ('-1 month','1 Month before end date'),
+    reminder = models.CharField(max_length=200, verbose_name="Remind in",
+        choices=(('custom','Custom Date'),
+                 ('1_week','1 Week'),
+                 ('2_weeks','2 Weeks'),
+                 ('1_month','1 Month'),
+                 ('3_months','3 Months'),
+                 ('-6_months','6 Months before end date'),
+                 ('-3_months','3 Months before end date'),
+                 ('-1_month','1 Month before end date'),
                  ))
     due_date = models.DateField()
 
@@ -381,14 +382,14 @@ class Reminder(models.Model):
         now = date.today()
 
         delay_periods = {
-            '1 week': {'weeks': 1},
-            '2 weeks': {'weeks': 2},
-            '1 month': {'months': 1},
-            '3 months': {'months': 3},
-            '6 months': {'months': 6},
-            '-6 months': {'months': -6},
-            '-3 months': {'months': -3},
-            '-1 month': {'months': -1}
+            '1_week': {'weeks': 1},
+            '2_weeks': {'weeks': 2},
+            '1_month': {'months': 1},
+            '3_months': {'months': 3},
+            '6_months': {'months': 6},
+            '-6_months': {'months': -6},
+            '-3_months': {'months': -3},
+            '-1_month': {'months': -1}
         }
 
         def set_due_date(target_date, **kwargs):
@@ -399,6 +400,7 @@ class Reminder(models.Model):
         else:
             target_date = now
 
-        set_due_date(target_date, **delay_periods[self.reminder])
+        if not self.reminder == 'custom':
+            set_due_date(target_date, **delay_periods[self.reminder])
 
         return super(Reminder, self).save(*args, **kwargs)

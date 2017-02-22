@@ -4,6 +4,7 @@ from django.http.response import HttpResponse
 from dmp.forms import *
 from django.core.exceptions import ValidationError
 
+
 from django.contrib.auth.models import *
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
@@ -1035,6 +1036,7 @@ def todo_list(request):
 
     today = date.today()
 
+    form = PostponeReminderForm()
 
     # List of projects whose reminders have expired
     expired = Reminder.objects.filter(due_date__lt=today)
@@ -1049,10 +1051,105 @@ def todo_list(request):
     others = Project.objects.filter(reminder__isnull=True)
 
     context = {
+        'user': request.user,
         'expired': expired,
         'active': active,
         'upcoming': upcoming,
         'others': others,
+        'form': form,
     }
-
     return render(request, "dmp/todolist.html", context)
+
+def return_reminder(request, object_type, object_id):
+    '''AJAX request to populate modal'''
+    if request.is_ajax():
+        if object_type == 'project':
+            object = Project.objects.get(id=object_id)
+
+            data = {
+                'object_id': object_id
+            }
+        else:
+            object = Reminder.objects.get(id=object_id)
+            data = {
+                'object_id': object_id,
+                'description': object.description,
+                'due_date': object.due_date.__str__()
+            }
+
+        data = json.dumps(data)
+        return HttpResponse(data, content_type='aplication/json')
+    else:
+        return redirect('/dmp/todo_list')
+
+def calculate_due_date(request, time_interval, object_type, object_id):
+    '''AJAX Request to calculate due date when user selects option'''
+    if request.is_ajax():
+        today = date.today()
+        if object_type == 'reminder':
+            end_date = Reminder.objects.get(id=object_id).project.enddate
+        else:
+            end_date = Project.objects.get(id=object_id).enddate
+
+        delay_periods = {
+            '1_week': {'weeks': 1},
+            '2_weeks': {'weeks': 2},
+            '1_month': {'months': 1},
+            '3_months': {'months': 3},
+            '6_months': {'months': 6},
+            '-6_months': {'months': -6},
+            '-3_months': {'months': -3},
+            '-1_month': {'months': -1}
+        }
+
+        def set_due_date(target_date, **kwargs):
+            due_date = target_date + relativedelta(**kwargs)
+            return due_date
+
+        if '-' in time_interval:
+            target_date = end_date
+        else:
+            target_date = today
+
+        due_date = set_due_date(target_date,**delay_periods[time_interval])
+
+        data = {"due_date": due_date.__str__()}
+        data = json.dumps(data)
+        return HttpResponse(data, content_type='application/json')
+
+
+def modify_reminder(request, object_type, object_id):
+    '''Action request from modify or delete modal'''
+    if request.POST:
+        form = PostponeReminderForm(request.POST)
+        if form.is_valid():
+            if "save" in request.POST:
+                if object_type == 'reminder':
+                    object = Reminder.objects.get(id=object_id)
+
+                # Set model instance fields with new values
+                    object.description = form.cleaned_data['description']
+                    object.reminder = form.cleaned_data['reminder']
+                    object.due_date = form.cleaned_data['due_date']
+                else:
+                    object = Reminder(
+                        project=Project.objects.get(id=object_id),
+                        description=form.cleaned_data['description'],
+                        reminder=form.cleaned_data['reminder'],
+                        due_date=form.cleaned_data['due_date'],
+                    )
+                object.save()
+        if "delete" in request.POST:
+            reminder = Reminder.objects.get(id=object_id)
+
+            reminder.delete()
+        elif "cancel" in request.POST:
+            messages.info(request, "No action was performed")
+    else:
+        messages.info(request, "No action was performed")
+
+    return redirect('/dmp/todo_list')
+
+
+
+

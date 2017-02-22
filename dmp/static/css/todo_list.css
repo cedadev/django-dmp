@@ -70,6 +70,10 @@ table tr:nth-child(odd) {
     background-color: #f6f6f6;
 }
 
+td {
+    vertical-align: middle;
+}
+
 .todo-badge {
     border: solid;
     border-color: #858585;
@@ -80,4 +84,79 @@ table tr:nth-child(odd) {
     background-color: white ;
     color: black;
     font-size: medium;
+}
+
+.delete {
+    background-color: #c4000e;
+    color: white;
+    border-radius: 7px;
+    border-width: 1px;
+
+}
+
+.postpone {
+    background-color: white;
+    color: black;
+    border-radius: 7px;
+    border-width: 1px;
+
+}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* The Modal (Header) */
+.modal-header {
+    background-color: #79aec8;
+    margin: 0 0 5px 0;
+    padding: 10px 10px 15px 20px;
+    border-radius: 9px 9px 0 0
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 0px 0px 20px 0px;
+    border: 1px solid #888;
+    max-width: 800px; /* Could be more or less, depending on screen size */
+    border-radius: 10px;
+}
+
+/* The Close Button */
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 10px;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.no_border {
+    border: none
+}
+.white-background {
+    background-color: white;
+}
+
+.icon {
+    max-height: 17px;
 }

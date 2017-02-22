@@ -154,3 +154,7 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
+
+class ReminderAdmin(admin.ModelAdmin):
+    list_display = ['id','description']
+admin.site.register(Reminder, ReminderAdmin)
