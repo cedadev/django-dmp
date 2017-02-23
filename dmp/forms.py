@@ -94,5 +94,16 @@ class PostponeReminderForm(forms.ModelForm):
         model = Reminder
         exclude = ['project']
 
+    def clean(self):
+        cleaned_data = super(PostponeReminderForm,self).clean()
+        if cleaned_data['reminder'] == 'custom':
+            try:
+                if not cleaned_data['due_date']:
+                    raise ValidationError('Must supply a due date')
+            except KeyError:
+                raise ValidationError('Must supply a due date')
+
+        return cleaned_data
+
     description = forms.CharField(widget=forms.TextInput(attrs={'style': 'width:98%'}))
     due_date =forms.DateField(required=False)

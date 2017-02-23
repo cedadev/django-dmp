@@ -1145,6 +1145,8 @@ def modify_reminder(request, object_type, object_id):
             reminder.delete()
         elif "cancel" in request.POST:
             messages.info(request, "No action was performed")
+        else:
+            messages.error(request, "No action was performed, invalid form submission")
     else:
         messages.info(request, "No action was performed")
 
