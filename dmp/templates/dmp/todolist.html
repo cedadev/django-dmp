@@ -38,7 +38,7 @@
                                 title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
                         <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
                                 title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
-                        <button class="postpone" onclick="showModal('addModal','project', {{ project.id }})"
+                        <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
                                 title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
                     </td>
                 </tr>
@@ -78,7 +78,7 @@
                                 title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
                         <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
                                 title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
-                        <button class="postpone" onclick="showModal('addModal','project', {{ project.id }})"
+                        <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
                                 title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
                     </td>
                 </tr>
@@ -118,7 +118,7 @@
                                 title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
                         <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
                                 title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
-                        <button class="postpone" onclick="showModal('addModal','project', {{ project.id }})"
+                        <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
                                 title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
                     </td>
                 </tr>
