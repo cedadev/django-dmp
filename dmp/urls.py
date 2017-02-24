@@ -16,10 +16,10 @@ urlpatterns = [
      url(r'^grant/(?P<grant_id>\d+)/link$', link_grant_to_project),
      url(r'^$', home, name='index'),
      url(r'^home/$', home, name='home'),
-     url(r'^DOG_report/$', DOG_report, name="DOG_report"),
+     url(r'^project/DOG_report/$', DOG_report, name="DOG_report"),
 
      # Send emails to PI
-     url(r'^email_templates/(?P<project_id>\d+)/$', mail_template, name="email_templates"),
+     url(r'^project/email_templates/(?P<project_id>\d+)/$', mail_template, name="email_templates"),
      url(r'^emailhelp/$',email_help,name="email_help"),
 
      # Google drive draft DMP upload and authorisation process
