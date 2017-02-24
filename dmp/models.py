@@ -375,6 +375,13 @@ class Reminder(models.Model):
                  ('-1_month','1 Month before end date'),
                  ))
     due_date = models.DateField()
+    state = models.CharField(max_length=200,
+                             choices=(
+                                 ('Open', 'Open'),
+                                 ('Complete', 'Complete'),
+                             ),
+                             null=True,
+                             default="Open")
 
     def save(self, *args,**kwargs):
 

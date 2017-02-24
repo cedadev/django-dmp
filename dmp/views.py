@@ -1036,16 +1036,16 @@ def todo_list(request):
 
     today = date.today()
 
-    form = PostponeReminderForm()
+    form = ReminderForm()
 
     # List of projects whose reminders have expired
-    expired = Reminder.objects.filter(due_date__lt=today)
+    expired = Reminder.objects.filter(due_date__lt=today).filter(state="Open").order_by('due_date')
 
     # List of projects reminders which have an expiry in next 2 weeks
-    active = Reminder.objects.filter(due_date__range=[today,today + relativedelta(weeks=2)])
+    active = Reminder.objects.filter(due_date__range=[today,today + relativedelta(weeks=2)]).filter(state="Open").order_by('due_date')
 
     # List of projects reminders have an expiry 2 weeks - 1 month
-    upcoming = Reminder.objects.filter(due_date__range=[today + relativedelta(weeks=2, days=1), today + relativedelta(months=1)])
+    upcoming = Reminder.objects.filter(due_date__range=[today + relativedelta(weeks=2, days=1), today + relativedelta(months=1)]).filter(state="Open").order_by('due_date')
 
     # List of projects with no reminders attached
     others = Project.objects.filter(reminder__isnull=True)
@@ -1074,7 +1074,7 @@ def return_reminder(request, object_type, object_id):
             data = {
                 'object_id': object_id,
                 'description': object.description,
-                'due_date': object.due_date.__str__()
+                'due_date': object.due_date.__str__(),
             }
 
         data = json.dumps(data)
@@ -1121,7 +1121,7 @@ def calculate_due_date(request, time_interval, object_type, object_id):
 def modify_reminder(request, object_type, object_id):
     '''Action request from modify or delete modal'''
     if request.POST:
-        form = PostponeReminderForm(request.POST)
+        form = ReminderForm(request.POST)
         if form.is_valid():
             if "save" in request.POST:
                 if object_type == 'reminder':
@@ -1139,19 +1139,29 @@ def modify_reminder(request, object_type, object_id):
                         due_date=form.cleaned_data['due_date'],
                     )
                 object.save()
+                messages.success(request,'Reminder saved successfully')
+        else:
+            messages.error(request, "No action was performed, invalid form submission")
+
         if "delete" in request.POST:
             reminder = Reminder.objects.get(id=object_id)
 
             reminder.delete()
         elif "cancel" in request.POST:
             messages.info(request, "No action was performed")
-        else:
-            messages.error(request, "No action was performed, invalid form submission")
     else:
         messages.info(request, "No action was performed")
 
     return redirect('/dmp/todo_list')
 
+def reminder_complete(request,reminder_id):
+
+    reminder = Reminder.objects.get(id=reminder_id)
+    reminder.state = "Complete"
+    reminder.save()
+
+    messages.success(request,'Reminder marked as complete')
+    return redirect('/dmp/todo_list')
 
 
 

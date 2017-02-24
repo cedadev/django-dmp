@@ -1,5 +1,5 @@
 from dmp.models import *
-from dmp.forms import ProjectAdminForm, NotesForm, PostponeReminderForm
+from dmp.forms import ProjectAdminForm, NotesForm, ReminderForm
 from django.forms import BaseInlineFormSet
 from django.contrib.auth.models import *
 from django.contrib import admin
@@ -30,7 +30,8 @@ class ReminderInline(admin.TabularInline):
     model = Reminder
     extra = 0
     classes = ['collapse']
-    form = PostponeReminderForm
+    # readonly_fields = ('state',)
+    form = ReminderForm
 
 
 
@@ -157,5 +158,5 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 
 class ReminderAdmin(admin.ModelAdmin):
-    list_display = ['id','description']
+    list_display = ['id','description','reminder','state']
 admin.site.register(Reminder, ReminderAdmin)

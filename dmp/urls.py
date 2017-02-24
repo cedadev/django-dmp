@@ -30,4 +30,5 @@ urlpatterns = [
      url(r'^todo_list/modal/(?P<object_type>[\w]+)/(?P<object_id>\d+)', return_reminder, name="reminder_ajax"),
      url(r'^todo_list/save_reminder/(?P<object_type>[\w]+)/(?P<object_id>\d+)', modify_reminder, name="modify_reminder"),
      url(r'^todo_list/update_duedate/(?P<object_type>[\w]+)/(?P<object_id>\d+)/(?P<time_interval>[\w-]+)', calculate_due_date, name="calculate_due_date"),
+     url(r'todo_list/mark_complete/(?P<reminder_id>\d+)$', reminder_complete, name="reminder_complete"),
 ]

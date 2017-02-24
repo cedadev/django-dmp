@@ -102,6 +102,18 @@ td {
 
 }
 
+.complete {
+    display: inline-block;
+    background-color: white;
+    padding: 2px 6px 2px 6px;
+    max-width: 31px;
+    border: solid;
+    border-radius: 7px;
+    border-width: 1px;
+    margin: 0px;
+    vertical-align: bottom;
+}
+
 /* The Modal (background) */
 .modal {
     display: none; /* Hidden by default */
@@ -159,4 +171,5 @@ td {
 
 .icon {
     max-height: 17px;
+    max-width: 17px;
 }

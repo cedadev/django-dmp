@@ -8,77 +8,150 @@
 {% endblock %}
 
 {% block content %}
-        <h1>Todo List</h1>
-        {% if  expired %}
-            <button class="accordion expired active">Expired<span class="todo-badge">{{ expired | length }}</span></button>
-            <div class="panel" style="display: block">
-        {% else %}
-            <button class="accordion expired">Expired<span class="todo-badge">{{ expired | length }}</span></button>
-            <div class="panel" style="display: none">
-        {% endif %}
-
-    <h3 class="expired-text">Reminder due date has passed</h3>
-
-    {% if expired %}
-
-        <table style="width: 100%;">
-            <th style="width: 20%">Reminder Description</th>
-            <th style="width: 60%">Project Name</th>
-            <th style="width: 10%">Reminder Due Date</th>
-            <th style="width: 10%;">Actions</th>
-            {% for reminder in expired %}
-                <tr>
-                <tr>
-                    <td>{{ reminder.description }}</td>
-                    <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a>
-                    </td>
-                    <td>{{ reminder.due_date }}</td>
-                    <td>
-                        <button class="postpone" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
-                                title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
-                        <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
-                                title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
-                        <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
-                                title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
-                    </td>
-                </tr>
-                </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>There are currently no expired reminders</p>
-    {% endif %}
-    </div>
-
-    {% if active %}
-        <button class="accordion current active">Active<span class="todo-badge">{{ active | length }}</span></button>
+    <h1>Todo List</h1>
+    {% if  expired %}
+        <button class="accordion expired active">Expired<span class="todo-badge">{{ expired | length }}</span></button>
         <div class="panel" style="display: block">
     {% else %}
-        <button class="accordion current">Active<span class="todo-badge">{{ active | length }}</span></button>
+        <button class="accordion expired">Expired<span class="todo-badge">{{ expired | length }}</span></button>
         <div class="panel" style="display: none">
     {% endif %}
 
-    <h3 class="current-text">Reminder due date occurs in the next 2 weeks</h3>
+<h3 class="expired-text">Reminder due date has passed</h3>
 
-    {% if active %}
+{% if expired %}
+
+    <table style="width: 100%;">
+        <th style="width: 20%">Reminder Description</th>
+        <th style="width: 60%">Project Name</th>
+        <th style="width: 10%">Reminder Due Date</th>
+        <th style="width: 10%;">Actions</th>
+        {% for reminder in expired %}
+            <tr>
+                <td>{{ reminder.description }}</td>
+                <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a>
+                </td>
+                <td>{{ reminder.due_date }}</td>
+                <td>
+                    <a class="complete" href="{% url 'reminder_complete' reminder.id %}"
+                            title="Mark Complete"><img class="icon" src="{% static 'icons/tick.png' %}"></a>
+                    <button class="postpone" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
+                            title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
+                    <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
+                            title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
+                    <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
+                            title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>There are currently no expired reminders</p>
+{% endif %}
+</div>
+
+{% if active %}
+    <button class="accordion current active">Active<span class="todo-badge">{{ active | length }}</span></button>
+    <div class="panel" style="display: block">
+{% else %}
+    <button class="accordion current">Active<span class="todo-badge">{{ active | length }}</span></button>
+    <div class="panel" style="display: none">
+{% endif %}
+
+<h3 class="current-text">Reminder due date occurs in the next 2 weeks</h3>
+
+{% if active %}
+
+    <table style="width: 100%;">
+        <th style="width: 20%">Reminder Description</th>
+        <th style="width: 60%">Project Name</th>
+        <th style="width: 10%">Reminder Due Date</th>
+        <th style="width: 10%;">Actions</th>
+        {% for reminder in active %}
+            <tr>
+                <td>{{ reminder.description }}</td>
+                <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a>
+                </td>
+                <td>{{ reminder.due_date }}</td>
+                <td>
+                    <a class="complete" href="{% url 'reminder_complete' reminder.id %}"
+                            title="Mark Complete"><img class="icon" src="{% static 'icons/tick.png' %}"></a>
+                    <button class="postpone" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
+                            title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
+                    <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
+                            title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
+                    <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
+                            title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+{% else %}
+    <p>There are currently no active reminders</p>
+{% endif %}
+</div>
+
+{% if upcoming %}
+    <button class="accordion upcoming active">Upcoming<span class="todo-badge">{{ upcoming | length }}</span></button>
+    <div class="panel" style="display: block">
+{% else %}
+    <button class="accordion upcoming">Upcoming<span class="todo-badge">{{ upcoming | length }}</span></button>
+    <div class="panel" style="display: none">
+{% endif %}
+
+<h3 class="upcoming-text">Reminder due date occurs before one month's time</h3>
+
+{% if upcoming %}
+
+    <table style="width: 100%;">
+        <th style="width: 20%">Reminder Description</th>
+        <th style="width: 60%">Project Name</th>
+        <th style="width: 10%">Reminder Due Date</th>
+        <th style="width: 10%;">Actions</th>
+        {% for reminder in upcoming %}
+            <tr>
+                <td>{{ reminder.description }}</td>
+                <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a>
+                </td>
+                <td>{{ reminder.due_date }}</td>
+                <td>
+                    <a class="complete" href="{% url 'reminder_complete' reminder.id %}"
+                            title="Mark Complete"><img class="icon" src="{% static 'icons/tick.png' %}"></a>
+                    <button class="postpone" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
+                            title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
+                    <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
+                            title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
+                    <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
+                            title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+{% else %}
+    <p>There are currently no upcoming reminders</p>
+{% endif %}
+</div>
+
+<button class="accordion">Un-assigned<span class="todo-badge">{{ others | length }}</span></button>
+<div class="panel other">
+    <h3>Project does not have a reminder assigned</h3>
+
+    {% if others %}
 
         <table style="width: 100%;">
             <th style="width: 20%">Reminder Description</th>
             <th style="width: 60%">Project Name</th>
             <th style="width: 10%">Reminder Due Date</th>
             <th style="width: 10%;">Actions</th>
-            {% for reminder in active %}
+            {% for project in others %}
                 <tr>
-                    <td>{{ reminder.description }}</td>
-                    <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a>
-                    </td>
-                    <td>{{ reminder.due_date }}</td>
+                    <td> --</td>
+                    <td><a href="{% url 'admin:dmp_project_change' project.id %}">{{ project.title }}</a></td>
+                    <td> --</td>
                     <td>
-                        <button class="postpone" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
-                                title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
-                        <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
-                                title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
-                        <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
+                        <button class="postpone" onclick="showModal('addModal','project', {{ project.id }})"
                                 title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
                     </td>
                 </tr>
@@ -86,275 +159,209 @@
         </table>
 
     {% else %}
-        <p>There are currently no active reminders</p>
+        <p>There are currently no projects without reminders</p>
     {% endif %}
-    </div>
+</div>
 
-    {% if upcoming %}
-        <button class="accordion upcoming active">Upcoming<span class="todo-badge">{{ upcoming | length }}</span></button>
-        <div class="panel" style="display: block">
-    {% else %}
-        <button class="accordion upcoming">Upcoming<span class="todo-badge">{{ upcoming | length }}</span></button>
-        <div class="panel" style="display: none">
-    {% endif %}
+<!-- Postpone Modal -->
+<div id="postponeModal" class="modal">
 
-    <h3 class="upcoming-text">Reminder due date occurs before one month's time</h3>
+    <!-- Modal content -->
+    <div id="modal-content" class="modal-content">
 
-    {% if upcoming %}
-
-        <table style="width: 100%;">
-            <th style="width: 20%">Reminder Description</th>
-            <th style="width: 60%">Project Name</th>
-            <th style="width: 10%">Reminder Due Date</th>
-            <th style="width: 10%;">Actions</th>
-            {% for reminder in upcoming %}
-                <tr>
-                    <td>{{ reminder.description }}</td>
-                    <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a>
-                    </td>
-                    <td>{{ reminder.due_date }}</td>
-                    <td>
-                        <button class="postpone" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
-                                title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
-                        <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
-                                title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
-                        <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
-                                title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-
-    {% else %}
-        <p>There are currently no upcoming reminders</p>
-    {% endif %}
-    </div>
-
-    <button class="accordion">Un-assigned<span class="todo-badge">{{ others | length }}</span></button>
-    <div class="panel other">
-        <h3>Project does not have a reminder assigned</h3>
-
-        {% if others %}
-
-            <table style="width: 100%;">
-                <th style="width: 20%">Reminder Description</th>
-                <th style="width: 60%">Project Name</th>
-                <th style="width: 10%">Reminder Due Date</th>
-                <th style="width: 10%;">Actions</th>
-                {% for project in others %}
+        <div class="modal-header">
+            <h2 style="margin: 0 0 0 0; color: white;">Postpone Reminder?<span class="close">&times;</span></h2>
+        </div>
+        <div class="modal-body" style="padding: 0 20px 0 20px">
+            {{ form.non_field_errors }}
+            <form id="form_element" action="" method="post">
+                {% csrf_token %}
+                <h3>Use the "Remind in" selection box to choose "Custom Date" and set your own due date or choose an
+                    option to set a new date relative to the present day or Project end date, as defined in options
+                    list.</h3>
+                <br>
+                <input id="object_id" type="text" value="" hidden>
+                <input id="object_type" type="text" value="" hidden>
+                <table>
+                    <th style="width: 60%">{{ form.description.label_tag }}</th>
+                    <th style="width: 20%">{{ form.reminder.label_tag }}</th>
+                    <th style="width: 20%">{{ form.due_date.label_tag }}</th>
                     <tr>
-                        <td> --</td>
-                        <td><a href="{% url 'admin:dmp_project_change' project.id %}">{{ project.title }}</a></td>
-                        <td> --</td>
-                        <td>
-                            <button class="postpone" onclick="showModal('addModal','project', {{ project.id }})"
-                                    title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
-                        </td>
+                        <td>{{ form.description }}</td>
+                        <td>{{ form.reminder }}</td>
+                        <td>{{ form.due_date }}</td>
                     </tr>
-                {% endfor %}
-            </table>
+                    <tr>
+                        <td class="no_border white-background"></td>
+                        <td class="no_border white-background"></td>
+                        <td class="no_border white-background" style="text-align: right"><input type="submit"
+                                                                                                value="Save"
+                                                                                                name="save"></td>
 
-        {% else %}
-            <p>There are currently no projects without reminders</p>
-        {% endif %}
-    </div>
-
-    <!-- Postpone Modal -->
-    <div id="postponeModal" class="modal">
-
-        <!-- Modal content -->
-        <div id="modal-content" class="modal-content">
-
-            <div class="modal-header">
-                <h2 style="margin: 0 0 0 0; color: white;">Postpone Reminder?<span class="close">&times;</span></h2>
-            </div>
-            <div class="modal-body" style="padding: 0 20px 0 20px">
-                {{ form.non_field_errors }}
-                <form id="form_element" action="" method="post">
-                    {% csrf_token %}
-                    <h3>Use the "Remind in" selection box to choose "Custom Date" and set your own due date or choose an
-                        option to set a new date relative to the present day or Project end date, as defined in options
-                        list.</h3>
-                    <br>
-                    <input id="object_id" type="text" value="" hidden>
-                    <input id="object_type" type="text" value="" hidden>
-                    <table>
-                        <th style="width: 60%">{{ form.description.label_tag }}</th>
-                        <th style="width: 20%">{{ form.reminder.label_tag }}</th>
-                        <th style="width: 20%">{{ form.due_date.label_tag }}</th>
-                        <tr>
-                            <td>{{ form.description }}</td>
-                            <td>{{ form.reminder }}</td>
-                            <td>{{ form.due_date }}</td>
-                        </tr>
-                        <tr>
-                            <td class="no_border white-background"></td>
-                            <td class="no_border white-background"></td>
-                            <td class="no_border white-background" style="text-align: right"><input type="submit"
-                                                                                                    value="Save"
-                                                                                                    name="save"></td>
-
-                        </tr>
-                    </table>
-                </form>
-            </div>
+                    </tr>
+                </table>
+            </form>
         </div>
-
     </div>
 
-    <!-- Delete Modal -->
-    <div id="deleteModal" class="modal">
+</div>
 
-        <!-- Modal content -->
-        <div id="modal-content" class="modal-content">
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal">
 
-            <div class="modal-header">
-                <h2 style="margin: 0 0 0 0; color: white;">Delete Reminder?<span class="close">&times;</span></h2>
-            </div>
-            <div class="modal-body" style="padding: 0 20px 0 20px">
-                {{ form.non_field_errors }}
-                <form id="form_element" action="" method="post">
-                    {% csrf_token %}
-                    <h3>Are you sure you want to delete this reminder?</h3>
+    <!-- Modal content -->
+    <div id="modal-content" class="modal-content">
 
-                    <br>
-                    <input id="object_id" type="text" value="" hidden>
-                    <input id="object_type" type="text" value="" hidden>
-                    <table>
-                        <th style="width: 80%">Description:</th>
-                        <th style="width: 20%">Due Date:</th>
-                        <tr>
-                            <td><input type="text" id="id_description" value="" style="width:98%;"></td>
-                            <td><input type="text" id="id_due_date" value=""></td>
-                        </tr>
-                        <tr>
-                            <td class="no_border white-background"></td>
-                            <td class="no_border white-background" style="text-align: right">
-                                <input style="background-color: #c4000e; color: white;" type="submit" value="Delete"
-                                       name="delete"> <input type="submit" value="Cancel" name="cancel"></td>
-
-                        </tr>
-                    </table>
-                </form>
-            </div>
+        <div class="modal-header">
+            <h2 style="margin: 0 0 0 0; color: white;">Delete Reminder?<span class="close">&times;</span></h2>
         </div>
+        <div class="modal-body" style="padding: 0 20px 0 20px">
+            {{ form.non_field_errors }}
+            <form id="form_element" action="" method="post">
+                {% csrf_token %}
+                <h3>Are you sure you want to delete this reminder?</h3>
 
-    </div>
+                <br>
+                <input id="object_id" type="text" value="" hidden>
+                <input id="object_type" type="text" value="" hidden>
+                <table>
+                    <th style="width: 80%">Description:</th>
+                    <th style="width: 20%">Due Date:</th>
+                    <tr>
+                        <td><input type="text" id="id_description" value="" style="width:98%;"></td>
+                        <td><input type="text" id="id_due_date" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="no_border white-background"></td>
+                        <td class="no_border white-background" style="text-align: right">
+                            <input style="background-color: #c4000e; color: white;" type="submit" value="Delete"
+                                   name="delete"> <input type="submit" value="Cancel" name="cancel"></td>
 
-    <!-- Add Reminder Modal -->
-    <div id="addModal" class="modal">
-
-        <!-- Modal content -->
-        <div id="modal-content" class="modal-content">
-
-            <div class="modal-header">
-                <h2 style="margin: 0 0 0 0; color: white;">Add a New Reminder?<span class="close">&times;</span></h2>
-            </div>
-            <div class="modal-body" style="padding: 0 20px 0 20px">
-                {{ form.non_field_errors }}
-                <form id="form_element" action="" method="post">
-                    {% csrf_token %}
-                    <h3>Use the "Remind in" selection box to choose "Custom Date" and set your own due date or choose an
-                        option to set a new date relative to the present day or Project end date, as defined in options
-                        list.
-                        If selecting an interval from "Remind in", leave the due date blank and the date will be calculated
-                        on save.</h3>
-                    <br>
-                    <input id="object_id" type="text" value="" hidden>
-                    <input id="object_type" type="text" value="" hidden>
-                    <table>
-                        <th style="width: 60%">{{ form.description.label_tag }}</th>
-                        <th style="width: 20%">{{ form.reminder.label_tag }}</th>
-                        <th style="width: 20%">{{ form.due_date.label_tag }}</th>
-                        <tr>
-                            <td>{{ form.description }}</td>
-                            <td>{{ form.reminder }}</td>
-                            <td>{{ form.due_date }}</td>
-                        </tr>
-                        <tr>
-                            <td class="no_border white-background"></td>
-                            <td class="no_border white-background"></td>
-                            <td class="no_border white-background" style="text-align: right"><input type="submit"
-                                                                                                    value="Save"
-                                                                                                    name="save"></td>
-
-                        </tr>
-                    </table>
-                </form>
-            </div>
+                    </tr>
+                </table>
+            </form>
         </div>
-
     </div>
 
+</div>
 
-    <script>
-        // Open and populate modal fields
-        function showModal(modal_id, object_type, object_id) {
+<!-- Add Reminder Modal -->
+<div id="addModal" class="modal">
 
-            var target = "/dmp/todo_list/modal/" + object_type + "/" + object_id;
-            $.get(target, function (data) {
-                $('[id="form_element"]').attr('action', "/dmp/todo_list/save_reminder/" + object_type + "/" + data["object_id"]);
-                $('[id="id_description"]').val(data["description"]);
-                $('[id="id_reminder"]').val(data["delay_period"]);
-                $('[id="id_due_date"]').val(data["due_date"]);
-                $('[id="object_id"]').val(object_id)
-                $('[id="object_type"]').val(object_type)
-            });
+    <!-- Modal content -->
+    <div id="modal-content" class="modal-content">
+
+        <div class="modal-header">
+            <h2 style="margin: 0 0 0 0; color: white;">Add a New Reminder?<span class="close">&times;</span></h2>
+        </div>
+        <div class="modal-body" style="padding: 0 20px 0 20px">
+            {{ form.non_field_errors }}
+            <form id="form_element" action="" method="post">
+                {% csrf_token %}
+                <h3>Use the "Remind in" selection box to choose "Custom Date" and set your own due date or choose an
+                    option to set a new date relative to the present day or Project end date, as defined in options
+                    list.
+                    If selecting an interval from "Remind in", leave the due date blank and the date will be calculated
+                    on save.</h3>
+                <br>
+                <input id="object_id" type="text" value="" hidden>
+                <input id="object_type" type="text" value="" hidden>
+                <table>
+                    <th style="width: 60%">{{ form.description.label_tag }}</th>
+                    <th style="width: 20%">{{ form.reminder.label_tag }}</th>
+                    <th style="width: 20%">{{ form.due_date.label_tag }}</th>
+                    <th hidden>{{ form.state.label_tag }}</th>
+                    <tr>
+                        <td>{{ form.description }}</td>
+                        <td>{{ form.reminder }}</td>
+                        <td>{{ form.due_date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="no_border white-background"></td>
+                        <td class="no_border white-background"></td>
+                        <td class="no_border white-background" style="text-align: right"><input type="submit"
+                                                                                                value="Save"
+                                                                                                name="save"></td>
+                        <td hidden>{{ form.state }}</td>
+
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+
+</div>
 
 
-            var modal = "#" + modal_id;
-            $(modal).show();
+<script>
+    // Open and populate modal fields
+    function showModal(modal_id, object_type, object_id) {
 
-            // Get the <span> element that closes the modal
-            var spans = document.getElementsByClassName("close");
+        var target = "/dmp/todo_list/modal/" + object_type + "/" + object_id;
+        $.get(target, function (data) {
+            $('[id="form_element"]').attr('action', "/dmp/todo_list/save_reminder/" + object_type + "/" + data["object_id"]);
+            $('[id="id_description"]').val(data["description"]);
+            $('[id="id_reminder"]').val(data["delay_period"]);
+            $('[id="id_due_date"]').val(data["due_date"]);
+            $('[id="id_state"]').val("Open");
+            $('[id="object_id"]').val(object_id);
+            $('[id="object_type"]').val(object_type);
+        });
 
-            // When the user clicks on <span> (x), close the modal
-            for (var i = 0; i < spans.length; i++) {
-                spans[i].onclick = function () {
-                    $(modal).hide();
-                }
+
+        var modal = "#" + modal_id;
+        $(modal).show();
+
+        // Get the <span> element that closes the modal
+        var spans = document.getElementsByClassName("close");
+
+        // When the user clicks on <span> (x), close the modal
+        for (var i = 0; i < spans.length; i++) {
+            spans[i].onclick = function () {
+                $(modal).hide();
             }
-
         }
-        ;
 
-    </script>
-    <script>
-        //change due date when user selects item from dropdown
-        $(document).ready(function () {
-            $('[id="id_reminder"]').change(function () {
-                var selected = $(this).val();
-                if (selected !== "custom") {
-                    // get object id, object type and set the target url
-                    var object_id = $('#object_id').val();
-                    var object_type = $('#object_type').val();
-                    var target = "/dmp/todo_list/update_duedate/" + object_type + "/" + object_id + "/" + selected;
+    }
+    ;
 
-                    $.get(target, function (data) {
-                        $('[id="id_due_date"]').val(data["due_date"])
+</script>
+<script>
+    //change due date when user selects item from dropdown
+    $(document).ready(function () {
+        $('[id="id_reminder"]').change(function () {
+            var selected = $(this).val();
+            if (selected !== "custom") {
+                // get object id, object type and set the target url
+                var object_id = $('#object_id').val();
+                var object_type = $('#object_type').val();
+                var target = "/dmp/todo_list/update_duedate/" + object_type + "/" + object_id + "/" + selected;
 
-                    })
-                }
-            })
+                $.get(target, function (data) {
+                    $('[id="id_due_date"]').val(data["due_date"])
+
+                })
+            }
         })
+    })
 
-    </script>
-    <script>
-        // open and close the collapsible panel
-        var acc = document.getElementsByClassName("accordion");
-        var i;
+</script>
+<script>
+    // open and close the collapsible panel
+    var acc = document.getElementsByClassName("accordion");
+    var i;
 
-        for (i = 0; i < acc.length; i++) {
-            acc[i].onclick = function () {
-                this.classList.toggle("active");
-                var panel = this.nextElementSibling;
-                if (panel.style.display === "block") {
-                    panel.style.display = "none";
-                } else {
-                    panel.style.display = "block";
-                }
+    for (i = 0; i < acc.length; i++) {
+        acc[i].onclick = function () {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.display === "block") {
+                panel.style.display = "none";
+            } else {
+                panel.style.display = "block";
             }
         }
-    </script>
+    }
+</script>
 
 {% endblock %}

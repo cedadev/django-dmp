@@ -89,13 +89,13 @@ class EmailMessageForm(forms.Form):
     message = forms.CharField(widget=forms.Textarea(attrs={'rows': 20}))
     template_type = forms.CharField(max_length=200)
 
-class PostponeReminderForm(forms.ModelForm):
+class ReminderForm(forms.ModelForm):
     class Meta:
         model = Reminder
-        exclude = ['project']
+        fields = ['description','reminder','due_date','state']
 
     def clean(self):
-        cleaned_data = super(PostponeReminderForm,self).clean()
+        cleaned_data = super(ReminderForm,self).clean()
         if cleaned_data['reminder'] == 'custom':
             try:
                 if not cleaned_data['due_date']:
@@ -107,3 +107,6 @@ class PostponeReminderForm(forms.ModelForm):
 
     description = forms.CharField(widget=forms.TextInput(attrs={'style': 'width:98%'}))
     due_date =forms.DateField(required=False)
+    # state = forms.CharField(required=False)
+
+
