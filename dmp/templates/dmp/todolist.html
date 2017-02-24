@@ -9,6 +9,18 @@
 
 {% block content %}
     <h1>Todo List</h1>
+    <h3 style="float: right">Filter on SciSup Contact:<span>
+    <select>
+        {% for contact in scisupcontacts %}
+            {% if contact.first_name and contact.last_name %}
+                <option value="{{ contact }}">{{ contact.first_name | capfirst }} {{ contact.last_name |capfirst }}</option>
+            {% else %}
+                <option value="{{ contact }}">{{ contact }}</option>
+            {% endif %}
+        {% endfor %} }
+    </select>
+    </span>
+    </h3>
     {% if  expired %}
         <button class="accordion expired active">Expired<span class="todo-badge">{{ expired | length }}</span></button>
         <div class="panel" style="display: block">

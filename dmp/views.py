@@ -1050,6 +1050,9 @@ def todo_list(request):
     # List of projects with no reminders attached
     others = Project.objects.filter(reminder__isnull=True)
 
+    # List of users to filter on SciSup Contact
+    scisupcontacts = Person.objects.filter(is_active=True)
+
     context = {
         'user': request.user,
         'expired': expired,
@@ -1057,6 +1060,7 @@ def todo_list(request):
         'upcoming': upcoming,
         'others': others,
         'form': form,
+        'scisupcontacts': scisupcontacts,
     }
     return render(request, "dmp/todolist.html", context)
 
