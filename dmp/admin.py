@@ -5,13 +5,7 @@ from django.contrib.auth.models import *
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
 
-
-
 # this is the customisation of the admin interface
-
-#-----
-# This is the interface for the data products
-
 
 class NotesInline(GenericTabularInline):
     model = Note
@@ -125,6 +119,7 @@ class GrantAdmin(admin.ModelAdmin):
     #readonly_fields=('title', 'pi', 'desc')
 admin.site.register(Grant, GrantAdmin)
 
+
 class ProjectGroupAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('name', 'desc')
@@ -132,19 +127,6 @@ class ProjectGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ('projects', )
 admin.site.register(ProjectGroup, ProjectGroupAdmin)
 
-
-class NotesAdmin(admin.ModelAdmin):
-
-    list_display = ('content_type','location','creator','added')
-    list_filter = ('content_type','creator')
-
-
-admin.site.register(Note, NotesAdmin)
-
-class MetadataAdmin(admin.ModelAdmin):
-    pass
-
-admin.site.register(MetadataForm,MetadataAdmin)
 
 class EmailTemplateAdmin(admin.ModelAdmin):
     list_display = ('template_name','template_ref', 'last_edited', 'edited_by')
@@ -158,10 +140,6 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 
 
-class ReminderAdmin(admin.ModelAdmin):
-    list_display = ['id','description','reminder','state']
-admin.site.register(Reminder, ReminderAdmin)
-
 class draftDmpAdmin(admin.ModelAdmin):
     list_display = ('draft_dmp_name',)
 
@@ -172,8 +150,30 @@ class draftDmpAdmin(admin.ModelAdmin):
             return True
 admin.site.register(draftDmp,draftDmpAdmin)
 
-class OAuth_tokenAdmin(admin.ModelAdmin):
-    list_display = ('user',)
+########################################################################################################################
+#                                                                                                                      #
+#                               Section for debugging and development admin views                                      #
+#                                                                                                                      #
+########################################################################################################################
 
-admin.site.register(OAuthToken, OAuth_tokenAdmin)
+# class OAuth_tokenAdmin(admin.ModelAdmin):
+#     list_display = ('user',)
+#
+# admin.site.register(OAuthToken, OAuth_tokenAdmin)
 
+# class NotesAdmin(admin.ModelAdmin):
+#
+#     list_display = ('content_type','location','creator','added')
+#     list_filter = ('content_type','creator')
+#
+#
+# admin.site.register(Note, NotesAdmin)
+
+# class MetadataAdmin(admin.ModelAdmin):
+#     pass
+#
+# admin.site.register(MetadataForm,MetadataAdmin)
+
+# class ReminderAdmin(admin.ModelAdmin):
+#     list_display = ['id','description','reminder','state']
+# admin.site.register(Reminder, ReminderAdmin)
