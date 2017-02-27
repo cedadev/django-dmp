@@ -12,8 +12,6 @@
 
 {% endblock %}
 
-
-
 {% block breadcrumbs %}
     <div class="breadcrumbs">
         ﻿<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
@@ -34,7 +32,7 @@
     {% if google_user %}
         <div style="padding-bottom: 10px">
             <div class="google_user_dropdown">
-                <a class="google_account_info dropbtn" onclick="showDetails()" onmouseover="showDetails()"
+                <a class="google_account_info" onclick="showDetails()" onmouseover="showDetails()"
                    title="Google account currently attached to logged in user">
                     {{ google_user.initial }}
                 </a>
