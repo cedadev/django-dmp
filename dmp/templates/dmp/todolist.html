@@ -11,19 +11,19 @@
     <h1>Todo List</h1>
     <h3 style="float: right">Filter on SciSup Contact:<span>
 
-        <div class="dropdown">
+        <div class="userFilterDropdown">
             {% if filter_value.first_name and filter_value.last_name %}
-                <button onclick="dropdown()" class="dropbtn">
+                <button onclick="dropdown()" class="userFilterDropdown-dropbtn">
                     {{ filter_value.first_name | capfirst }} {{ filter_value.last_name | capfirst}}
                     <span class="caret"></span>
                 </button>
             {% else %}
-                <button onclick="dropdown()" class="dropbtn">
+                <button onclick="dropdown()" class="userFilterDropdown-dropbtn">
                     {{ filter_value.username }}
                     <span class="caret"></span>
                 </button>
             {% endif %}
-            <div id="userFilterDropdown" class="dropdown-content">
+            <div id="userFilterDropdown" class="userFilterDropdown-content">
                 <a href="all">Show All</a>
                 {% for contact in scisupcontacts %}
                     {% if contact.first_name and contact.last_name %}
@@ -405,7 +405,7 @@
     window.onclick = function (event) {
         if (!event.target.matches('.dropbtn')) {
 
-            var dropdowns = document.getElementsByClassName("dropdown-content");
+            var dropdowns = document.getElementsByClassName("userFilterDropdown-content");
             var i;
             for (i = 0; i < dropdowns.length; i++) {
                 var openDropdown = dropdowns[i];
