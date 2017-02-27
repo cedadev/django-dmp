@@ -24,7 +24,7 @@ urlpatterns = [
      url(r'^grant/grant_upload/$',grant_uploader, name="grant_uploader"),
      url(r'^grant/grant_upload/confirm$',grant_upload_confirm, name="grant_upload_confirm"),
      url(r'^grant/grant_upload_complete/$', grant_upload_complete, name="grant_upload_complete"),
-     url(r'^todo_list$', todo_list, name= "todo_list"),
+     url(r'^todo_list/$', todo_list, name= "todo_list"),
      url(r'^todo_list/(?P<scisupcontact>[\w]+)$', todo_list, name="todo_list_filter"),
 
      # todo list Requests

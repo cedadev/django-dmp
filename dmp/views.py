@@ -1042,22 +1042,34 @@ def todo_list(request, scisupcontact=None):
     expired = Reminder.objects.filter(due_date__lt=today).filter(state="Open").order_by('due_date')
 
     # List of projects reminders which have an expiry in next 2 weeks
-    active = Reminder.objects.filter(due_date__range=[today,today + relativedelta(weeks=2)]).filter(state="Open").order_by('due_date')
+    active = Reminder.objects.filter(due_date__range=[today,today + relativedelta(months=1)]).filter(state="Open").order_by('due_date')
 
     # List of projects reminders have an expiry 2 weeks - 1 month
-    upcoming = Reminder.objects.filter(due_date__range=[today + relativedelta(weeks=2, days=1), today + relativedelta(months=1)]).filter(state="Open").order_by('due_date')
+    upcoming = Reminder.objects.filter(due_date__range=[today + relativedelta(months=1, days=1), today + relativedelta(months=3)]).filter(state="Open").order_by('due_date')
 
     # List of projects with no reminders attached
     others = Project.objects.filter(reminder__isnull=True)
 
     # List of users to filter on SciSup Contact
     scisupcontacts = Person.objects.filter(is_active=True)
+    filter = request.user
 
+    # Filter context based on current user or selected user from dropdown
     if scisupcontact and scisupcontact != 'all':
-        expired = expired.filter(project__sciSupContact=scisupcontact)
-        active = active.filter(project__sciSupContact=scisupcontact)
-        upcoming = upcoming.filter(project__sciSupContact=scisupcontact)
-        others = others.filter(project__sciSupContact=scisupcontact)
+        expired = expired.filter(project__sciSupContact__username=scisupcontact)
+        active = active.filter(project__sciSupContact__username=scisupcontact)
+        upcoming = upcoming.filter(project__sciSupContact__username=scisupcontact)
+        others = others.filter(sciSupContact__username=scisupcontact)
+        filter = Person.objects.get(username=scisupcontact)
+    elif scisupcontact == 'all':
+        filter.first_name = None
+        filter.last_name = None
+        filter.username = 'Show All'
+    else:
+        expired = expired.filter(project__sciSupContact__username=request.user)
+        active = active.filter(project__sciSupContact__username=request.user)
+        upcoming = upcoming.filter(project__sciSupContact__username=request.user)
+        others = others.filter(sciSupContact__username=request.user)
 
     context = {
         'user': request.user,
@@ -1067,6 +1079,7 @@ def todo_list(request, scisupcontact=None):
         'others': others,
         'form': form,
         'scisupcontacts': scisupcontacts,
+        'filter_value' : filter,
     }
     return render(request, "dmp/todolist.html", context)
 
