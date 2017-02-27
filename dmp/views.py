@@ -1031,7 +1031,7 @@ def email_help(request):
 
 
 @login_required
-def todo_list(request):
+def todo_list(request, scisupcontact=None):
     '''Produces a list of items for attention, as designated by the user, hiding items which do not need attention'''
 
     today = date.today()
@@ -1052,6 +1052,12 @@ def todo_list(request):
 
     # List of users to filter on SciSup Contact
     scisupcontacts = Person.objects.filter(is_active=True)
+
+    if scisupcontact and scisupcontact != 'all':
+        expired = expired.filter(project__sciSupContact=scisupcontact)
+        active = active.filter(project__sciSupContact=scisupcontact)
+        upcoming = upcoming.filter(project__sciSupContact=scisupcontact)
+        others = others.filter(project__sciSupContact=scisupcontact)
 
     context = {
         'user': request.user,

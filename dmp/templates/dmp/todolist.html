@@ -10,7 +10,8 @@
 {% block content %}
     <h1>Todo List</h1>
     <h3 style="float: right">Filter on SciSup Contact:<span>
-    <select>
+    <select id="contact-filter">
+            <option value="all">Show all</option>
         {% for contact in scisupcontacts %}
             {% if contact.first_name and contact.last_name %}
                 <option value="{{ contact }}">{{ contact.first_name | capfirst }} {{ contact.last_name |capfirst }}</option>
@@ -339,7 +340,7 @@
 
 </script>
 <script>
-    //change due date when user selects item from dropdown
+    //change due date when user selects item from reminder dropdown
     $(document).ready(function () {
         $('[id="id_reminder"]').change(function () {
             var selected = $(this).val();
@@ -374,6 +375,16 @@
             }
         }
     }
+</script>
+<script>
+    // Reload page if user chooses to filter by specific scisupcontact
+    $(document).ready(function () {
+        $('#contact-filter').change(function () {
+            var selected = $(this).val();
+            alert(selected)
+        })
+    })
+
 </script>
 
 {% endblock %}
