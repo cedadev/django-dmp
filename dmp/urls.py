@@ -16,10 +16,10 @@ urlpatterns = [
      url(r'^grant/(?P<grant_id>\d+)/link$', link_grant_to_project),
      url(r'^$', home, name='index'),
      url(r'^home/$', home, name='home'),
-     url(r'^DOG_report/$', DOG_report, name="DOG_report"),
+     url(r'^project/DOG_report/$', DOG_report, name="DOG_report"),
 
      # Send emails to PI
-     url(r'^email_templates/(?P<project_id>\d+)/$', mail_template, name="email_templates"),
+     url(r'^project/email_templates/(?P<project_id>\d+)/$', mail_template, name="email_templates"),
      url(r'^emailhelp/$',email_help,name="email_help"),
 
      # Google drive draft DMP upload and authorisation process
@@ -33,5 +33,12 @@ urlpatterns = [
      url(r'^grant/grant_upload/$',grant_uploader, name="grant_uploader"),
      url(r'^grant/grant_upload/confirm$',grant_upload_confirm, name="grant_upload_confirm"),
      url(r'^grant/grant_upload_complete/$', grant_upload_complete, name="grant_upload_complete"),
+     url(r'^todo_list/$', todo_list, name= "todo_list"),
+     url(r'^todo_list/(?P<scisupcontact>[\w]+)$', todo_list, name="todo_list_filter"),
 
+     # todo list Requests
+     url(r'^todo_list/modal/(?P<object_type>[\w]+)/(?P<object_id>\d+)', return_reminder, name="reminder_ajax"),
+     url(r'^todo_list/save_reminder/(?P<object_type>[\w]+)/(?P<object_id>\d+)', modify_reminder, name="modify_reminder"),
+     url(r'^todo_list/update_duedate/(?P<object_type>[\w]+)/(?P<object_id>\d+)/(?P<time_interval>[\w-]+)', calculate_due_date, name="calculate_due_date"),
+     url(r'todo_list/mark_complete/(?P<reminder_id>\d+)$', reminder_complete, name="reminder_complete"),
 ]

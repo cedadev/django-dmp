@@ -1,5 +1,5 @@
 from dmp.models import *
-from dmp.forms import ProjectAdminForm, NotesForm
+from dmp.forms import ProjectAdminForm, NotesForm, ReminderForm
 from django.forms import BaseInlineFormSet
 from django.contrib.auth.models import *
 from django.contrib import admin
@@ -25,6 +25,14 @@ class MetadataFormInline(GenericTabularInline):
     extra = 0
     readonly_fields = ('modified',)
     classes = ['collapse']
+
+class ReminderInline(admin.TabularInline):
+    model = Reminder
+    extra = 0
+    classes = ['collapse']
+    # readonly_fields = ('state',)
+    form = ReminderForm
+
 
 
 class DataProductAdmin(admin.ModelAdmin):
@@ -93,7 +101,7 @@ class ProjectAdmin(admin.ModelAdmin):
         }),
     )
 
-    inlines = [NotesInline,MetadataFormInline]
+    inlines = [NotesInline,MetadataFormInline, ReminderInline]
 
     def save_formset(self, request, form, formset, change):
         if formset.model != Note:
@@ -149,6 +157,11 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 
+
+class ReminderAdmin(admin.ModelAdmin):
+    list_display = ['id','description','reminder','state']
+admin.site.register(Reminder, ReminderAdmin)
+
 class draftDmpAdmin(admin.ModelAdmin):
     list_display = ('draft_dmp_name',)
 
@@ -163,3 +176,4 @@ class OAuth_tokenAdmin(admin.ModelAdmin):
     list_display = ('user',)
 
 admin.site.register(OAuthToken, OAuth_tokenAdmin)
+

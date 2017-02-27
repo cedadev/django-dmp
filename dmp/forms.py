@@ -1,8 +1,9 @@
 from django.forms.widgets import Widget
+from django.forms.extras import widgets
 from django.forms.utils import flatatt
 from django.utils.html import format_html
 from django import forms
-from dmp.models import EmailTemplate
+from dmp.models import EmailTemplate, Reminder
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import validate_email
@@ -90,6 +91,30 @@ class EmailMessageForm(forms.Form):
     message = forms.CharField(widget=forms.Textarea(attrs={'rows': 20}))
     template_type = forms.CharField(max_length=200)
 
+
+class ReminderForm(forms.ModelForm):
+    class Meta:
+        model = Reminder
+        fields = ['description','reminder','due_date','state']
+
+    def clean(self):
+        cleaned_data = super(ReminderForm,self).clean()
+        if cleaned_data['reminder'] == 'custom':
+            try:
+                if not cleaned_data['due_date']:
+                    raise ValidationError('Must supply a due date')
+            except KeyError:
+                raise ValidationError('Must supply a due date')
+
+        return cleaned_data
+
+    description = forms.CharField(widget=forms.TextInput(attrs={'style': 'width:98%'}))
+    due_date =forms.DateField(required=False)
+    # state = forms.CharField(required=False)
+
+
+
 class DraftDmpForm(forms.Form):
     upload_path = forms.CharField(widget=forms.TextInput(attrs={'class':'hidden'}))
     draft_dmp = forms.CharField(widget=forms.Textarea(attrs={'style': 'height:700px'}))
+

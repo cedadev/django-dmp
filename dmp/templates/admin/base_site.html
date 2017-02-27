@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {%  block title %}{{ title }} | {% trans 'DMP Administration' %}{% endblock %}
 
@@ -8,7 +8,32 @@
     <h1 id="site-name">{% trans 'Data Management Plan Administration' %}</h1>
 {% endblock %}
 
-{% block nav-global %}{% endblock %}
+{% block extrahead %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block nav-global %}
+
+    <ul class="nav-bar">
+        <li class="nav-bar"><a class="navbar-text" href="{% url 'admin:index' %}">Home</a></li>
+        <li class="dropdown">
+            <a href="{% url 'admin:dmp_project_changelist' %}" class="dropbtn navbar-text">Projects</a>
+            <div class="dropdown-content">
+                <a style="color: black" href="{% url 'admin:dmp_project_changelist' %}">Project List</a>
+                <a style="color: black" href="{% url 'todo_list' %}">Todo-List</a>
+                <a style="color: black" href="{% url 'DOG_report' %}">DOG Report</a>
+            </div>
+        </li>
+        <li class="dropdown">
+            <a href="{% url 'admin:dmp_grant_changelist' %}" class="dropbtn navbar-text">Grants</a>
+            <div class="dropdown-content">
+                <a style="color: black" href="{% url 'admin:dmp_grant_changelist' %}">Grant List</a>
+                <a style="color: black" href="{% url 'grant_uploader' %}">Grant Uploader</a>
+            </div>
+        </li>
+    </ul>
+
+{% endblock %}
 
 {% block usertools %}
 <div id="user-tools">
@@ -27,9 +52,9 @@
             {% endif %}
         {% endif %}
         {% if user.has_usable_password %}
-        <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
+            <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
         {% endif %}
         <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
+        </div>
     {% endblock %}
-</div>
 {% endblock %}

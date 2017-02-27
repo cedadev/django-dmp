@@ -1,6 +1,6 @@
 {% extends 'admin/base_site.html' %}
 {% load static i18n admin_urls %}
-{% block extrahead %}
+{% block extrahead %}{{ block.super }}
     <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
     <script>tinymce.init({
         selector: 'textarea',

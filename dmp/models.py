@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 
 import re
+from dateutil.relativedelta import relativedelta
 
 # import users 
 from django.contrib.auth.models import *
@@ -387,3 +388,55 @@ class GrantFile(models.Model):
     file_contents = PickledObjectField()
     added = models.DateTimeField(auto_now_add=True)
 
+
+class Reminder(models.Model):
+
+    project = models.ForeignKey(Project)
+    description = models.CharField(max_length=200, null=True)
+    reminder = models.CharField(max_length=200, verbose_name="Remind in",
+        choices=(('custom','Custom Date'),
+                 ('1_week','1 Week'),
+                 ('2_weeks','2 Weeks'),
+                 ('1_month','1 Month'),
+                 ('3_months','3 Months'),
+                 ('-6_months','6 Months before end date'),
+                 ('-3_months','3 Months before end date'),
+                 ('-1_month','1 Month before end date'),
+                 ))
+    due_date = models.DateField()
+    state = models.CharField(max_length=200,
+                             choices=(
+                                 ('Open', 'Open'),
+                                 ('Complete', 'Complete'),
+                             ),
+                             null=True,
+                             default="Open")
+
+    def save(self, *args,**kwargs):
+
+        enddate =  self.project.enddate
+        now = date.today()
+
+        delay_periods = {
+            '1_week': {'weeks': 1},
+            '2_weeks': {'weeks': 2},
+            '1_month': {'months': 1},
+            '3_months': {'months': 3},
+            '6_months': {'months': 6},
+            '-6_months': {'months': -6},
+            '-3_months': {'months': -3},
+            '-1_month': {'months': -1}
+        }
+
+        def set_due_date(target_date, **kwargs):
+            self.due_date = target_date + relativedelta(**kwargs)
+
+        if '-' in self.reminder:
+            target_date = enddate
+        else:
+            target_date = now
+
+        if not self.reminder == 'custom':
+            set_due_date(target_date, **delay_periods[self.reminder])
+
+        return super(Reminder, self).save(*args, **kwargs)

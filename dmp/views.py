@@ -18,6 +18,7 @@ from contextlib import contextmanager
 
 
 
+
 from django.contrib.auth.models import *
 
 from django.template import Context, Template
@@ -29,6 +30,7 @@ from django.utils.html import strip_tags
 
 import requests
 import datetime
+import dateutil.relativedelta
 import re
 import string
 import time
@@ -1315,5 +1317,163 @@ def email_help(request):
 
 
     return render(request,"dmp/email_template_info.html")
+
+
+@login_required
+def todo_list(request, scisupcontact=None):
+    '''Produces a list of items for attention, as designated by the user, hiding items which do not need attention'''
+
+    today = date.today()
+
+    form = ReminderForm()
+
+    # List of projects whose reminders have expired
+    expired = Reminder.objects.filter(due_date__lt=today).filter(state="Open").order_by('due_date')
+
+    # List of projects reminders which have an expiry in next 2 weeks
+    active = Reminder.objects.filter(due_date__range=[today,today + relativedelta(months=1)]).filter(state="Open").order_by('due_date')
+
+    # List of projects reminders have an expiry 2 weeks - 1 month
+    upcoming = Reminder.objects.filter(due_date__range=[today + relativedelta(months=1, days=1), today + relativedelta(months=3)]).filter(state="Open").order_by('due_date')
+
+    # List of projects with no reminders attached
+    others = Project.objects.filter(reminder__isnull=True)
+
+    # List of users to filter on SciSup Contact
+    scisupcontacts = Person.objects.filter(is_active=True)
+    filter = request.user
+
+    # Filter context based on current user or selected user from dropdown
+    if scisupcontact and scisupcontact != 'all':
+        expired = expired.filter(project__sciSupContact__username=scisupcontact)
+        active = active.filter(project__sciSupContact__username=scisupcontact)
+        upcoming = upcoming.filter(project__sciSupContact__username=scisupcontact)
+        others = others.filter(sciSupContact__username=scisupcontact)
+        filter = Person.objects.get(username=scisupcontact)
+    elif scisupcontact == 'all':
+        filter.first_name = None
+        filter.last_name = None
+        filter.username = 'Show All'
+    else:
+        expired = expired.filter(project__sciSupContact__username=request.user)
+        active = active.filter(project__sciSupContact__username=request.user)
+        upcoming = upcoming.filter(project__sciSupContact__username=request.user)
+        others = others.filter(sciSupContact__username=request.user)
+
+    context = {
+        'user': request.user,
+        'expired': expired,
+        'active': active,
+        'upcoming': upcoming,
+        'others': others,
+        'form': form,
+        'scisupcontacts': scisupcontacts,
+        'filter_value' : filter,
+    }
+    return render(request, "dmp/todolist.html", context)
+
+def return_reminder(request, object_type, object_id):
+    '''AJAX request to populate modal'''
+    if request.is_ajax():
+        if object_type == 'project':
+            object = Project.objects.get(id=object_id)
+
+            data = {
+                'object_id': object_id
+            }
+        else:
+            object = Reminder.objects.get(id=object_id)
+            data = {
+                'object_id': object_id,
+                'description': object.description,
+                'due_date': object.due_date.__str__(),
+            }
+
+        data = json.dumps(data)
+        return HttpResponse(data, content_type='aplication/json')
+    else:
+        return redirect('/dmp/todo_list')
+
+def calculate_due_date(request, time_interval, object_type, object_id):
+    '''AJAX Request to calculate due date when user selects option'''
+    if request.is_ajax():
+        today = date.today()
+        if object_type == 'reminder':
+            end_date = Reminder.objects.get(id=object_id).project.enddate
+        else:
+            end_date = Project.objects.get(id=object_id).enddate
+
+        delay_periods = {
+            '1_week': {'weeks': 1},
+            '2_weeks': {'weeks': 2},
+            '1_month': {'months': 1},
+            '3_months': {'months': 3},
+            '6_months': {'months': 6},
+            '-6_months': {'months': -6},
+            '-3_months': {'months': -3},
+            '-1_month': {'months': -1}
+        }
+
+        def set_due_date(target_date, **kwargs):
+            due_date = target_date + relativedelta(**kwargs)
+            return due_date
+
+        if '-' in time_interval:
+            target_date = end_date
+        else:
+            target_date = today
+
+        due_date = set_due_date(target_date,**delay_periods[time_interval])
+
+        data = {"due_date": due_date.__str__()}
+        data = json.dumps(data)
+        return HttpResponse(data, content_type='application/json')
+
+
+def modify_reminder(request, object_type, object_id):
+    '''Action request from modify or delete modal'''
+    if request.POST:
+        form = ReminderForm(request.POST)
+        if form.is_valid():
+            if "save" in request.POST:
+                if object_type == 'reminder':
+                    object = Reminder.objects.get(id=object_id)
+
+                # Set model instance fields with new values
+                    object.description = form.cleaned_data['description']
+                    object.reminder = form.cleaned_data['reminder']
+                    object.due_date = form.cleaned_data['due_date']
+                else:
+                    object = Reminder(
+                        project=Project.objects.get(id=object_id),
+                        description=form.cleaned_data['description'],
+                        reminder=form.cleaned_data['reminder'],
+                        due_date=form.cleaned_data['due_date'],
+                    )
+                object.save()
+                messages.success(request,'Reminder saved successfully')
+        else:
+            messages.error(request, "No action was performed, invalid form submission")
+
+        if "delete" in request.POST:
+            reminder = Reminder.objects.get(id=object_id)
+
+            reminder.delete()
+        elif "cancel" in request.POST:
+            messages.info(request, "No action was performed")
+    else:
+        messages.info(request, "No action was performed")
+
+    return redirect('/dmp/todo_list')
+
+def reminder_complete(request,reminder_id):
+
+    reminder = Reminder.objects.get(id=reminder_id)
+    reminder.state = "Complete"
+    reminder.save()
+
+    messages.success(request,'Reminder marked as complete')
+    return redirect('/dmp/todo_list')
+
 
 
