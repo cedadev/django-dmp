@@ -23,7 +23,7 @@
                     </li>
                 {% endfor %}
                 <li><a href="/dmp/project/{{ original.id }}" class="historylink">Draft DMP</a></li>
-                <li><a href="{% url "email_templates" object_id %}" class="historylink">Email Templates</a></li>
+                <li><a href="{% url "email_templates" object_id %}" class="historylink">Send Email for Project</a></li>
                 {% if has_absolute_url %}
                     <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/"
                            class="viewsitelink">{% trans "View on site" %}</a></li>{% endif %}

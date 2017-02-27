@@ -9,6 +9,8 @@ from datetime import datetime, timedelta, date
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.fields import PositiveIntegerField
+from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 
 import re
 from dateutil.relativedelta import relativedelta
@@ -270,7 +272,7 @@ class Grant(models.Model):
     title = models.CharField(max_length=800, blank=True, null=True)
     pi = models.CharField(max_length=200, blank=True, null=True)
     desc = models.TextField(blank=True, null=True)
-    # if grant is a child grant, enter email. This is used as a CC  when emails are sent.
+    # This is used as a CC  when emails are sent.
     data_email = models.EmailField(blank=True, null=True)
 
     def __unicode__(self):
@@ -355,10 +357,37 @@ class DOGstats(models.Model):
     ended_with_outstanding_data = models.IntegerField(null=True)
     total_grants = models.IntegerField(null=True)
 
+
+class draftDmp(models.Model):
+    '''html template for the draft dmp stored in a place editable by the user and not just hardcoded.'''
+    draft_dmp_name = models.CharField(max_length=200, default='Draft DMP')
+    draft_dmp_content = models.TextField(blank=True)
+
+    class Meta():
+        verbose_name_plural = 'Draft DMP'
+
+
+class OAuthToken(models.Model):
+
+    """
+    Model representing an OAuth token from the CEDA OAuth server for a user. A
+    user may have at most one token at any one time.
+    """
+    class Meta:
+        verbose_name = 'OAuth Token'
+
+    user = models.OneToOneField(User,
+                                models.CASCADE, related_name = 'oauth_token')
+
+    token_expiry=  models.DateTimeField()
+    access_token=models.CharField(max_length=200)
+    refresh_token=models.CharField(max_length=200)
+
 class GrantFile(models.Model):
     '''when user uploads a file using the grant uploader, temporarily store the contents for use later'''
     file_contents = PickledObjectField()
     added = models.DateTimeField(auto_now_add=True)
+
 
 class Reminder(models.Model):
 

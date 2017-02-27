@@ -52,9 +52,10 @@ a:visited.gotwlink {color:red; background-color:blue}
 }
 
 .email_template_info {
-    background-color: rgba(255, 1, 15, 0.13);
-    border-radius: 10px;
+    background: linear-gradient(to right, rgba(255, 0, 0, 0.2), rgba(255,0,0,0.15) ) ;
+    border-radius: 5px;
     padding: 1px 5px 1px 5px;
+
 
 }
 
@@ -64,9 +65,71 @@ a:visited.gotwlink {color:red; background-color:blue}
     padding: 1px 5px 1px 5px;
 }
 
+
+#google_upload_button {
+    background-color: #79aec8;
+    border-radius: 5px;
+    font-size: medium;
+    color: white;
+    border: none;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+}
+
+.google_account_info {
+    height: 60px;
+    width: 60px;
+    background-color: #00ccff;
+    line-height: 60px;
+    text-align: center;
+    border-radius: 30px;
+    font-size: x-large;
+    display: block;
+    cursor: pointer;
+}
+
+.google_account_info:link {
+    color: white
+}
+.google_account_info:active {
+    color: white
+}
+.google_account_info:visited {
+    color: white
+}
+.google_account_info:hover {
+    color: whitesmoke;
+}
+
+.google_user_dropdown {
+    position: relative;
+    display: inline-block;
+    float: right;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+.google_user_dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0px;
+    min-width: 300px;
+    background-color: white;
+    border:lightgrey;
+    border-style: solid;
+    border-width: thin;
+    border-radius: 5px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+.show {
+    display: block;}
+
 .cancel {
     display: block;
-    width:130px;
+    min-width:130px;
     height: 38px;
     line-height: 40px;
     border-radius: 3px;
@@ -86,4 +149,14 @@ a:visited.gotwlink {color:red; background-color:blue}
 }
 .cancel:active{
     color: white;
+}
+
+.google_upload_path{
+    padding-left: 0px;
+    border-style: solid;
+    border-bottom: solid;
+}
+
+#id_upload_path{
+    width: 99%;
 }

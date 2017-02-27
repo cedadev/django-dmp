@@ -3,16 +3,27 @@ from django.shortcuts import redirect, render_to_response, get_object_or_404, re
 from django.http.response import HttpResponse
 from dmp.forms import *
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
+
+# upload draft dmp to google
+import cStringIO as StringIO
+from httplib2 import Http
+from apiclient.discovery import build
+from apiclient.http import BatchHttpRequest
+from oauth2client import file, client
+from oauth2client import GOOGLE_TOKEN_URI, GOOGLE_REVOKE_URI, GOOGLE_AUTH_URI
+from oauth2client.client import HttpAccessTokenRefreshError
+import tempfile
+from contextlib import contextmanager
+
+
 
 
 from django.contrib.auth.models import *
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.decorators import login_required
-from django.template.loader import render_to_string
-from dateutil.relativedelta import relativedelta
-import json
+
 from django.template import Context, Template
 from django.core.mail import EmailMultiAlternatives
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.utils.html import strip_tags
 
@@ -25,6 +36,7 @@ import string
 import time
 import os
 import csv
+import json
 
 
 # set http proxy for wget calls
@@ -35,10 +47,280 @@ def home(request):
     # Home page view
     return render_to_response('dmp/home.html', {'user': request.user})
 
+
+def google_drive_upload(request, project_id):
+    # Put project id in the session when coming from form submit
+    if request.POST:
+        request.session['project_id'] = project_id
+        form = DraftDmpForm(request.POST)
+
+    try:
+        token = request.user.oauth_token
+    except ObjectDoesNotExist:
+        return redirect('google_authorise')
+    else:
+        # Upload file to google drive if there is a current token
+
+        # Load the project for the upload
+        project = get_object_or_404(Project, pk= project_id)
+
+        # Render DMP template and create string
+        filename = project.title + '_DraftDMP.html'
+        template = Template(draftDmp.objects.all()[0].draft_dmp_content)
+        context = Context({'project': project})
+        html = template.render(context)
+        result = StringIO.StringIO()
+        result.write(html.encode("ISO-8859-1"))
+
+        # Create google credentials object
+        creds = client.GoogleCredentials(
+            access_token=token.access_token,
+            client_secret=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+            client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+            refresh_token=token.refresh_token,
+            token_expiry=token.token_expiry,
+            token_uri=GOOGLE_TOKEN_URI,
+            user_agent=None
+        )
+
+        # Create temporary file for google to upload
+        @contextmanager
+        def tempinput(data):
+            temp = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
+            temp.write(data)
+            temp.close()
+            yield temp.name
+            os.remove(temp.name)
+
+        desired_name = re.sub('.html','',filename) # name which will be displayed in the Google Drive
+        with tempinput(result.getvalue()) as tempfilename:
+
+            # Build drive object
+            DRIVE = build('drive', 'v3', http=creds.authorize(Http()))
+            FILES = (
+                (tempfilename, 'application/vnd.google-apps.document'),
+            )
+
+            file_path = form.data['upload_path'].split('/')
+
+            # Perform check to see which directories need to be created.
+            folder_id = None
+            root_folder_name = "'%s'" % file_path[0]
+
+            DMP_Root_folder = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder'" % (root_folder_name)).execute()['files']
+
+            if not DMP_Root_folder:
+                # If the parent folder is not there, jump to create the whole path.
+                required_folders = file_path[0:-1]
+
+            else:
+                parent_folder_id = DMP_Root_folder[0]['id']
+                # Check which folders already exist.
+                for i, folder in enumerate(file_path[1:-1]):
+                    folder_name = "'%s'" % folder
+                    parent_id = "'%s'" % parent_folder_id
+                    folder_test = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder' and %s in parents" % (folder_name,parent_id)).execute()['files']
+                    if folder_test:
+                        parent_folder_id = folder_test[0]['id']
+                    else:
+                        required_folders = file_path[i+1:-1]
+                        folder_id = parent_folder_id
+                        break
+
+            # Create the directories
+            for folder in required_folders:
+                if folder_id:
+                    metadata = {
+                            'name': folder,
+                            'mimeType': 'application/vnd.google-apps.folder',
+                            'parents': [folder_id],
+                        }
+                else:
+                    metadata = {
+                        'name': folder,
+                        'mimeType': 'application/vnd.google-apps.folder',
+                    }
+                res = DRIVE.files().create(body=metadata,
+                                           fields='id').execute()
+                folder_id = res.get('id')
+
+
+            # Upload file
+            for filename, mimeType in FILES:
+                if folder_id:
+                    metadata = {
+                        'name': desired_name,
+                        'parents': [folder_id],
+                    }
+                else:
+                    metadata = {
+                        'name': desired_name,
+                    }
+
+                if mimeType:
+                    metadata['mimeType'] = mimeType
+                try:
+                    res = DRIVE.files().create(body=metadata, media_body=filename).execute()
+                except HttpAccessTokenRefreshError:
+                    return redirect('google_authorise')
+
+                if res:
+                    messages.success(
+                        request,
+                        "Uploaded '" +
+                        desired_name +
+                        "' to Google Drive"
+                    )
+                # Add sharing permissions to document
+                if res:
+                    FILE_ID = res.get('id')
+                    batch_request = BatchHttpRequest()
+
+                    batch_entry1 = DRIVE.permissions().create(fileId=FILE_ID, body={
+                        'type': 'anyone',
+                        'role': 'writer',
+                        'withLink': True
+                    })
+                    batch_request.add(batch_entry1, request_id='batch1')
+
+                    batch_request.execute(Http())
+
+                # Add document link to project
+                if res:
+                    google_doc_url = DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute()['webViewLink']
+                    project.dmp_URL = google_doc_url
+                    project.save()
+
+        return redirect("/admin/dmp/project/%s/change" % project_id)
+
+
+def google_drive_authorise(request):
+
+    SCOPES = ('https://www.googleapis.com/auth/drive',
+              'https://www.googleapis.com/auth/userinfo.profile',
+              'https://www.googleapis.com/auth/userinfo.email',)
+
+    flow = client.OAuth2WebServerFlow(
+        client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/',
+        scope=SCOPES,
+        approval_prompt='force',
+        access_type='offline',
+    )
+
+    # Get authorisation URL
+    auth_url = flow.step1_get_authorize_url()
+
+    return redirect(auth_url)
+
+
+def google_drive_token_exchange(request):
+    # TODO handle any error messages
+    # Exchange code for token
+    SCOPES = ('https://www.googleapis.com/auth/drive.file',
+              'https://www.googleapis.com/auth/userinfo.profile',
+              'https://www.googleapis.com/auth/userinfo.email',)
+
+    flow = client.OAuth2WebServerFlow(
+        client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+        client_secret=settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
+        scope=SCOPES,
+        approval_prompt='force',
+        access_type='offline',
+        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/'
+    )
+
+    token = flow.step2_exchange(request.GET['code'])
+
+    # save token against the current logged in user.
+    token = {'token_expiry': token.token_expiry,'access_token': token.access_token,'refresh_token':token.refresh_token}
+
+    OAuthToken.objects.update_or_create(user=request.user, defaults=token)
+
+    #  Retrieve the project id and return to google_drive_upload.
+    project_id = request.session.pop('project_id', None)
+
+    return redirect('dmp_upload',project_id)
+
+def google_drive_token_revoke(request, project_id):
+    # Delete the current users OAuth token from the database.
+    try:
+        token = request.user.oauth_token
+    except ObjectDoesNotExist:
+        pass
+
+    else:
+        token.delete()
+
+    return redirect('dmp_draft',project_id=project_id)
+
+
+@login_required
 def dmp_draft(request, project_id):
     # a summary of a single project
     project = get_object_or_404(Project, pk=project_id)
-    return render_to_response('dmp/dmp_draft.html', {'project': project,})
+    start_year = datetime.datetime.strftime(project.startdate,'%Y')
+    opts = Project()._meta
+    form = DraftDmpForm()
+
+    template_obj = Template(draftDmp.objects.all()[0].draft_dmp_content)
+    form.fields['upload_path'].initial = "DMP/"+start_year+"/"+project.title+"_draftDMP"
+    form.fields['draft_dmp'].initial = template_obj.render(Context({'project': project}))
+
+    # If there us a google token for the current logged in user, collect user information
+    try:
+        token = request.user.oauth_token
+    except ObjectDoesNotExist:
+        google_user= None
+        token = OAuthToken(access_token=None)
+
+    else:
+
+        ZERO = timedelta(0)
+
+        class UTC(datetime.tzinfo):
+            def utcoffset(selfself, dt):
+                return ZERO
+
+            def tzname(selfself, dt):
+                return "UTC"
+
+            def dst(self, dt):
+                return ZERO
+        utc = UTC()
+
+        if token.token_expiry < datetime.datetime.now(utc):
+
+            r = requests.post("https://www.googleapis.com/oauth2/v4/token",{'client_id':settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+                                                                        'client_secret': settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
+                                                                        'refresh_token':token.refresh_token,
+                                                                        'grant_type':'refresh_token'})
+            if r.status_code != 200:
+                google_user=None
+            else:
+                token.access_token = json.loads(r.text)['access_token']
+                token.save()
+
+        r = requests.get('https://www.googleapis.com/oauth2/v3/userinfo?access_token=%s' % token.access_token)
+
+        if r.status_code != 200:
+            google_user = None
+        else:
+            google_user = json.loads(r.text)
+            google_user['initial'] = google_user['name'][0]
+
+
+    return render(request,
+                  'dmp/dmp_draft.html',
+                  {
+                      'project': project,
+                      'opts': opts,
+                      'form': form,
+                      'google_user': google_user,
+                      'start_year': start_year,
+                      'token':token.access_token
+                  }
+                  )
 
 
 def add_dataproduct(request, project_id):
@@ -237,6 +519,7 @@ def showproject(request, project_id):
 
 def gotw_scrape(request, id):
     """Scrape grants on the web for grant info then make a project. """
+    #TODO add ODMP URL guess when new project created as in the grant uploader.
     grant = get_object_or_404(Grant, pk=id)
 
     # find split grant info from grants on the web
@@ -425,9 +708,13 @@ def mail_template(request, project_id):
             msg.send()
             messages.success(request, "Your email was sent successfully")
 
-            email_note = '"' + str(EmailTemplate.objects.get(template_ref=type).template_name) + '" email was sent to ' + request.POST['receiver'] + " with " + \
-                request.POST['cc'] + " ccd in."
-
+            if request.POST['cc']:
+                email_note = '"' + str(EmailTemplate.objects.get(template_ref=type).template_name) + '" email was sent to ' + request.POST['receiver'] + " with " + \
+                    request.POST['cc'] + " ccd in."
+            else:
+                email_note = '"' + str(
+                    EmailTemplate.objects.get(template_ref=type).template_name) + '" email was sent to ' + request.POST[
+                                 'receiver'] +"."
 
             Note(
                 creator=request.user,
@@ -516,6 +803,7 @@ def grant_upload_confirm(request):
             else:
                 # User has uploaded a DataMad file
                 # TODO: Allow script to pass any failed situations, eg. no matching regex.
+                # TODO: If script fails, give an informative error message to help the user correct the input.
 
                 # build dictionary of dictionaries to give access to all grant numbers in the file plus their column attributes
                 file = request.FILES['grantfile']
@@ -672,6 +960,7 @@ def grant_upload_confirm(request):
         # If form is not valid, return to grant uploader page and display errors.
         else:
             return render(request, 'dmp/grant_uploader.html', {"form":form, "opts":opts})
+
 
 @login_required
 def grant_upload_complete(request):

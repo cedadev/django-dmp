@@ -157,6 +157,23 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 
+
 class ReminderAdmin(admin.ModelAdmin):
     list_display = ['id','description','reminder','state']
 admin.site.register(Reminder, ReminderAdmin)
+
+class draftDmpAdmin(admin.ModelAdmin):
+    list_display = ('draft_dmp_name',)
+
+    def has_add_permission(self, request):
+        if self.model.objects.count() > 0:
+            return False
+        else:
+            return True
+admin.site.register(draftDmp,draftDmpAdmin)
+
+class OAuth_tokenAdmin(admin.ModelAdmin):
+    list_display = ('user',)
+
+admin.site.register(OAuthToken, OAuth_tokenAdmin)
+

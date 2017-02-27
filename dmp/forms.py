@@ -55,11 +55,13 @@ class GrantUploadForm(forms.Form):
 
 
 class EmailTemplateSelectorForm(forms.Form):
-    available_templates = EmailTemplate.objects.all().order_by("template_name")
-    CHOICES = []
-    for template in available_templates:
-        CHOICES.append((template.template_ref,template.template_name))
-    template_type = forms.ChoiceField(label='Select email template to use ', choices=CHOICES)
+    def __init__(self, *args, **kwargs):
+        super(EmailTemplateSelectorForm,self).__init__(*args, **kwargs)
+        available_templates = EmailTemplate.objects.all().order_by("template_name")
+        CHOICES = []
+        for template in available_templates:
+            CHOICES.append((template.template_ref,template.template_name))
+        self.fields['template_type'] = forms.ChoiceField(label='Select email template to use ', choices=CHOICES)
 
 
 class EmailMessageForm(forms.Form):
@@ -89,6 +91,7 @@ class EmailMessageForm(forms.Form):
     message = forms.CharField(widget=forms.Textarea(attrs={'rows': 20}))
     template_type = forms.CharField(max_length=200)
 
+
 class ReminderForm(forms.ModelForm):
     class Meta:
         model = Reminder
@@ -109,4 +112,9 @@ class ReminderForm(forms.ModelForm):
     due_date =forms.DateField(required=False)
     # state = forms.CharField(required=False)
 
+
+
+class DraftDmpForm(forms.Form):
+    upload_path = forms.CharField(widget=forms.TextInput(attrs={'class':'hidden'}))
+    draft_dmp = forms.CharField(widget=forms.Textarea(attrs={'style': 'height:700px'}))
 
