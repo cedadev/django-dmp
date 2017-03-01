@@ -53,6 +53,7 @@ def google_drive_upload(request, project_id):
     if request.POST:
         request.session['project_id'] = project_id
         form = DraftDmpForm(request.POST)
+        request.session['upload_path'] = form.data['upload_path']
 
     try:
         token = request.user.oauth_token
@@ -101,10 +102,11 @@ def google_drive_upload(request, project_id):
                 (tempfilename, 'application/vnd.google-apps.document'),
             )
 
-            file_path = form.data['upload_path'].split('/')
+            file_path = request.session.pop('upload_path',None).split('/')
 
             # Perform check to see which directories need to be created.
             folder_id = None
+            required_folders = None
             root_folder_name = "'%s'" % file_path[0]
 
             DMP_Root_folder = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder'" % (root_folder_name)).execute()['files']
@@ -127,22 +129,23 @@ def google_drive_upload(request, project_id):
                         folder_id = parent_folder_id
                         break
 
-            # Create the directories
-            for folder in required_folders:
-                if folder_id:
-                    metadata = {
+            # Create the required directories
+            if required_folders:
+                for folder in required_folders:
+                    if folder_id:
+                        metadata = {
+                                'name': folder,
+                                'mimeType': 'application/vnd.google-apps.folder',
+                                'parents': [folder_id],
+                            }
+                    else:
+                        metadata = {
                             'name': folder,
                             'mimeType': 'application/vnd.google-apps.folder',
-                            'parents': [folder_id],
                         }
-                else:
-                    metadata = {
-                        'name': folder,
-                        'mimeType': 'application/vnd.google-apps.folder',
-                    }
-                res = DRIVE.files().create(body=metadata,
-                                           fields='id').execute()
-                folder_id = res.get('id')
+                    res = DRIVE.files().create(body=metadata,
+                                               fields='id').execute()
+                    folder_id = res.get('id')
 
 
             # Upload file
@@ -275,7 +278,7 @@ def dmp_draft(request, project_id):
         token = OAuthToken(access_token=None)
 
     else:
-
+        '''In production, adding this secion causes the error.'''
         ZERO = timedelta(0)
 
         class UTC(datetime.tzinfo):
