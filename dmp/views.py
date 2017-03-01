@@ -202,7 +202,7 @@ def google_drive_authorise(request):
 
     flow = client.OAuth2WebServerFlow(
         client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
-        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/',
+        redirect_uri=settings.DMP_AUTH['OAUTH']['REDIRECT_URI_BASE'] + '/dmp/google_drive_token_exchange/',
         scope=SCOPES,
         approval_prompt='force',
         access_type='offline',
@@ -227,7 +227,7 @@ def google_drive_token_exchange(request):
         scope=SCOPES,
         approval_prompt='force',
         access_type='offline',
-        redirect_uri='https://localhost:8000/dmp/google_drive_token_exchange/'
+        redirect_uri=settings.DMP_AUTH['OAUTH']['REDIRECT_URI_BASE'] + '/dmp/google_drive_token_exchange/'
     )
 
     token = flow.step2_exchange(request.GET['code'])
