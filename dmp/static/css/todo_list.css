@@ -194,7 +194,7 @@ td {
 
 /* Dropdown button on hover & focus */
 .userFilterDropdown-dropbtn:hover, .userFilterDropdown-dropbtn:focus {
-    background-color: #3e8e41;
+    background-color: #e0e0e0;
 }
 
 /* The container <div> - needed to position the dropdown content */
@@ -228,7 +228,9 @@ td {
 .userFilterDropdown a:hover {background-color: #f1f1f1}
 
 /* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
-.show {display:block;}
+.show {
+    display:block;
+}
 
 .caret {
     width: 0;
