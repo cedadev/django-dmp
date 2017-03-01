@@ -752,7 +752,7 @@ def grant_uploader(request):
     opts = Grant()._meta
     form = GrantUploadForm() #empty unbound form
 
-    return render(request,"dmp/grant_uploader.html",{'form':form, 'opts':opts})
+    return render(request,"dmp/grant_uploader.html",{'form':form, 'opts':opts, 'user':request.user})
 
 @login_required
 def grant_upload_confirm(request):
@@ -979,7 +979,11 @@ def grant_upload_complete(request):
             return redirect('grant_uploader')
 
         # get the file details from the session.
-        grants = GrantFile.objects.get(pk=request.POST['pk']).file_contents
+        try:
+            grants = GrantFile.objects.get(pk=request.POST['pk']).file_contents
+        except ObjectDoesNotExist:
+            messages.error(request, 'Form resubmission does not contain file ID. Original process may still be running in background. Changes should still be made.')
+            return redirect('/dmp/grant/grant_upload/')
 
         # Counters and boolean switches to handle counting and saving of changes
         g_added = 0
@@ -1235,6 +1239,9 @@ def grant_upload_complete(request):
         temp_file.delete()
 
         return render(request, 'dmp/grant_uploader.html', {'form': form, 'opts': opts})
+    else:
+        messages.error(request, 'No file submitted')
+        return redirect('/dmp/grant/grant_upload/')
 
 
 @login_required
