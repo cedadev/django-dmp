@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-dmp',
-    version='1.6.1',
+    version='1.6.2',
     packages=['dmp'],
     include_package_data=True,
     license='my License',  # example license
