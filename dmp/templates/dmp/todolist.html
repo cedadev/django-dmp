@@ -217,6 +217,7 @@
                     <th style="width: 60%">{{ form.description.label_tag }}</th>
                     <th style="width: 20%">{{ form.reminder.label_tag }}</th>
                     <th style="width: 20%">{{ form.due_date.label_tag }}</th>
+                    <th hidden>{{ form.state.label_tag }}</th>
                     <tr>
                         <td>{{ form.description }}</td>
                         <td>{{ form.reminder }}</td>
@@ -228,6 +229,7 @@
                         <td class="no_border white-background" style="text-align: right"><input type="submit"
                                                                                                 value="Save"
                                                                                                 name="save"></td>
+                        <td hidden>{{ form.state }}</td>
 
                     </tr>
                 </table>

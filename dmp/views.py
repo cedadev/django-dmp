@@ -66,7 +66,7 @@ def google_drive_upload(request, project_id):
         project = get_object_or_404(Project, pk= project_id)
 
         # Render DMP template and create string
-        filename = project.title + '_DraftDMP.html'
+        filename = project.title + '_DMP.html'
         template = Template(draftDmp.objects.all()[0].draft_dmp_content)
         context = Context({'project': project})
         html = template.render(context)
@@ -126,8 +126,8 @@ def google_drive_upload(request, project_id):
                         parent_folder_id = folder_test[0]['id']
                     else:
                         required_folders = file_path[i+1:-1]
-                        folder_id = parent_folder_id
                         break
+                folder_id = parent_folder_id
 
             # Create the required directories
             if required_folders:
@@ -278,21 +278,21 @@ def dmp_draft(request, project_id):
         token = OAuthToken(access_token=None)
 
     else:
-        '''In production, adding this secion causes the error.'''
-        ZERO = timedelta(0)
+        # '''In production, adding this secion causes the error.'''
+        # ZERO = timedelta(0)
+        #
+        # class UTC(datetime.tzinfo):
+        #     def utcoffset(selfself, dt):
+        #         return ZERO
+        #
+        #     def tzname(selfself, dt):
+        #         return "UTC"
+        #
+        #     def dst(self, dt):
+        #         return ZERO
+        # utc = UTC()
 
-        class UTC(datetime.tzinfo):
-            def utcoffset(selfself, dt):
-                return ZERO
-
-            def tzname(selfself, dt):
-                return "UTC"
-
-            def dst(self, dt):
-                return ZERO
-        utc = UTC()
-
-        if token.token_expiry < datetime.datetime.now(utc):
+        if token.token_expiry < datetime.datetime.now():
 
             r = requests.post("https://www.googleapis.com/oauth2/v4/token",{'client_id':settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
                                                                         'client_secret': settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
@@ -1444,7 +1444,13 @@ def modify_reminder(request, object_type, object_id):
     '''Action request from modify or delete modal'''
     if request.POST:
         form = ReminderForm(request.POST)
-        if form.is_valid():
+        if "delete" in request.POST:
+            reminder = Reminder.objects.get(id=object_id)
+
+            reminder.delete()
+        elif "cancel" in request.POST:
+            messages.info(request, "No action was performed")
+        elif form.is_valid():
             if "save" in request.POST:
                 if object_type == 'reminder':
                     object = Reminder.objects.get(id=object_id)
@@ -1465,12 +1471,6 @@ def modify_reminder(request, object_type, object_id):
         else:
             messages.error(request, "No action was performed, invalid form submission")
 
-        if "delete" in request.POST:
-            reminder = Reminder.objects.get(id=object_id)
-
-            reminder.delete()
-        elif "cancel" in request.POST:
-            messages.info(request, "No action was performed")
     else:
         messages.info(request, "No action was performed")
 
