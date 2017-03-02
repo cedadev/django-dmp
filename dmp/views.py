@@ -129,6 +129,8 @@ def google_drive_upload(request, project_id):
                         break
                 folder_id = parent_folder_id
 
+            desired_name = file_path[-1]
+
             # Create the required directories
             if required_folders:
                 for folder in required_folders:
