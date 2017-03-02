@@ -41,10 +41,10 @@
     </span>
     </h3>
     {% if  expired %}
-        <button class="accordion expired active">Expired<span class="todo-badge">{{ expired | length }}</span></button>
+        <button class="accordion expired active">Overdue<span class="todo-badge">{{ expired | length }}</span></button>
         <div class="panel" style="display: block">
     {% else %}
-        <button class="accordion expired">Expired<span class="todo-badge">{{ expired | length }}</span></button>
+        <button class="accordion expired">Overdue<span class="todo-badge">{{ expired | length }}</span></button>
         <div class="panel" style="display: none">
     {% endif %}
 
@@ -165,7 +165,7 @@
 {% endif %}
 </div>
 
-<button class="accordion">Un-assigned<span class="todo-badge">{{ others | length }}</span></button>
+<button class="accordion">Project with no reminder<span class="todo-badge">{{ others | length }}</span></button>
 <div class="panel other">
     <h3>Project does not have a reminder assigned</h3>
 
