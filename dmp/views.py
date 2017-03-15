@@ -702,7 +702,7 @@ def mail_template(request, project_id):
             msg = EmailMultiAlternatives(
             subject = request.POST['subject'],
             body = strip_tags(request.POST['message']),
-            from_email='noreply@ceda.ac.uk',
+            from_email=[request.POST['sender']][0],
             to = [request.POST['receiver']],
             cc = [request.POST['cc']],
             bcc= [request.POST['sender']],
