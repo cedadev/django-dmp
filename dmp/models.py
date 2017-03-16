@@ -274,6 +274,7 @@ class Grant(models.Model):
     desc = models.TextField(blank=True, null=True)
     # This is used as a CC  when emails are sent.
     data_email = models.EmailField(blank=True, null=True)
+    lead_grant = models.BooleanField(default=False)
 
     def __unicode__(self):
         if not self.title: return "%s" % self.number
@@ -281,8 +282,11 @@ class Grant(models.Model):
         else: return "%s: %s" % (self.number, self.title)
 
     def gotw(self):
-        if self.number: 
-            return '<a style="color:red; background-color:lightblue; border:2px blue dashed" href="http://gotw.nerc.ac.uk/list_full.asp?pcode=%s">%s</a>' %(self.number, self.number)
+        if self.number:
+            if self.lead_grant:
+                return '<a style="color:white; background-color:#b70019" href="http://gotw.nerc.ac.uk/list_full.asp?pcode=%s">%s</a>' % (self.number, "Lead Grant: "+ self.number)
+            else:
+                return '<a style="color:red; background-color:lightblue; border:2px blue dashed; padding: 1px 12px 1px 12px" href="http://gotw.nerc.ac.uk/list_full.asp?pcode=%s">%s</a>' %(self.number, self.number)
         else:
             return '-'
     gotw.allow_tags = True    

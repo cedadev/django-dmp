@@ -113,9 +113,9 @@ admin.site.register(Project, ProjectAdmin)
 
 class GrantAdmin(admin.ModelAdmin):
     save_on_top = True
-    list_display = ('number', 'project', 'gotw', 'scrape_project')
+    list_display = ('number', 'project', 'gotw', 'scrape_project', 'lead_grant')
     search_fields = ('number', 'project__title')
-    fields = ('number', 'project')
+    fields = ('number', 'project', 'lead_grant')
     #readonly_fields=('title', 'pi', 'desc')
 admin.site.register(Grant, GrantAdmin)
 

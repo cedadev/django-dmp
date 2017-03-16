@@ -886,6 +886,8 @@ def grant_upload_confirm(request):
                                 create_project=True
                     else:
                         # if the current grant does not have a parent listed, it is the parent.
+                        if not current_grant.lead_grant:
+                            field_updates.append({"Grant": current_grant, "Message": "Mark as lead grant"})
                         if not current_grant.project:
 
                             # If the current grant does not have a project attached, look in database to see if one
@@ -941,6 +943,7 @@ def grant_upload_confirm(request):
                             if grants[grant]['Data Contact Email'] \
                                     and not current_grant.data_email:
                                 field_updates.append({"Grant":grant, "Message":"Add Data Email to grant"})
+
 
                 # If there are no changes, escape the process.
                 if not any([new_grants, new_projects, link_projects, field_updates]):
@@ -1004,7 +1007,7 @@ def grant_upload_complete(request):
             if not Grant.objects.filter(number=grant):
                 grant_instance = Grant(
                     number=grant,
-                    data_email=grants[grant]['Data Contact Email']
+                    data_email=grants[grant]['Data Contact Email'],
                 )
                 grant_instance.save()
                 g_added += 1
@@ -1063,7 +1066,10 @@ def grant_upload_complete(request):
                         # information is not contained in the uploaded file or in the database. Grant created but will have
                         # to be manually added to a project.
                 else:
-                    # If the current grant does not have a parent listed, it is the parent.
+                    # If the current grant does not have a parent listed, it is the parent. Mark as such
+                    current_grant_obj.lead_grant = True
+                    current_grant_obj.save()
+
                     if not current_grant_obj.project:
                         # If there is a project already in the database with the same name as the grant, link it..
                         if Project.objects.filter(title=grants[grant]['Title']):
@@ -1218,6 +1224,13 @@ def grant_upload_complete(request):
                         and not current_grant_obj.data_email:
                     current_grant_obj.data_email = grants[grant]['Data Contact Email']
                     g_change = True
+
+            # If the parent grant is not listed in datamad file, it is parent grant. If the grant is not currently marked
+            # as such, mark it.
+            if not grants[grant]['Parent Grant'] and not current_grant_obj.lead_grant:
+                current_grant_obj.lead_grant = True
+                g_change = True
+
 
             # Save changes and update count to track changes
             if p_change:

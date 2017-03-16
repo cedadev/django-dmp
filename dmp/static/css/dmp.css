@@ -2,6 +2,10 @@ a:link.gotwlink {color:red; background-color:blue}
 a:hover.gotwlink {color:red; background-color:blue}
 a:visited.gotwlink {color:red; background-color:blue}
 
+.object-tools li {
+    margin: 5px;
+}
+
 #dataproducts {background-color:blue}
 .project {width:60px; 
           height:30px; 
