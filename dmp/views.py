@@ -676,10 +676,17 @@ def mail_template(request, project_id):
         # get template type to be rendered
         type = request.GET['template_type']
 
+        # If available, put the lead grant in the email subject line.
+        lead_grant_number = Grant.objects.filter(project__pk=project_id).filter(lead_grant=True).first()
+        if lead_grant_number:
+            subject_text = lead_grant_number.number + ": " + project.title
+        else:
+            subject_text = project.title
+
         # autofill email fields
         message.fields['receiver'].initial = project.PIemail
         message.fields['sender'].initial = request.user.email
-        message.fields['subject'].initial = project.title
+        message.fields['subject'].initial = subject_text
 
         cc = ''
         for i,grant in enumerate(Grant.objects.filter(project_id=project.id).exclude(data_email=project.PIemail)):
@@ -710,6 +717,7 @@ def mail_template(request, project_id):
 
         if form.is_valid():
 
+
             msg = EmailMultiAlternatives(
             subject = request.POST['subject'],
             body = strip_tags(request.POST['message']),
@@ -717,8 +725,6 @@ def mail_template(request, project_id):
             to = [request.POST['receiver']],
             cc = [request.POST['cc']],
             bcc= [request.POST['sender']],
-            reply_to= [request.POST['sender']]
-
             )
             msg.attach_alternative(request.POST['message'],"text/html")
             msg.send()
