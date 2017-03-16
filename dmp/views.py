@@ -4,6 +4,7 @@ from django.http.response import HttpResponse
 from dmp.forms import *
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 # upload draft dmp to google
 import cStringIO as StringIO
@@ -1372,7 +1373,7 @@ def todo_list(request, scisupcontact=None):
     upcoming = Reminder.objects.filter(due_date__range=[today + relativedelta(months=1, days=1), today + relativedelta(months=3)]).filter(state="Open").order_by('due_date')
 
     # List of projects with no reminders attached
-    others = Project.objects.filter(reminder__isnull=True)
+    others = Project.objects.filter(reminder__isnull=True).filter(Q(status="Active") | Q(status="EndedWithDataToCome"))
 
     # List of users to filter on SciSup Contact
     scisupcontacts = Person.objects.filter(is_active=True)
