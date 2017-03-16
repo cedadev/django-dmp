@@ -190,11 +190,21 @@ def google_drive_upload(request, project_id):
 
                     batch_request.execute(Http())
 
-                # Add document link to project
+                # Add document link to project and note to reflect changes.
                 if res:
                     google_doc_url = DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute()['webViewLink']
                     project.dmp_URL = google_doc_url
                     project.save()
+
+                    # Add note to document file upload
+                    note_content = "Draft dmp uploaded to Google Drive"
+
+                    Note(
+                        creator=request.user,
+                        notes= note_content,
+                        location = project
+                    ).save()
+
 
         return redirect("/admin/dmp/project/%s/change" % project_id)
 
@@ -280,7 +290,7 @@ def dmp_draft(request, project_id):
         token = OAuthToken(access_token=None)
 
     else:
-        # '''In production, adding this secion causes the error.'''
+        # '''In production, adding this section causes the error.'''
         # ZERO = timedelta(0)
         #
         # class UTC(datetime.tzinfo):
