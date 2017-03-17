@@ -1171,6 +1171,34 @@ def grant_upload_complete(request):
                 new_proj.save()
                 p_added += 1
 
+                # Add basic reminders to project.
+                # Initial contact reminder
+                Reminder(
+                    project=new_proj,
+                    description="Send initial email",
+                    reminder="custom",
+                    due_date= new_proj.startdate + relativedelta(months=1),
+                    state="Open"
+                ).save()
+
+                # Dmp upload reminder
+                Reminder(
+                    project=new_proj,
+                    description="Make and upload DMP",
+                    reminder="custom",
+                    due_date= new_proj.startdate + relativedelta(months=3),
+                    state="Open"
+                ).save()
+
+                # Project nearing end date, check for data
+                Reminder(
+                    project=new_proj,
+                    description="Project nearing end date",
+                    reminder="custom",
+                    due_date= new_proj.enddate + relativedelta(months=-3),
+                    state="Open"
+                ).save()
+
                 # Link grant and new project
                 current_grant_obj.project = new_proj
                 current_grant_obj.save()
