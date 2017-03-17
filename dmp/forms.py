@@ -7,6 +7,7 @@ from dmp.models import EmailTemplate, Reminder
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import validate_email
+from dmp.fields import ListTextWidget
 
 
 class ReadOnlyInput(Widget):
@@ -96,6 +97,17 @@ class ReminderForm(forms.ModelForm):
     class Meta:
         model = Reminder
         fields = ['description','reminder','due_date','state']
+
+    def __init__(self, *args, **kwargs):
+        _reminder_list= (
+            'Follow up initial email',
+            'Follow up previous email',
+            'Check progress with PI',
+            'Send initial email',
+            'Make DMP',
+            )
+        super(ReminderForm, self).__init__(*args, **kwargs)
+        self.fields['description'].widget = ListTextWidget(data_list=_reminder_list, name='reminder-list')
 
     def clean(self):
         cleaned_data = super(ReminderForm,self).clean()
