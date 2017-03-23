@@ -32,7 +32,7 @@ class ReminderInline(admin.TabularInline):
 class DataProductAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('title', 'status','sciSupContact',)
-    search_fields = ('title', 'contact')
+    search_fields = ('title',)
     list_filter = ('sciSupContact','status',)
 
     fieldsets = (

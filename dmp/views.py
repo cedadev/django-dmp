@@ -383,7 +383,7 @@ def my_projects(request):
 
     projects = projects.order_by('modified')
 
-    return render_to_response('dmp/my_projects.html',
+    return render(request, 'dmp/my_projects.html',
                               {'projects': projects, 'user': user, 'listall': listall,
                                'modchecktime': datetime.datetime.now()-datetime.timedelta(days=90)})
 
@@ -397,7 +397,7 @@ def datamad_update(request):
         projects = projects.order_by(*order)
         order = ','.join(order)
     
-    return render_to_response('dmp/datamad_update.html',
+    return render(request, 'dmp/datamad_update.html',
                               {'projects': projects, 'order': order,
                                'modchecktime': datetime.datetime.now()-datetime.timedelta(days=90)})
 
@@ -458,7 +458,7 @@ def link_grant_to_project(request, grant_id):
     context = {'projectscores': topprojectscores, 'grant': grant, 'user': user,
                'search': searchstring}
     
-    return render_to_response('dmp/link_grant_to_project.html', context)
+    return render(request, 'dmp/link_grant_to_project.html', context)
 
 
 def projects_by_person(request):
@@ -485,7 +485,7 @@ def projects_by_person(request):
                 if pg not in summary[username][1]:
                     summary[username][1].append(pg)
 
-    return render_to_response('dmp/projects_by_person.html', {'summary': summary})
+    return render(request, 'dmp/projects_by_person.html', {'summary': summary})
 
 
 def projects_vis(request):
@@ -521,7 +521,7 @@ def projects_vis(request):
     for p in projects:
         p.alert_type, p.alert_text = p.alerts()
 
-    return render_to_response('dmp/projects_vis.html',
+    return render(request,'dmp/projects_vis.html',
                               {'projects': projects, 'user': user,
                                'listall': listall, 'show': show,
                                'modchecktime': datetime.datetime.now()-datetime.timedelta(days=90)})
@@ -530,7 +530,7 @@ def projects_vis(request):
 def showproject(request, project_id):
     # a summary of a single project
     project = get_object_or_404(Project, pk=project_id)
-    return render_to_response('dmp/showproject.html', {'project': project})
+    return render(request,'dmp/showproject.html', {'project': project})
 
 
 def gotw_scrape(request, id):
