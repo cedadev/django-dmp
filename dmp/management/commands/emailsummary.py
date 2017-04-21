@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from dmp.models import *
-from django.template import Context, Template, loader
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template import Context, loader
+from django.core.mail import send_mail
 
 '''Produces a summary email for each user in the DMP app who have reminders.
    Gives only the expired and active reminders. Email is sent via a cronjob as a manage.py task.'''
@@ -31,11 +31,11 @@ class Command(BaseCommand):
                 # Render Template Body
                 # template = Template('/dmp/templates/weekly_email/weekly_email.html')
                 template = loader.get_template('dmp/weekly_email/weekly_email.html')
-                context = Context({
+                context = {
                     "expired": expired,
                     "active": active,
                     "contact": contact,
-                })
+                }
 
                 message_content = template.render(context)
 

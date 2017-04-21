@@ -1,11 +1,11 @@
-{% load static %}
 
-<head>
-    <link type="text/css" href="{% static 'css/weekly_email/weekly_email.css' %}" rel="stylesheet">
-</head>
 <body>
 
-    <p>Dear {{ contact.first_name }} {{ contact.last_name }},</p>
+    {% if contact.first_name %}
+        <p>Dear {{ contact.first_name }} {{ contact.last_name }},</p>
+    {% else %}
+        <p>Dear {{ contact }},</p>
+    {% endif %}
 
     <p>Please find below any reminders for which the due date has passed and those which are due in the next month.</p>
     <p>You have {{ expired | length }} expired reminders and {{ active | length }} active reminders.</p>
@@ -57,5 +57,56 @@
         </table>
         {% endif %}
     </div>
+    <style>
+        table tr:nth-child(odd) {
+        background-color: #f6f6f6;
+    }
+    table {
+        width: 100%;
+    }
+
+    tr {
+        line-height: 2em;
+    }
+
+    td {
+        padding: 0 5px 0 5px;
+    }
+    .expired-text {
+        color: #c4000e;
+    }
+    .active-text{
+        color: #b7b534;
+    }
+
+    .expired {
+        background-color: rgba(242, 222, 222, 0.73);
+    }
+
+    .active {
+        background-color: #fcf8e3;
+    }
+
+
+    .block-head {
+        border-radius: 5px;
+        height: 50px;
+        line-height: 50px;
+        padding-left: 10px;
+    }
+
+    .todo-badge {
+        border: solid;
+        border-color: #858585;
+        border-width: 1px;
+        border-radius: 12px;
+        margin-left: 7px;
+        padding: 0 7px 0 7px;
+        background-color: white ;
+        color: black;
+        font-size: medium;
+        vertical-align: middle;
+    }
+    </style>
 </body>
 
