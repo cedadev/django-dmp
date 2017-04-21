@@ -1410,7 +1410,7 @@ def todo_list(request, scisupcontact=None):
     others = Project.objects.filter(reminder__isnull=True).filter(Q(status="Active") | Q(status="EndedWithDataToCome"))
 
     # List of users to filter on SciSup Contact
-    scisupcontacts = Person.objects.filter(is_active=True)
+    scisupcontacts = Person.objects.filter(is_active=True).filter(Q(project__status="Active") | Q(project__status="EndedWithDataToCome")).distinct()
     filter = request.user
 
     # Filter context based on current user or selected user from dropdown
@@ -1545,5 +1545,31 @@ def reminder_complete(request,reminder_id):
     messages.success(request,'Reminder marked as complete')
     return redirect('/dmp/todo_list')
 
+def todolist_summary(request):
 
+    summary = []
 
+    # return all the Person objects which are active and have an active, or ended with data to come status.
+    scisupcontacts = Person.objects.filter(is_active=True).filter(Q(project__status="Active") | Q(project__status="EndedWithDataToCome")).distinct()
+    for contact in scisupcontacts:
+
+        today = date.today()
+
+        reminders = Reminder.objects.filter(project__sciSupContact = contact).filter(state="Open")
+        if reminders:
+
+            # List of project reminders for which the expiry date has passed
+            expired = reminders.filter(due_date__lt=today).count()
+
+            # List of projects reminders which have an expiry in next 2 weeks
+            active = reminders.filter(due_date__range=[today, today + relativedelta(months=1)]).count()
+
+            # List of projects reminders have an expiry 2 weeks - 1 month
+            upcoming = reminders.filter(due_date__range=[today + relativedelta(months=1, days=1), today + relativedelta(months=3)]).count()
+
+            contact.expired = expired
+            contact.active = active
+            contact.upcoming = upcoming
+            summary.append(contact)
+
+    return render(request,'dmp/todolist_summary.html', {"summary": summary})

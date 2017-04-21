@@ -1,0 +1,61 @@
+{% load static %}
+
+<head>
+    <link type="text/css" href="{% static 'css/weekly_email/weekly_email.css' %}" rel="stylesheet">
+</head>
+<body>
+
+    <p>Dear {{ contact.first_name }} {{ contact.last_name }},</p>
+
+    <p>Please find below any reminders for which the due date has passed and those which are due in the next month.</p>
+    <p>You have {{ expired | length }} expired reminders and {{ active | length }} active reminders.</p>
+    <p>Please carry out the relevant action and be sure to update the reminder details either from the project details screen or
+        from the <a href="{% url 'todo_list' %}">to-do list</a>.</p>
+
+    <p>Many thanks,</p>
+    <p>The DMP Tool</p>
+
+    <div>
+        <div class="block-head expired">
+            <h2>Overdue <span class="todo-badge">{{ expired | length }}</span></h2>
+        </div>
+        {% if expired %}
+            <h3 class="expired-text">Expired reminders, reminders for which the due date has passed.</h3>
+            <table>
+                <th>Reminder Description</th>
+                <th>Project Name</th>
+                <th style="padding: 0 5px 0 5px;">Reminder Due Date</th>
+                {% for reminder in expired %}
+                    <tr>
+                        <td>{{ reminder.description }}</td>
+                        <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a></td>
+                        <td>{{ reminder.due_date }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    </div>
+
+
+    <div>
+        <div class="block-head active">
+                <h2>Active <span class="todo-badge">{{ active | length }}</span></h2>
+        </div>
+        {% if active %}
+        <h3 class="active-text">Active reminders, reminders for which the due date occurs in the next month.</h3>
+        <table>
+            <th>Reminder Description</th>
+            <th>Project Name</th>
+            <th>Reminder Due Date</th>
+            {% for reminder in active %}
+                <tr>
+                    <td>{{ reminder.description }}</td>
+                    <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a></td>
+                    <td>{{ reminder.due_date }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+</body>
+

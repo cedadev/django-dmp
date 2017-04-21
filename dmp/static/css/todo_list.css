@@ -59,7 +59,7 @@ div.panel {
 .expired-text {
     color: #c4000e;
 }
-.current-text{
+.active-text{
     color: #b7b534;
 }
 .upcoming-text {
@@ -69,6 +69,7 @@ div.panel {
 table tr:nth-child(odd) {
     background-color: #f6f6f6;
 }
+
 
 td {
     vertical-align: middle;
@@ -175,6 +176,21 @@ td {
 }
 
 
+/* Button */
+.button {
+    background-color: #79aec8;
+    display: inline-block;
+    width: 120px;
+    color: white;
+    padding: 6px;
+    margin: 1px 0;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+
+}
+
 
 /* Dropdown Button */
 .userFilterDropdown-dropbtn {
@@ -222,6 +238,7 @@ td {
     display: block;
     font-size: 13px;
     font-weight: 400;
+    text-align: left;
 }
 
 /* Change color of dropdown links on hover */
@@ -244,4 +261,10 @@ td {
     margin-top: 7px;
 
 
+}
+
+/* Todolist summary */
+
+.summary {
+    width:100%;
 }

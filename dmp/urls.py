@@ -42,4 +42,6 @@ urlpatterns = [
      url(r'^todo_list/save_reminder/(?P<object_type>[\w]+)/(?P<object_id>\d+)', modify_reminder, name="modify_reminder"),
      url(r'^todo_list/update_duedate/(?P<object_type>[\w]+)/(?P<object_id>\d+)/(?P<time_interval>[\w-]+)', calculate_due_date, name="calculate_due_date"),
      url(r'todo_list/mark_complete/(?P<reminder_id>\d+)$', reminder_complete, name="reminder_complete"),
+     url(r'^todo_list/summary/$', todolist_summary, name="todolist_summary"),
+
 ]

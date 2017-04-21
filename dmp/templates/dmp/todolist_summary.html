@@ -1,0 +1,36 @@
+{% extends 'admin/base_site.html' %}
+
+{% load static %}
+
+{% block extrahead %}{{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/todo_list.css' %}" type="text/css"/>
+{% endblock %}
+
+
+{% block content %}
+
+<h1> Todo List Summary Statistics</h1>
+
+    <table class="summary">
+     <th>Name</th>
+     <th>Expired Reminders</th>
+     <th>Active Reminders</th>
+     <th>Upcoming Reminders</th>
+    {% for contact in summary %}
+        <tr>
+            {% if contact.first_name %}
+                <td>{{ contact.first_name }} {{ contact.last_name }}</td>
+            {% else %}
+                <td>{{ contact.username }}</td>
+            {% endif %}
+            <td class="expired-text">{{ contact.expired }}</td>
+            <td class="active-text">{{ contact.active }}</td>
+            <td class="upcoming-text">{{ contact.upcoming }}</td>
+        </tr>
+    {% endfor %}
+
+    </table>
+
+
+{% endblock %}
+
