@@ -17,7 +17,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         if options['server_name']:
-            server_name = options['server_name']
+            server_name = options['server_name'][0]
         else:
             raise CommandError('No Server address given. Please enter a server address, either ip or DNS lookup')
 
