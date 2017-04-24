@@ -2,7 +2,28 @@
 {% load i18n admin_modify static admin_urls %}
 
 {% block extrahead %}{{ block.super }}
-<link rel="stylesheet" href="{% static 'css/dmp.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'css/dmp.css' %}" type="text/css"/>
+    <script src="{% static 'js/jquery-1.11.0.min.js' %}" type="text/javascript"></script>
+
+{% endblock %}
+{% block admin_change_form_document_ready %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function () {
+            $('#draftdmp').click(function (e) {
+                if($('#id_dmp_URL').val()){
+                    e.preventDefault();
+                    alert("This link is disabled if there is URL entered in the 'DMP URL' box.")
+                }
+
+            });
+
+        if ($('#id_dmp_URL').val()){
+            $('#draftdmp').attr('style',"opacity: 0.2; cursor: not-allowed; background-color: grey")
+        }
+        })(django.jquery)
+
+    </script>
 {% endblock %}
 
 
@@ -18,7 +39,7 @@
                 {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
                 <li><a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a></li>
                 <li><a href="/dmp/myprojects" class="historylink">My projects</a></li>
-                <li><a href="/dmp/projectsvis?listall=1&show={{ object_id }}" class="historylink">Vis</a></li>
+{#                <li><a href="/dmp/projectsvis?listall=1&show={{ object_id }}" class="historylink">Vis</a></li>#}
                 {% for g in original.grants %}
                     <li>{{ g.gotw|safe }}</li>
                 {% endfor %}
@@ -26,7 +47,7 @@
                     <li><a style="background-color:#ccdd99" href="/admin/dmp/projectgroup/{{ pg.pk }}">{{ pg.name }}</a>
                     </li>
                 {% endfor %}
-                <li><a href="/dmp/project/{{ original.id }}" class="historylink">Draft DMP</a></li>
+                <li><a id="draftdmp" href="/dmp/project/{{ original.id }}" class="historylink">Draft DMP</a></li>
                 <li><a href="{% url "email_templates" object_id %}" class="historylink">Send Email for Project</a></li>
                 {% if has_absolute_url %}
                     <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/"

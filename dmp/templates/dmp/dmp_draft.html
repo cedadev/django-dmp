@@ -61,6 +61,13 @@
         </div>
     {% endif %}
 
+    {% if project.dmp_URL %}
+        <h2 style="color: red;">Warning!</h2>
+        <p>A draft dmp has already been uploaded to google drive. </p>
+        <p>In order to avoid accidentally overwriting, this page has been disabled.</p>
+        <p>If you wish to upload a brand new DMP, clear the DMP URL field in the project details.</p>
+    {% else %}
+
     <form action="{% url 'dmp_upload' project.id %}" method="POST">
         {% csrf_token %}
         <table>
@@ -71,15 +78,6 @@
         </table>
 
         <h2>File will be uploaded to:</h2>
-{#        <table>#}
-{#            <tr>#}
-{#                <td style="border-radius: 5px; border-bottom: none; background-color: #f1f1f1">DMP/{{ start_year }}/{{ project.title }}_draftDMP</td>#}
-{#                <td style="border: none">#}
-{#                    <a id="change-button-upload-path"  onclick="display('id_upload_path')">Change</a>#}
-{#                </td>#}
-{#            </tr>#}
-{#        </table>#}
-{#        <br>#}
 
         {{ form.non_field_errors }}
         {{ form.upload_path.errors }}
@@ -90,11 +88,10 @@
         {{ form.draft_dmp.errors }}
         {{ form.draft_dmp.error_messages }}
         {{ form.draft_dmp }}
-
-{#        {% for field in form %}#}
-{#            {{ field }}#}
-{#        {% endfor %}#}
+    
     </form>
+    {% endif %}
+
 
     <script>
         function show(obj){

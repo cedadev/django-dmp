@@ -61,7 +61,9 @@ class Project(models.Model):
                  ("EndedWithDataToCome","Ended with data to come"),
                  ("Defaulted","Defaulted"),
                  ("NoDataForUs","No data for us"),
-                 ("Complete","Complete")))
+                 ("Complete","Complete"),
+                 ("Unresponsive", "Unresponsive"),
+                     ))
     modified = models.DateTimeField(auto_now=True)
     third_party_data = models.ManyToManyField('DataProduct', related_name='requirements+', 
                         blank=True, null=True)
