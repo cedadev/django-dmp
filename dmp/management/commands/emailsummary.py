@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
                 today = date.today()
 
-                reminders = Reminder.objects.filter(project__sciSupContact=contact)
+                reminders = Reminder.objects.filter(project__sciSupContact=contact).filter(state="Open")
 
                 # List of project reminders for which the expiry date has passed
                 expired = reminders.filter(due_date__lt=today)
