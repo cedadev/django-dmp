@@ -50,7 +50,7 @@
             {% for reminder in active %}
                 <tr>
                     <td>{{ reminder.description }}</td>
-                    <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a></td>
+                    <td><a href="https://{{ server_name }}/admin/dmp/project/{{ reminder.project.id }}/change/">{{ reminder.project.title }}</a></td>
                     <td>{{ reminder.due_date }}</td>
                 </tr>
             {% endfor %}

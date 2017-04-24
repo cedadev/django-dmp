@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from dmp.models import *
 from django.template import Context, loader
 from django.core.mail import send_mail
@@ -11,7 +11,15 @@ from django.core.mail import send_mail
 class Command(BaseCommand):
     help = 'Generates emails for each of the users with open reminders which have expired or are due in the next month.'
 
+    def add_arguments(self, parser):
+        parser.add_argument('server_name', nargs='+', type=str)
+
     def handle(self, *args, **options):
+
+        if options['server_name']:
+            server_name = options['server_name']
+        else:
+            raise CommandError('No Server address given. Please enter a server address, either ip or DNS lookup')
 
         scisupcontacts = Person.objects.filter(is_active=True).filter(project__reminder__state="Open").distinct()
 
@@ -35,6 +43,7 @@ class Command(BaseCommand):
                     "expired": expired,
                     "active": active,
                     "contact": contact,
+                    "server_name": server_name
                 }
 
                 message_content = template.render(context)
