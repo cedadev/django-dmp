@@ -1501,24 +1501,85 @@ def calculate_due_date(request, time_interval, object_type, object_id):
 
 
 def modify_reminder(request, object_type, object_id):
-    '''Action request from modify or delete modal'''
+    '''Action request to modify, complete or delete reminder from relevant modal'''
     if request.POST:
+        create_note = False
         form = ReminderForm(request.POST)
+
         if "delete" in request.POST:
+            # handles deletion requests
             reminder = Reminder.objects.get(id=object_id)
 
+            note_message = 'Reminder "%s" has been deleted. \n' % reminder.description
+
+            if form.data['delete_note']:
+                note_message += "Reason for deletion: %s" % form.data['delete_note']
+
+            Note(
+                creator=request.user,
+                notes=note_message,
+                location=reminder.project
+            ).save()
+
             reminder.delete()
+
         elif "cancel" in request.POST:
+            #escapes the procedure if no action required
             messages.info(request, "No action was performed")
+
+        elif "complete" in request.POST:
+            # handles completion requests
+            reminder = Reminder.objects.get(id=object_id)
+            note_message = 'Reminder "%s" has been marked complete.\n' % reminder.description
+
+            if form.data['complete_note']:
+                note_message += "Reason: %s" % form.data['complete_note']
+
+            Note(
+                creator=request.user,
+                notes=note_message,
+                location=reminder.project
+            ).save()
+
+            reminder.state = "Complete"
+            reminder.save()
+
+            messages.success(request, 'Reminder marked as complete')
+
+
         elif form.is_valid():
+            # handles modification requests
+
             if "save" in request.POST:
                 if object_type == 'reminder':
                     object = Reminder.objects.get(id=object_id)
+
+                # Create note on modification of date or description.
+                    note_message = 'Reminder "%s" has been modified, see below for changes:\n' % object.description
+
+                    if object.description != form.cleaned_data['description']:
+                        note_message += 'Description has changed from: "%s" to: "%s". \n' % (object.description, form.cleaned_data['description'])
+                        create_note = True
+
+                    if object.due_date != form.cleaned_data['due_date']:
+                        note_message += 'Due date has changed from: "%s" to: "%s". \n' % (object.due_date, form.cleaned_data['due_date'])
+                        create_note = True
+
+                    if form.data['note']:
+                        note_message += 'Reason for change: %s' % form.data['note']
+                        create_note = True
+                    if create_note:
+                        Note(
+                            creator = request.user,
+                            notes = note_message,
+                            location = object.project
+                        ).save()
 
                 # Set model instance fields with new values
                     object.description = form.cleaned_data['description']
                     object.reminder = form.cleaned_data['reminder']
                     object.due_date = form.cleaned_data['due_date']
+
                 else:
                     object = Reminder(
                         project=Project.objects.get(id=object_id),
@@ -1534,15 +1595,6 @@ def modify_reminder(request, object_type, object_id):
     else:
         messages.info(request, "No action was performed")
 
-    return redirect('/dmp/todo_list')
-
-def reminder_complete(request,reminder_id):
-
-    reminder = Reminder.objects.get(id=reminder_id)
-    reminder.state = "Complete"
-    reminder.save()
-
-    messages.success(request,'Reminder marked as complete')
     return redirect('/dmp/todo_list')
 
 def todolist_summary(request):

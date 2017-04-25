@@ -38,10 +38,11 @@ urlpatterns = [
      # todo list Requests
      url(r'^todo_list/$', todo_list, name="todo_list"),
      url(r'^todo_list/(?P<scisupcontact>[\w]+)$', todo_list, name="todo_list_filter"),
-     url(r'^todo_list/modal/(?P<object_type>[\w]+)/(?P<object_id>\d+)', return_reminder, name="reminder_ajax"),
+          # todolist AJAX requests
+          url(r'^todo_list/modal/(?P<object_type>[\w]+)/(?P<object_id>\d+)', return_reminder, name="reminder_ajax"), #populates modal with data and sets the target url for the form.
+          url(r'^todo_list/update_duedate/(?P<object_type>[\w]+)/(?P<object_id>\d+)/(?P<time_interval>[\w-]+)', calculate_due_date, name="calculate_due_date"),
+
      url(r'^todo_list/save_reminder/(?P<object_type>[\w]+)/(?P<object_id>\d+)', modify_reminder, name="modify_reminder"),
-     url(r'^todo_list/update_duedate/(?P<object_type>[\w]+)/(?P<object_id>\d+)/(?P<time_interval>[\w-]+)', calculate_due_date, name="calculate_due_date"),
-     url(r'todo_list/mark_complete/(?P<reminder_id>\d+)$', reminder_complete, name="reminder_complete"),
      url(r'^todo_list/summary/$', todolist_summary, name="todolist_summary"),
 
 ]

@@ -122,8 +122,6 @@ class ReminderForm(forms.ModelForm):
 
     description = forms.CharField(widget=forms.TextInput(attrs={'style': 'width:98%'}))
     due_date =forms.DateField(required=False)
-    # state = forms.CharField(required=False)
-
 
 
 class DraftDmpForm(forms.Form):

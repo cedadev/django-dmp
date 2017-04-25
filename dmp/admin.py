@@ -24,8 +24,8 @@ class ReminderInline(admin.TabularInline):
     model = Reminder
     extra = 0
     classes = ['collapse']
-    # readonly_fields = ('state',)
     form = ReminderForm
+
 
 
 

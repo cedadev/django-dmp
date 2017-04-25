@@ -68,13 +68,13 @@
                 </td>
                 <td>{{ reminder.due_date }}</td>
                 <td>
-                    <a class="complete" href="{% url 'reminder_complete' reminder.id %}"
+                    <a class="complete" onclick="showModal('completeModal','reminder',{{ reminder.id }})"
                        title="Mark Complete"><img class="icon" src="{% static 'icons/tick.png' %}"></a>
-                    <button class="postpone" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
+                    <button class="action-button" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
                             title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
                     <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
                             title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
-                    <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
+                    <button class="action-button" onclick="showModal('addModal','project', {{ reminder.project.id }})"
                             title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
                 </td>
             </tr>
@@ -109,13 +109,13 @@
                 </td>
                 <td>{{ reminder.due_date }}</td>
                 <td>
-                    <a class="complete" href="{% url 'reminder_complete' reminder.id %}"
+                    <a class="complete" onclick="showModal('completeModal','reminder',{{ reminder.id }})"
                        title="Mark Complete"><img class="icon" src="{% static 'icons/tick.png' %}"></a>
-                    <button class="postpone" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
+                    <button class="action-button" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
                             title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
                     <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
                             title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
-                    <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
+                    <button class="action-button" onclick="showModal('addModal','project', {{ reminder.project.id }})"
                             title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
                 </td>
             </tr>
@@ -151,13 +151,13 @@
                 </td>
                 <td>{{ reminder.due_date }}</td>
                 <td>
-                    <a class="complete" href="{% url 'reminder_complete' reminder.id %}"
+                    <a class="complete" onclick="showModal('completeModal','reminder',{{ reminder.id }})"
                        title="Mark Complete"><img class="icon" src="{% static 'icons/tick.png' %}"></a>
-                    <button class="postpone" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
+                    <button class="action-button" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
                             title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
                     <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
                             title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
-                    <button class="postpone" onclick="showModal('addModal','project', {{ reminder.project.id }})"
+                    <button class="action-button" onclick="showModal('addModal','project', {{ reminder.project.id }})"
                             title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
                 </td>
             </tr>
@@ -186,7 +186,7 @@
                     <td><a href="{% url 'admin:dmp_project_change' project.id %}">{{ project.title }}</a></td>
                     <td> --</td>
                     <td>
-                        <button class="postpone" onclick="showModal('addModal','project', {{ project.id }})"
+                        <button class="action-button" onclick="showModal('addModal','project', {{ project.id }})"
                                 title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
                     </td>
                 </tr>
@@ -196,6 +196,55 @@
     {% else %}
         <p>There are currently no projects without reminders</p>
     {% endif %}
+</div>
+
+<!-- Complete Modal -->
+<div id="completeModal" class="modal">
+
+    <!-- Modal content -->
+    <div id="modal-content" class="modal-content">
+
+        <div class="modal-header">
+            <h2 style="margin: 0 0 0 0; color: white;">Complete Reminder?<span class="close">&times;</span></h2>
+        </div>
+        <div class="modal-body" style="padding: 0 20px 0 20px">
+            {{ form.non_field_errors }}
+            <form id="form_element" action="" method="post">
+                {% csrf_token %}
+                <h3>Are you sure you want to mark this reminder as complete?</h3>
+
+                <br>
+                <input id="object_id" type="text" value="" hidden>
+                <input id="object_type" type="text" value="" hidden>
+                <table>
+                    <th style="width: 80%">Description:</th>
+                    <th style="width: 20%">Due Date:</th>
+                    <tr>
+                        <td><input type="text" id="id_description" value="" style="width:98%;"></td>
+                        <td><input type="text" id="id_due_date" value=""></td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">
+                            Comments on completion:
+                        </th>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <textarea name="complete_note" style="width: 98%;"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="no_border white-background"></td>
+                        <td class="no_border white-background" style="text-align: right">
+                            <input style="background-color: #5ad5c4; color: white;" type="submit" value="Complete"
+                                   name="complete"> <input type="submit" value="Cancel" name="cancel"></td>
+
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+
 </div>
 
 <!-- Postpone Modal -->
@@ -226,6 +275,11 @@
                         <td>{{ form.description }}</td>
                         <td>{{ form.reminder }}</td>
                         <td>{{ form.due_date }}</td>
+                        <td hidden>{{ form.state }}</td>
+                    </tr>
+                    <th colspan="3">Reason for change:</th>
+                    <tr>
+                        <td colspan="3"><textarea name="note" style="width: 98%;"></textarea></td>
                     </tr>
                     <tr>
                         <td class="no_border white-background"></td>
@@ -233,9 +287,9 @@
                         <td class="no_border white-background" style="text-align: right"><input type="submit"
                                                                                                 value="Save"
                                                                                                 name="save"></td>
-                        <td hidden>{{ form.state }}</td>
 
                     </tr>
+
                 </table>
             </form>
         </div>
@@ -267,6 +321,16 @@
                     <tr>
                         <td><input type="text" id="id_description" value="" style="width:98%;"></td>
                         <td><input type="text" id="id_due_date" value=""></td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">
+                            Reason for deletion:
+                        </th>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <textarea name="delete_note" style="width: 98%;"></textarea>
+                        </td>
                     </tr>
                     <tr>
                         <td class="no_border white-background"></td>
@@ -316,11 +380,10 @@
                     <tr>
                         <td class="no_border white-background"></td>
                         <td class="no_border white-background"></td>
-                        <td class="no_border white-background" style="text-align: right"><input type="submit"
-                                                                                                value="Save"
-                                                                                                name="save"></td>
+                        <td class="no_border white-background" style="text-align: right">
+                            <input type="submit" value="Save" name="save">
+                        </td>
                         <td hidden>{{ form.state }}</td>
-
                     </tr>
                 </table>
             </form>
