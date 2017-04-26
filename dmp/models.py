@@ -418,10 +418,8 @@ class Reminder(models.Model):
                              null=True,
                              default="Open")
 
-    def save(self, *args,**kwargs):
-
-        enddate =  self.project.enddate
-        now = date.today()
+    def date_due(self):
+        '''return the due date'''
 
         delay_periods = {
             '1_week': {'weeks': 1},
@@ -434,15 +432,21 @@ class Reminder(models.Model):
             '-1_month': {'months': -1}
         }
 
-        def set_due_date(target_date, **kwargs):
-            self.due_date = target_date + relativedelta(**kwargs)
-
         if '-' in self.reminder:
-            target_date = enddate
+            target_date = self.project.enddate
         else:
-            target_date = now
+            target_date = date.today()
 
         if not self.reminder == 'custom':
-            set_due_date(target_date, **delay_periods[self.reminder])
+            due_date = target_date + relativedelta(**delay_periods[self.reminder])
+        else:
+            due_date = self.due_date
+
+        return due_date
+
+
+    def save(self, *args,**kwargs):
+
+        self.due_date = self.date_due()
 
         return super(Reminder, self).save(*args, **kwargs)

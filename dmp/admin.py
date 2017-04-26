@@ -4,6 +4,7 @@ from django.forms import BaseInlineFormSet
 from django.contrib.auth.models import *
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
+from django.core.exceptions import ObjectDoesNotExist
 
 # this is the customisation of the admin interface
 
@@ -25,6 +26,14 @@ class ReminderInline(admin.TabularInline):
     extra = 0
     classes = ['collapse']
     form = ReminderForm
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            # Do something with `instance`
+            instance.save()
+        formset.save_m2m()
+
 
 
 
@@ -69,7 +78,6 @@ admin.site.register(DataProduct, DataProductAdmin)
 class ProjectAdmin(admin.ModelAdmin):
     save_on_top = True
 
-
     list_display = ('title', 'project_groups_links', 'startdate', 'enddate', 'initial_contact', 'dmp_agreed', 'status', 'ndata','sciSupContact','grant_links')
     search_fields = ('title', 'desc', 'PI', 'Contact1', 'Contact2')
     list_filter = ('status', 'sciSupContact', 'date_added')
@@ -98,14 +106,64 @@ class ProjectAdmin(admin.ModelAdmin):
     inlines = [NotesInline,MetadataFormInline, ReminderInline]
 
     def save_formset(self, request, form, formset, change):
-        if formset.model != Note:
+
+        if formset.model == Note:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                if not instance.pk:
+                    instance.creator = request.user
+                instance.save()
+            formset.save()
+
+        elif formset.model == Reminder:
+            create_note = False
+            instances = formset.save(commit=False)
+
+            if formset.deleted_objects:
+                note_message = "The following reminders were deleted:\n"
+                for reminder in formset.deleted_objects:
+                    note_message += '"%s" \n' % reminder.description
+                reminder = formset.deleted_objects[0]
+                Note(
+                    creator= request.user,
+                    notes = note_message,
+                    location = reminder.project
+
+                ).save()
+
+            if instances:
+                note_message = 'Reminders for this project have been modified.\n'
+                project = instances[0].project
+
+            for instance in instances:
+                try:
+                    db_instance = Reminder.objects.get(id=instance.pk)
+                except ObjectDoesNotExist:
+                    # User has added a new reminder and it is not yet in the database.
+                    instance.save()
+                else:
+                    if instance.description != db_instance.description:
+                        note_message += 'Reminder: "%s". Description has changed from: "%s" to: "%s"\n' % (instance.description, db_instance.description, instance.description)
+                        create_note = True
+
+                    a = instance.date_due()
+
+                    if instance.date_due() != db_instance.due_date:
+                        note_message += 'Reminder: "%s". Due date has changed from: "%s" to: "%s"\n' % (instance.description, db_instance.due_date, instance.due_date)
+                        create_note = True
+                    instance.save()
+
+            if create_note:
+                Note(
+                    creator = request.user,
+                    notes = note_message,
+                    location = project
+                ).save()
+
+            formset.save()
+
+        else:
             return super(ProjectAdmin, self).save_formset(request, form, formset, change)
-        instances = formset.save(commit=False)
-        for instance in instances:
-            if not instance.pk:
-                instance.creator = request.user
-            instance.save()
-        formset.save()
 
 
 admin.site.register(Project, ProjectAdmin)
