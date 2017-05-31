@@ -63,9 +63,9 @@
 
     {% if project.dmp_URL %}
         <h2 style="color: red;">Warning!</h2>
-        <p>A draft dmp has already been uploaded to google drive. </p>
+        <p>A draft dmp has already been uploaded to google drive for this project. </p>
         <p>In order to avoid accidentally overwriting, this page has been disabled.</p>
-        <p>If you wish to upload a brand new DMP, clear the DMP URL field in the project details.</p>
+        <p>If you wish to upload a brand new DMP, clear the DMP URL field in the project details. After saving, the Draft DMP link at the top of the page will become active again.</p>
     {% else %}
 
     <form action="{% url 'dmp_upload' project.id %}" method="POST">
