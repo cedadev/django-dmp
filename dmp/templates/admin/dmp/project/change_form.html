@@ -27,6 +27,13 @@
     <script type="text/javascript">
         (function () {
 
+                // reset "remind in" value
+                var i
+                var reminder = $('[id^=id_reminder_set][id$=-reminder]')
+                for (i=0; i < reminder.length; i++){
+                    reminder[i].value = ''
+                }
+
                 function setDueDate(){
                     function dateFormatter(date) {
                         // Takes a date and toggles beween dd/mm/yyyy and mm/dd/yyyy //

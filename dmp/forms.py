@@ -111,6 +111,17 @@ class ReminderForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(ReminderForm,self).clean()
+
+        if not cleaned_data['reminder']:
+            if cleaned_data['id'] or cleaned_data['due_date']:
+                # Reminder already exists in database and no changes have been made, mark it as custom to allow it to save.
+                # OR
+                # Due date has been written in but blank not set to custom. Handle this.
+                cleaned_data['reminder'] = 'custom'
+            else:
+                # No reminder set and no due date manually entered. Error
+                raise ValidationError(_('Please select a reminder interval from the dropdown or set to Custom Date and enter a date'))
+
         if cleaned_data['reminder'] == 'custom':
             try:
                 if not cleaned_data['due_date']:

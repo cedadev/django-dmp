@@ -399,7 +399,7 @@ class Reminder(models.Model):
 
     project = models.ForeignKey(Project)
     description = models.CharField(max_length=200, null=True)
-    reminder = models.CharField(max_length=200, verbose_name="Remind in",
+    reminder = models.CharField(max_length=200, blank=True, verbose_name="Remind in",
         choices=(('custom','Custom Date'),
                  ('1_week','1 Week'),
                  ('2_weeks','2 Weeks'),
@@ -420,6 +420,7 @@ class Reminder(models.Model):
 
     def date_due(self):
         '''return the due date'''
+
 
         delay_periods = {
             '1_week': {'weeks': 1},
