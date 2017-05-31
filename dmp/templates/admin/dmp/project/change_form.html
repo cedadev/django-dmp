@@ -26,55 +26,55 @@
     </script>
     <script type="text/javascript">
         (function () {
-            $('[id^=id_reminder_set][id$=-reminder]').change(function () {
 
-                function dateFormatter(date) {
-                    // Takes a date and toggles beween dd/mm/yyyy and mm/dd/yyyy //
-                    if (date === ''){
-                        return ''
+                function setDueDate(){
+                    function dateFormatter(date) {
+                        // Takes a date and toggles beween dd/mm/yyyy and mm/dd/yyyy //
+                        if (date === ''){
+                            return ''
+                        }
+                        var dateparts = date.split("/");
+                        return dateparts[1] + "/" + dateparts[0] + "/" + dateparts[2]
                     }
-                    var dateparts = date.split("/");
-                    return dateparts[1] + "/" + dateparts[0] + "/" + dateparts[2]
+
+                    var id = this.id
+                    var value = this.value
+                    var dueDateInput = document.getElementById(id.replace("-reminder","-due_date"))
+                    var today = new Date();
+                    var endDate = new Date(dateFormatter(document.getElementById("id_enddate").value));
+                    var dueDate = new Date()
+
+                    var delay_periods = {
+                        '1_week': 86400*7*1000,     // 1 week in milliseconds
+                        '2_weeks': 86400*14*1000,   // 2 weeks in milliseconds
+                        '1_month': 1,
+                        '3_months': 3,
+                        '6_months': 6,
+                        '-6_months': -6,
+                        '-3_months': -3,
+                        '-1_month': -1
+                    }
+
+                    if (value === 'custom' || value === ''){
+                        dueDate = ''
+
+                    } else if (value.includes('-')) {
+                        endDate.setMonth(endDate.getMonth() + delay_periods[value])
+                        dueDate = endDate.toLocaleDateString('en-UK')
+
+                    } else if (value.includes('month')) {
+                        dueDate.setMonth(today.getMonth() + delay_periods[value])
+                        dueDate = dueDate.toLocaleDateString('en-UK')
+
+                    } else {
+                        dueDate.setTime(today.getTime() + delay_periods[value])
+                        dueDate = dueDate.toLocaleDateString('en-UK')
+
+                    }
+                    dueDateInput.value = dateFormatter(dueDate)
                 }
 
-                var id = this.id
-                var value = this.value
-                var dueDateInput = document.getElementById(id.replace("-reminder","-due_date"))
-                var today = new Date();
-                var endDate = new Date(dateFormatter(document.getElementById("id_enddate").value));
-                var dueDate = new Date()
-
-                var delay_periods = {
-                    '1_week': 86400*7*1000,     // 1 week in milliseconds
-                    '2_weeks': 86400*14*1000,   // 2 weeks in milliseconds
-                    '1_month': 1,
-                    '3_months': 3,
-                    '6_months': 6,
-                    '-6_months': -6,
-                    '-3_months': -3,
-                    '-1_month': -1
-                }
-
-                if (value === 'custom' || value === ''){
-                    dueDate = ''
-
-                } else if (value.includes('-')) {
-                    endDate.setMonth(endDate.getMonth() + delay_periods[value])
-                    dueDate = endDate.toLocaleDateString('en-UK')
-
-                } else if (value.includes('month')) {
-                    dueDate.setMonth(today.getMonth() + delay_periods[value])
-                    dueDate = dueDate.toLocaleDateString('en-UK')
-
-                } else {
-                    dueDate.setTime(today.getTime() + delay_periods[value])
-                    dueDate = dueDate.toLocaleDateString('en-UK')
-
-                }
-
-                dueDateInput.value = dateFormatter(dueDate)
-
-            })
+            $('#reminder_set-group').on('change', '[id^=id_reminder_set][id$=-reminder]', setDueDate)
         })(django.jquery)
     </script>
 {% endblock %}
