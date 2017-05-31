@@ -46,7 +46,7 @@ import json
 
 def home(request):
     # Home page view
-    return render_to_response('dmp/home.html', {'user': request.user})
+    return render(request, 'dmp/home.html', {'user': request.user})
 
 
 def google_drive_upload(request, project_id):

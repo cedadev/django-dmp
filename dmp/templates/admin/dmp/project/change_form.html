@@ -11,18 +11,71 @@
     <script type="text/javascript">
         (function () {
             $('#draftdmp').click(function (e) {
-                if($('#id_dmp_URL').val()){
+                if ($('#id_dmp_URL').val()) {
                     e.preventDefault();
                     alert("This link is disabled if there is URL entered in the 'DMP URL' box.")
                 }
 
             });
 
-        if ($('#id_dmp_URL').val()){
-            $('#draftdmp').attr('style',"opacity: 0.2; cursor: not-allowed; background-color: grey")
-        }
+            if ($('#id_dmp_URL').val()) {
+                $('#draftdmp').attr('style', "opacity: 0.2; cursor: not-allowed; background-color: grey")
+            }
         })(django.jquery)
 
+    </script>
+    <script type="text/javascript">
+        (function () {
+            $('[id^=id_reminder_set][id$=-reminder]').change(function () {
+
+                function dateFormatter(date) {
+                    // Takes a date and toggles beween dd/mm/yyyy and mm/dd/yyyy //
+                    if (date === ''){
+                        return ''
+                    }
+                    var dateparts = date.split("/");
+                    return dateparts[1] + "/" + dateparts[0] + "/" + dateparts[2]
+                }
+
+                var id = this.id
+                var value = this.value
+                var dueDateInput = document.getElementById(id.replace("-reminder","-due_date"))
+                var today = new Date();
+                var endDate = new Date(dateFormatter(document.getElementById("id_enddate").value));
+                var dueDate = new Date()
+
+                var delay_periods = {
+                    '1_week': 86400*7*1000,     // 1 week in milliseconds
+                    '2_weeks': 86400*14*1000,   // 2 weeks in milliseconds
+                    '1_month': 1,
+                    '3_months': 3,
+                    '6_months': 6,
+                    '-6_months': -6,
+                    '-3_months': -3,
+                    '-1_month': -1
+                }
+
+                if (value === 'custom' || value === ''){
+                    dueDate = ''
+
+                } else if (value.includes('-')) {
+                    endDate.setMonth(endDate.getMonth() + delay_periods[value])
+                    dueDate = endDate.toLocaleDateString('en-UK')
+
+                } else if (value.includes('month')) {
+                    dueDate.setMonth(today.getMonth() + delay_periods[value])
+                    dueDate = dueDate.toLocaleDateString('en-UK')
+
+                } else {
+                    dueDate.setTime(today.getTime() + delay_periods[value])
+                    dueDate = dueDate.toLocaleDateString('en-UK')
+
+                }
+
+                dueDateInput.value = dateFormatter(dueDate)
+
+            })
+        })(django.jquery)
     </script>
 {% endblock %}
 
@@ -30,7 +83,7 @@
 {% block object-tools %}
 
 
-<img style="height:40px; align:right" src="/static/projecticon.jpg"/>
+    <img style="height:40px; align:right" src="/static/projecticon.jpg"/>
 
 
     {% if change %}{% if not is_popup %}
@@ -39,7 +92,7 @@
                 {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
                 <li><a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a></li>
                 <li><a href="/dmp/myprojects" class="historylink">My projects</a></li>
-{#                <li><a href="/dmp/projectsvis?listall=1&show={{ object_id }}" class="historylink">Vis</a></li>#}
+                {#                <li><a href="/dmp/projectsvis?listall=1&show={{ object_id }}" class="historylink">Vis</a></li>#}
                 {% for g in original.grants %}
                     <li>{{ g.gotw|safe }}</li>
                 {% endfor %}
@@ -88,19 +141,25 @@
 
 {% block after_related_objects %}
 
-<table style="background-color:#ddddff; margin:10px 10px 10px 10px">
-<tr><td>Data Products</td><td>contact</td><td>status</td><td>Delivery date</td></tr>
-{% for d in original.data_outputs %} 
-<tr>
-  <td><a href="/admin/dmp/dataproduct/{{d.id}}">{{d}}</a></td>
-  <td>{{d.contact1}}</td>
-  <td>{{d.status}}</td>
-  <td>{{d.deliverydate}}</td>
-</tr>
-{% endfor %}
-</table>
+    <table style="background-color:#ddddff; margin:10px 10px 10px 10px">
+        <tr>
+            <td>Data Products</td>
+            <td>contact</td>
+            <td>status</td>
+            <td>Delivery date</td>
+        </tr>
+        {% for d in original.data_outputs %}
+            <tr>
+                <td><a href="/admin/dmp/dataproduct/{{ d.id }}">{{ d }}</a></td>
+                <td>{{ d.contact1 }}</td>
+                <td>{{ d.status }}</td>
+                <td>{{ d.deliverydate }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 
-<a style="margin:10px 10px 10px 10px; border:2px solid #333399; background-color:#ccccff; border-radius:5px" href="/dmp/project/{{original.id}}/adddataproduct">Add new data product</a>
+    <a style="margin:10px 10px 10px 10px; border:2px solid #333399; background-color:#ccccff; border-radius:5px"
+       href="/dmp/project/{{ original.id }}/adddataproduct">Add new data product</a>
 
 {% endblock %}
 

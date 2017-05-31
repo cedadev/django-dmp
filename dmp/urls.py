@@ -6,6 +6,8 @@ from views import *
 
 urlpatterns = [
 
+     url(r'^$', home, name="home"),
+
      url(r'^project/(?P<project_id>\d+)/adddataproduct$', add_dataproduct),
      url(r'^project/(?P<project_id>\d+)/show$', showproject),
      url(r'^myprojects$', my_projects),
