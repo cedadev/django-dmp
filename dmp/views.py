@@ -52,162 +52,152 @@ def home(request):
 def google_drive_upload(request, project_id):
     # Put project id in the session when coming from form submit
     if request.POST:
-        request.session['project_id'] = project_id
         form = DraftDmpForm(request.POST)
-        request.session['upload_path'] = form.data['upload_path']
-
-    try:
-        token = request.user.oauth_token
-    except ObjectDoesNotExist:
-        return redirect('google_authorise')
     else:
-        # Upload file to google drive if there is a current token
+        # redirect to draft dmp page if request is not from a form submit
+        messages.error(request, 'Please submit the form using the "Upload to Google Docs" button')
+        return redirect('dmp_draft', project_id)
 
-        # Load the project for the upload
-        project = get_object_or_404(Project, pk= project_id)
+    # Upload file to google drive as there is a current token
+    # Load the project for the upload
+    project = get_object_or_404(Project, pk= project_id)
+    token = request.user.oauth_token
 
-        # Render DMP template and create string
-        filename = project.title + '_DMP.html'
-        template = Template(draftDmp.objects.all()[0].draft_dmp_content)
-        context = Context({'project': project})
-        html = template.render(context)
-        result = StringIO.StringIO()
-        result.write(html.encode("ISO-8859-1"))
+    dmp_body = form.data['draft_dmp']
 
-        # Create google credentials object
-        creds = client.GoogleCredentials(
-            access_token=token.access_token,
-            client_secret=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
-            client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
-            refresh_token=token.refresh_token,
-            token_expiry=token.token_expiry,
-            token_uri=GOOGLE_TOKEN_URI,
-            user_agent=None
+    # Create google credentials object
+    creds = client.GoogleCredentials(
+        access_token=token.access_token,
+        client_secret=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+        client_id=settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+        refresh_token=token.refresh_token,
+        token_expiry=token.token_expiry,
+        token_uri=GOOGLE_TOKEN_URI,
+        user_agent=None
+    )
+
+    # Create temporary file for google to upload
+    @contextmanager
+    def tempinput(data):
+        temp = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
+        temp.write(data)
+        temp.close()
+        yield temp.name
+        os.remove(temp.name)
+
+    with tempinput(dmp_body) as tempfilename:
+
+        # Build drive object
+        DRIVE = build('drive', 'v3', http=creds.authorize(Http()))
+        FILES = (
+            (tempfilename, 'application/vnd.google-apps.document'),
         )
 
-        # Create temporary file for google to upload
-        @contextmanager
-        def tempinput(data):
-            temp = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
-            temp.write(data)
-            temp.close()
-            yield temp.name
-            os.remove(temp.name)
+        file_path = form.data['upload_path'].split('/') #request.session.pop('upload_path',None).split('/')
 
-        desired_name = re.sub('.html','',filename) # name which will be displayed in the Google Drive
-        with tempinput(result.getvalue()) as tempfilename:
+        # Perform check to see which directories need to be created.
+        folder_id = None
+        required_folders = None
+        root_folder_name = "'%s'" % file_path[0]
 
-            # Build drive object
-            DRIVE = build('drive', 'v3', http=creds.authorize(Http()))
-            FILES = (
-                (tempfilename, 'application/vnd.google-apps.document'),
-            )
+        DMP_Root_folder = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder'" % (root_folder_name)).execute()['files']
 
-            file_path = request.session.pop('upload_path',None).split('/')
+        if not DMP_Root_folder:
+            # If the parent folder is not there, jump to create the whole path.
+            required_folders = file_path[0:-1]
 
-            # Perform check to see which directories need to be created.
-            folder_id = None
-            required_folders = None
-            root_folder_name = "'%s'" % file_path[0]
+        else:
+            parent_folder_id = DMP_Root_folder[0]['id']
+            # Check which folders already exist.
+            for i, folder in enumerate(file_path[1:-1]):
+                folder_name = "'%s'" % folder
+                parent_id = "'%s'" % parent_folder_id
+                folder_test = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder' and %s in parents" % (folder_name,parent_id)).execute()['files']
+                if folder_test:
+                    parent_folder_id = folder_test[0]['id']
+                else:
+                    required_folders = file_path[i+1:-1]
+                    break
+            folder_id = parent_folder_id
 
-            DMP_Root_folder = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder'" % (root_folder_name)).execute()['files']
+        desired_name = file_path[-1]
 
-            if not DMP_Root_folder:
-                # If the parent folder is not there, jump to create the whole path.
-                required_folders = file_path[0:-1]
-
-            else:
-                parent_folder_id = DMP_Root_folder[0]['id']
-                # Check which folders already exist.
-                for i, folder in enumerate(file_path[1:-1]):
-                    folder_name = "'%s'" % folder
-                    parent_id = "'%s'" % parent_folder_id
-                    folder_test = DRIVE.files().list(q="name = %s and trashed != true and mimeType = 'application/vnd.google-apps.folder' and %s in parents" % (folder_name,parent_id)).execute()['files']
-                    if folder_test:
-                        parent_folder_id = folder_test[0]['id']
-                    else:
-                        required_folders = file_path[i+1:-1]
-                        break
-                folder_id = parent_folder_id
-
-            desired_name = file_path[-1]
-
-            # Create the required directories
-            if required_folders:
-                for folder in required_folders:
-                    if folder_id:
-                        metadata = {
-                                'name': folder,
-                                'mimeType': 'application/vnd.google-apps.folder',
-                                'parents': [folder_id],
-                            }
-                    else:
-                        metadata = {
-                            'name': folder,
-                            'mimeType': 'application/vnd.google-apps.folder',
-                        }
-                    res = DRIVE.files().create(body=metadata,
-                                               fields='id').execute()
-                    folder_id = res.get('id')
-
-
-            # Upload file
-            for filename, mimeType in FILES:
+        # Create the required directories
+        if required_folders:
+            for folder in required_folders:
                 if folder_id:
                     metadata = {
-                        'name': desired_name,
-                        'parents': [folder_id],
-                    }
+                            'name': folder,
+                            'mimeType': 'application/vnd.google-apps.folder',
+                            'parents': [folder_id],
+                        }
                 else:
                     metadata = {
-                        'name': desired_name,
+                        'name': folder,
+                        'mimeType': 'application/vnd.google-apps.folder',
                     }
-
-                if mimeType:
-                    metadata['mimeType'] = mimeType
-                try:
-                    res = DRIVE.files().create(body=metadata, media_body=filename).execute()
-                except HttpAccessTokenRefreshError:
-                    return redirect('google_authorise')
-
-                if res:
-                    messages.success(
-                        request,
-                        "Uploaded '" +
-                        desired_name +
-                        "' to Google Drive"
-                    )
-                # Add sharing permissions to document
-                if res:
-                    FILE_ID = res.get('id')
-                    batch_request = BatchHttpRequest()
-
-                    batch_entry1 = DRIVE.permissions().create(fileId=FILE_ID, body={
-                        'type': 'anyone',
-                        'role': 'writer',
-                        'withLink': True
-                    })
-                    batch_request.add(batch_entry1, request_id='batch1')
-
-                    batch_request.execute(Http())
-
-                # Add document link to project and note to reflect changes.
-                if res:
-                    google_doc_url = DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute()['webViewLink']
-                    project.dmp_URL = google_doc_url
-                    project.save()
-
-                    # Add note to document file upload
-                    note_content = "Draft dmp uploaded to Google Drive"
-
-                    Note(
-                        creator=request.user,
-                        notes= note_content,
-                        location = project
-                    ).save()
+                res = DRIVE.files().create(body=metadata,
+                                           fields='id').execute()
+                folder_id = res.get('id')
 
 
-        return redirect("/admin/dmp/project/%s/change" % project_id)
+        # Upload file
+        for filename, mimeType in FILES:
+            if folder_id:
+                metadata = {
+                    'name': desired_name,
+                    'parents': [folder_id],
+                }
+            else:
+                metadata = {
+                    'name': desired_name,
+                }
+
+            if mimeType:
+                metadata['mimeType'] = mimeType
+            try:
+                res = DRIVE.files().create(body=metadata, media_body=filename).execute()
+            except HttpAccessTokenRefreshError:
+                return redirect('google_authorise')
+
+            if res:
+                messages.success(
+                    request,
+                    "Uploaded '" +
+                    desired_name +
+                    "' to Google Drive"
+                )
+            # Add sharing permissions to document
+            if res:
+                FILE_ID = res.get('id')
+                batch_request = BatchHttpRequest()
+
+                batch_entry1 = DRIVE.permissions().create(fileId=FILE_ID, body={
+                    'type': 'anyone',
+                    'role': 'writer',
+                    'withLink': True
+                })
+                batch_request.add(batch_entry1, request_id='batch1')
+
+                batch_request.execute(Http())
+
+            # Add document link to project and note to reflect changes.
+            if res:
+                google_doc_url = DRIVE.files().get(fileId=res['id'], fields="webViewLink").execute()['webViewLink']
+                project.dmp_URL = google_doc_url
+                project.save()
+
+                # Add note to document file upload
+                note_content = "Draft dmp uploaded to Google Drive"
+
+                Note(
+                    creator=request.user,
+                    notes= note_content,
+                    location = project
+                ).save()
+
+
+    return redirect("/admin/dmp/project/%s/change" % project_id)
 
 
 def google_drive_authorise(request):
@@ -256,7 +246,7 @@ def google_drive_token_exchange(request):
     #  Retrieve the project id and return to google_drive_upload.
     project_id = request.session.pop('project_id', None)
 
-    return redirect('dmp_upload',project_id)
+    return redirect('dmp_draft',project_id)
 
 def google_drive_token_revoke(request, project_id):
     # Delete the current users OAuth token from the database.
@@ -273,6 +263,13 @@ def google_drive_token_revoke(request, project_id):
 
 @login_required
 def dmp_draft(request, project_id):
+    # Check that the user has a google drive oAuth token. If not, redirect to google authorisation.
+    try:
+        token = request.user.oauth_token
+    except ObjectDoesNotExist:
+        request.session['project_id'] = project_id
+        return redirect('google_authorise')
+
     # a summary of a single project
     project = get_object_or_404(Project, pk=project_id)
     start_year = datetime.datetime.strftime(project.startdate,'%Y')
