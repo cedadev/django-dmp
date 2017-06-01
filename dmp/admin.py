@@ -27,16 +27,6 @@ class ReminderInline(admin.TabularInline):
     classes = ['collapse']
     form = ReminderForm
 
-    def save_formset(self, request, form, formset, change):
-        instances = formset.save(commit=False)
-        for instance in instances:
-            # Do something with `instance`
-            instance.save()
-        formset.save_m2m()
-
-
-
-
 
 class DataProductAdmin(admin.ModelAdmin):
     save_on_top = True
