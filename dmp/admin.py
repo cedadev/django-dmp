@@ -47,6 +47,7 @@ class DataProductAdmin(admin.ModelAdmin):
     )
 
     inlines = [NotesInline]
+    list_select_related = ('project','sciSupContact',)
 
     def save_formset(self, request, form, formset, change):
         if formset.model != Note:
@@ -94,6 +95,8 @@ class ProjectAdmin(admin.ModelAdmin):
     )
 
     inlines = [NotesInline,MetadataFormInline, ReminderInline]
+
+    list_select_related = ('sciSupContact',)
 
     def save_formset(self, request, form, formset, change):
 
@@ -151,7 +154,6 @@ class ProjectAdmin(admin.ModelAdmin):
                 ).save()
 
             formset.save()
-
         else:
             return super(ProjectAdmin, self).save_formset(request, form, formset, change)
 
@@ -165,6 +167,7 @@ class GrantAdmin(admin.ModelAdmin):
     search_fields = ('number', 'project__title')
     fields = ('number', 'project', 'lead_grant')
     #readonly_fields=('title', 'pi', 'desc')
+    list_select_related = ('project',)
 admin.site.register(Grant, GrantAdmin)
 
 
@@ -178,6 +181,7 @@ admin.site.register(ProjectGroup, ProjectGroupAdmin)
 
 class EmailTemplateAdmin(admin.ModelAdmin):
     list_display = ('template_name','template_ref', 'last_edited', 'edited_by')
+    list_select_related = ('edited_by',)
 
 
     def get_readonly_fields(self, request, obj=None):

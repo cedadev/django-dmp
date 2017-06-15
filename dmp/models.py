@@ -226,6 +226,18 @@ class Project(models.Model):
             if gws.path.find("cems") != -1: return True
         return False
 
+    def save(self, *args,**kwargs):
+        # If the project is an existing one and the sciSupContact has changed. Save a note to describe the change.
+        if Project.objects.filter(pk=self.pk).exists():
+            past = Project.objects.get(pk=self.pk)
+            if past.sciSupContact != self.sciSupContact:
+                Note(
+                    notes="The sciSupContact has been changed from %s to %s" % (past.sciSupContact, self.sciSupContact),
+                    location=self
+                ).save()
+
+        return super(Project, self).save(*args, **kwargs)
+
 
 #-----
 
