@@ -151,6 +151,8 @@
 {#                    tinyMCE.get('id_draft_dmp').getBody().html('')setContent('');#}
                     tinymce.get('id_draft_dmp').getBody().innerHTML = data
                 })
+            } else {
+                tinymce.get('id_draft_dmp').getBody().innerHTML = null
             }
         });
 
