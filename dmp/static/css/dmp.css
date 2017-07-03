@@ -69,6 +69,10 @@ a:visited.gotwlink {color:red; background-color:blue}
     padding: 1px 5px 1px 5px;
 }
 
+#templateSelect {
+    margin-bottom: 20px;
+}
+
 
 #google_upload_button {
     background-color: #79aec8;
