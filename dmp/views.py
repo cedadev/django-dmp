@@ -1619,6 +1619,7 @@ def todolist_summary(request):
             contact.expired = expired
             contact.active = active
             contact.upcoming = upcoming
+            contact.total = expired + active + upcoming
             summary.append(contact)
 
     return render(request,'dmp/todolist_summary.html', {"summary": summary})
