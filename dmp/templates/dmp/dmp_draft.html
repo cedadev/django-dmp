@@ -68,6 +68,16 @@
         <p>If you wish to upload a brand new DMP, clear the DMP URL field in the project details. After saving, the Draft DMP link at the top of the page will become active again.</p>
     {% else %}
 
+
+
+    <select id="templateSelect">
+        <option value="none">---</option>
+        {% for template in DMPtemplates %}
+            <option value="{{ template.id }}">{{ template.draft_dmp_name|capfirst }}</option>
+        {% endfor %}
+    </select>
+
+    <hr/>
     <form action="{% url 'dmp_upload' project.id %}" method="POST">
         {% csrf_token %}
         <table>
@@ -129,6 +139,24 @@
 
     })
     </script>
+
+    <script>
+
+        $('#templateSelect').on('change', function () {
+            if (this.value !== 'none') {
+
+                var target = "/dmp/render_template/" + {{ project.id }} + '/' + this.value;
+
+                $.get(target, function (data) {
+{#                    tinyMCE.get('id_draft_dmp').getBody().html('')setContent('');#}
+                    tinymce.get('id_draft_dmp').getBody().innerHTML = data
+                })
+            } else {
+                tinymce.get('id_draft_dmp').getBody().innerHTML = null
+            }
+        });
+
+</script>
 
 {% endblock %}
 

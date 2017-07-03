@@ -261,6 +261,21 @@ def google_drive_token_revoke(request, project_id):
     return redirect('dmp_draft',project_id=project_id)
 
 
+def render_template(request, project_id, template_id):
+    if request.is_ajax():
+
+        project = get_object_or_404(Project, pk=project_id)
+
+        template_obj = Template(draftDmp.objects.get(pk=template_id).draft_dmp_content)
+        data = template_obj.render(Context({'project': project}))
+
+        data = json.dumps(data)
+        return HttpResponse(data, content_type='aplication/json')
+    else:
+        return redirect('/dmp/project/%s' % project_id)
+
+
+
 @login_required
 def dmp_draft(request, project_id):
     # Check that the user has a google drive oAuth token. If not, redirect to google authorisation.
@@ -276,56 +291,43 @@ def dmp_draft(request, project_id):
     opts = Project()._meta
     form = DraftDmpForm()
 
-    template_obj = Template(draftDmp.objects.all()[0].draft_dmp_content)
+
     form.fields['upload_path'].initial = "DMP/"+start_year+"/"+project.title+"_draftDMP"
-    form.fields['draft_dmp'].initial = template_obj.render(Context({'project': project}))
+    form.fields['draft_dmp'].initial = "Select template from dropdown"
 
-    # If there us a google token for the current logged in user, collect user information
-    try:
-        token = request.user.oauth_token
-    except ObjectDoesNotExist:
-        google_user= None
-        token = OAuthToken(access_token=None)
 
-    else:
-        # '''In production, adding this section causes the error.'''
-        # ZERO = timedelta(0)
-        #
-        # class UTC(datetime.tzinfo):
-        #     def utcoffset(selfself, dt):
-        #         return ZERO
-        #
-        #     def tzname(selfself, dt):
-        #         return "UTC"
-        #
-        #     def dst(self, dt):
-        #         return ZERO
-        # utc = UTC()
+    # Collect Google user information for current logged in user.
+    token = request.user.oauth_token
 
-        if token.token_expiry < datetime.datetime.now():
+    # If the token has expired, refresh the token.
+    if token.token_expiry < datetime.datetime.now():
 
-            r = requests.post("https://www.googleapis.com/oauth2/v4/token",{'client_id':settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
-                                                                        'client_secret': settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
-                                                                        'refresh_token':token.refresh_token,
-                                                                        'grant_type':'refresh_token'})
-            if r.status_code != 200:
-                google_user=None
-            else:
-                token.access_token = json.loads(r.text)['access_token']
-                token.save()
-
-        r = requests.get('https://www.googleapis.com/oauth2/v3/userinfo?access_token=%s' % token.access_token)
-
+        r = requests.post("https://www.googleapis.com/oauth2/v4/token",{'client_id':settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
+                                                                    'client_secret': settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
+                                                                    'refresh_token':token.refresh_token,
+                                                                    'grant_type':'refresh_token'})
         if r.status_code != 200:
-            google_user = None
+            google_user=None
         else:
-            google_user = json.loads(r.text)
-            google_user['initial'] = google_user['name'][0]
+            token.access_token = json.loads(r.text)['access_token']
+            token.save()
 
+    r = requests.get('https://www.googleapis.com/oauth2/v3/userinfo?access_token=%s' % token.access_token)
+
+    # Handle any error from google.
+    if r.status_code != 200:
+        google_user = None
+    else:
+        google_user = json.loads(r.text)
+        google_user['initial'] = google_user['name'][0]
+
+    # Collect DMP draft template options.
+    DMPtemplates = draftDmp.objects.all()
 
     return render(request,
                   'dmp/dmp_draft.html',
                   {
+                      'DMPtemplates': DMPtemplates,
                       'project': project,
                       'opts': opts,
                       'form': form,

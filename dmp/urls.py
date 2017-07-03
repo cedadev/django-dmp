@@ -30,6 +30,8 @@ urlpatterns = [
      url(r'^google_drive_token_exchange/$', google_drive_token_exchange, name='google_token_exchange'),
      url(r'^google_drive_upload/(?P<project_id>\d+)/$', google_drive_upload, name='dmp_upload'),
      url(r'^google_drive_revoke/(?P<project_id>\d+)/$', google_drive_token_revoke, name="google_token_revoke"),
+     url(r'^render_template/(?P<project_id>\d+)/(?P<template_id>\d+)$', render_template, name="render_template"),
+
 
      # Grant uploader process
      url(r'^grant/grant_upload/$',grant_uploader, name="grant_uploader"),
