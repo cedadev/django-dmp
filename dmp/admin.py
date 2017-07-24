@@ -125,7 +125,7 @@ class ProjectAdmin(admin.ModelAdmin):
                 ).save()
 
             if instances:
-                note_message = 'Reminders for this project have been modified.\n'
+                note_message = 'Reminders have been modified.\n'
                 project = instances[0].project
 
             for instance in instances:
@@ -136,7 +136,7 @@ class ProjectAdmin(admin.ModelAdmin):
                     instance.save()
                 else:
                     if instance.description != db_instance.description:
-                        note_message += 'Reminder: "%s". Description has changed from: "%s" to: "%s"\n' % (instance.description, db_instance.description, instance.description)
+                        note_message += 'Description has changed from: "%s" to: "%s"\n' % (db_instance.description, instance.description)
                         create_note = True
 
                     a = instance.date_due()

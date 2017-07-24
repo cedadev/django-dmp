@@ -1608,7 +1608,6 @@ def todolist_summary(request):
 
         reminders = Reminder.objects.filter(project__sciSupContact = contact).filter(state="Open")
         if reminders:
-
             # List of project reminders for which the expiry date has passed
             expired = reminders.filter(due_date__lt=today).count()
 
@@ -1616,12 +1615,18 @@ def todolist_summary(request):
             active = reminders.filter(due_date__range=[today, today + relativedelta(months=1)]).count()
 
             # List of projects reminders have an expiry 2 weeks - 1 month
-            upcoming = reminders.filter(due_date__range=[today + relativedelta(months=1, days=1), today + relativedelta(months=3)]).count()
+            upcoming = reminders.filter(
+                due_date__range=[today + relativedelta(months=1, days=1), today + relativedelta(months=3)]).count()
+
+            # List of projects with no reminders attached
+            others = Project.objects.filter(reminder__isnull=True).filter(
+                Q(status="Active") | Q(status="EndedWithDataToCome")).count()
 
             contact.expired = expired
             contact.active = active
             contact.upcoming = upcoming
             contact.total = expired + active + upcoming
+            contact.other = others
             summary.append(contact)
 
     return render(request,'dmp/todolist_summary.html', {"summary": summary})

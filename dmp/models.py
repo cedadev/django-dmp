@@ -63,6 +63,7 @@ class Project(models.Model):
                  ("NoDataForUs","No data for us"),
                  ("Complete","Complete"),
                  ("Unresponsive", "Unresponsive"),
+                 ("MergedProject/HandledElsewhere", "Merged Project/Handled Elsewhere"),
                      ))
     modified = models.DateTimeField(auto_now=True)
     third_party_data = models.ManyToManyField('DataProduct', related_name='requirements+', 

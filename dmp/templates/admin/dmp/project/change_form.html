@@ -26,6 +26,10 @@
     </script>
     <script type="text/javascript">
         (function () {
+                // This function modifies the django admin inline form for reminders. It resets the "remind in" value to
+                // "-----" on page load to limit confusion.
+                // setDueDate() is used to calculate the due date from the input value to dynamically set the due date field.
+
 
                 // reset "remind in" value
                 var i
@@ -35,8 +39,11 @@
                 }
 
                 function setDueDate(){
+                    // Dynamically fills the Due Date field based on the input in the "remind in" field.
+
                     function dateFormatter(date) {
-                        // Takes a date and toggles beween dd/mm/yyyy and mm/dd/yyyy //
+                        // Takes a date string and toggles beween dd/mm/yyyy and mm/dd/yyyy //
+
                         if (date === ''){
                             return ''
                         }
