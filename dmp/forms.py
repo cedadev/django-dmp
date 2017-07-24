@@ -113,9 +113,7 @@ class ReminderForm(forms.ModelForm):
         cleaned_data = super(ReminderForm,self).clean()
 
         if not cleaned_data['reminder']:
-            if cleaned_data['id'] or cleaned_data['due_date']:
-                # Reminder already exists in database and no changes have been made, mark it as custom to allow it to save.
-                # OR
+            if cleaned_data['due_date']:
                 # Due date has been written in but blank not set to custom. Handle this.
                 cleaned_data['reminder'] = 'custom'
             else:

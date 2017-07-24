@@ -4,7 +4,9 @@
 
 {% block extrahead %}{{ block.super }}
     <link rel="stylesheet" href="{% static 'css/todo_list.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'js/jquery-ui-1.12.1-datepicker/jquery-ui.min.css' %}" type="text/css"/>
     <script type="text/javascript" src="{% static 'js/jquery-1.11.0.min.js' %}"></script>
+    <script src="{% static 'js/jquery-ui-1.12.1-datepicker/jquery-ui.min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -247,7 +249,7 @@
 
 </div>
 
-<!-- Postpone Modal -->
+<!-- Edit Reminder Modal -->
 <div id="postponeModal" class="modal">
 
     <!-- Modal content -->
@@ -482,6 +484,20 @@
             }
         }
     }
+</script>
+<script type="text/javascript">
+
+        $('input[id$=due_date]').datepicker({
+            onSelect: function () {
+              $('[id="id_due_date"]').val(this.value)
+            },
+
+            dateFormat: "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "2015:2050"
+        });
+
 </script>
 
 {% endblock %}
