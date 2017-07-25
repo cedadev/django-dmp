@@ -1620,7 +1620,7 @@ def todolist_summary(request):
 
             # List of projects with no reminders attached
             others = Project.objects.filter(reminder__isnull=True).filter(
-                Q(status="Active") | Q(status="EndedWithDataToCome")).count()
+                Q(status="Active") | Q(status="EndedWithDataToCome")).filter(sciSupContact=contact).count()
 
             contact.expired = expired
             contact.active = active
