@@ -76,6 +76,7 @@ class Project(models.Model):
     moles_URL = models.URLField(blank=True,null=True)
     project_usergroup = models.CharField(max_length=200, blank=True, null=True, help_text="Group name for registration for this group")
     metadata_form = GenericRelation("MetadataForm")
+    reassigned = models.BooleanField(default=False)
 
 
     def active(self):
@@ -228,7 +229,8 @@ class Project(models.Model):
         return False
 
     def save(self, *args,**kwargs):
-        # If the project is an existing one and the sciSupContact has changed. Save a note to describe the change.
+        # If the project is an existing one and the sciSupContact has changed. Save a note to describe the change and
+        # set the flag so the newly assigned person knows they have a new project.
         if Project.objects.filter(pk=self.pk).exists():
             past = Project.objects.get(pk=self.pk)
             if past.sciSupContact != self.sciSupContact:
@@ -236,6 +238,7 @@ class Project(models.Model):
                     notes="The sciSupContact has been changed from %s to %s" % (past.sciSupContact, self.sciSupContact),
                     location=self
                 ).save()
+                self.reassigned = True
 
         return super(Project, self).save(*args, **kwargs)
 

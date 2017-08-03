@@ -79,12 +79,11 @@ class ProjectAdmin(admin.ModelAdmin):
             'fields': (('title', 'PI', 'PIemail'), 'desc',),
         }),
         ('', {
-            #'classes': ('collapse',),
             'fields': (
             ('startdate', 'enddate'), ('initial_contact','dmp_agreed'),
             ('sciSupContact', 'status'),
             ('primary_dataCentre','other_dataCentres'),
-            'dmp_URL','ODMP_URL','moles_URL')
+            'dmp_URL','ODMP_URL','moles_URL', 'reassigned')
         }),
         ('Advanced options', {
             'classes': ('collapse',),

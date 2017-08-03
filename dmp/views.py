@@ -1405,8 +1405,8 @@ def todo_list(request, scisupcontact=None):
     # List of projects reminders have an expiry 2 weeks - 1 month
     upcoming = Reminder.objects.filter(due_date__range=[today + relativedelta(months=1, days=1), today + relativedelta(months=3)]).filter(state="Open").order_by('due_date')
 
-    # List of projects with no reminders attached
-    others = Project.objects.filter(reminder__isnull=True).filter(Q(status="Active") | Q(status="EndedWithDataToCome"))
+    # List of projects with no active reminders attached
+    others = Project.objects.filter(Q(status="Active") | Q(status="EndedWithDataToCome")).exclude(reminder__state="Open")
 
     # List of users to filter on SciSup Contact
     scisupcontacts = Person.objects.filter(is_active=True).filter(Q(project__status="Active") | Q(project__status="EndedWithDataToCome")).distinct()
@@ -1619,8 +1619,8 @@ def todolist_summary(request):
                 due_date__range=[today + relativedelta(months=1, days=1), today + relativedelta(months=3)]).count()
 
             # List of projects with no reminders attached
-            others = Project.objects.filter(reminder__isnull=True).filter(
-                Q(status="Active") | Q(status="EndedWithDataToCome")).filter(sciSupContact=contact).count()
+
+            others = Project.objects.filter(Q(status="Active") | Q(status="EndedWithDataToCome")).filter(sciSupContact=contact).exclude(reminder__state="Open").count()
 
             contact.expired = expired
             contact.active = active
