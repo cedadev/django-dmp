@@ -63,14 +63,11 @@
                 <h2>Newly Assigned Projects<span class="todo-badge">{{ new_proj | length }}</span></h2>
             </div>
                 <h3>You have been assigned these projects in the last week.</h3>
-                <table>
-                    <th>Project Name</th>
+                <ul>
                     {% for project in new_proj %}
-                        <tr>
-                            <td><a href="https://{{ server_name }}/admin/dmp/project/{{ project.id }}/change/">{{ project.title }}</a></td>
-                        </tr>
+                            <li><a href="https://{{ server_name }}/admin/dmp/project/{{ project.id }}/change/">{{ project.title }}</a></li>
                     {% endfor %}
-                </table>
+                </ul>
         </div>
     {% endif %}
     <style>
@@ -104,7 +101,7 @@
     }
 
     .info {
-        background-color: rgba(0, 202, 255, 0.38);
+        background-color: rgba(0, 202, 255, 0.18);
     }
 
 
