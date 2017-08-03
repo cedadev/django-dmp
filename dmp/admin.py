@@ -83,7 +83,7 @@ class ProjectAdmin(admin.ModelAdmin):
             ('startdate', 'enddate'), ('initial_contact','dmp_agreed'),
             ('sciSupContact', 'status'),
             ('primary_dataCentre','other_dataCentres'),
-            'dmp_URL','ODMP_URL','moles_URL', 'reassigned')
+            'dmp_URL','ODMP_URL','moles_URL')
         }),
         ('Advanced options', {
             'classes': ('collapse',),
