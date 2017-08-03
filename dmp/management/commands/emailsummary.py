@@ -36,6 +36,14 @@ class Command(BaseCommand):
                 # List of projects reminders which have an expiry in next 2 weeks
                 active = reminders.filter(due_date__range=[today, today + relativedelta(months=1)])
 
+                # List of newly assigned projects
+                new_proj = Project.objects.filter(reassigned=True).filter(sciSupContact=contact)
+
+                # Set projects reassigned status to false
+                for proj in new_proj:
+                    proj.reassigned = False
+                    proj.save()
+
                 # Render Template Body
                 # template = Template('/dmp/templates/weekly_email/weekly_email.html')
                 template = loader.get_template('dmp/weekly_email/weekly_email.html')

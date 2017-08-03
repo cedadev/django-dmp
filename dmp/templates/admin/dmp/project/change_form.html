@@ -142,30 +142,6 @@
 {% endblock %}
 
 
-
-{% block field_sets %}
-    {% for fieldset in adminform %}
-        {% if fieldset.name == "" %}
-            {% for inline_admin_formset in inline_admin_formsets %}
-                {% if inline_admin_formset.opts.opts.model_name == "note" %}
-                    {% include inline_admin_formset.opts.template %}
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-        {% include "admin/includes/fieldset.html" %}
-
-    {% endfor %}
-{% endblock %}
-
-
-{% block inline_field_sets %}
-    {% for inline_admin_formset in inline_admin_formsets %}
-        {% if not inline_admin_formset.opts.opts.model_name == "note" %}
-            {% include inline_admin_formset.opts.template %}
-        {% endif %}
-    {% endfor %}
-{% endblock %}
-
 {% block after_related_objects %}
 
     <table style="background-color:#ddddff; margin:10px 10px 10px 10px">

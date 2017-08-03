@@ -57,6 +57,22 @@
         </table>
         {% endif %}
     </div>
+    {% if new_proj %}
+        <div>
+            <div class="block-head">
+                <h2>Newly Assigned Projects<span class="todo-badge">{{ new_proj | length }}</span></h2>
+            </div>
+                <h3>You have been assigned these projects in the last week.</h3>
+                <table>
+                    <th>Project Name</th>
+                    {% for project in new_proj %}
+                        <tr>
+                            <td><a href="https://{{ server_name }}/admin/dmp/project/{{ project.id }}/change/">{{ project.title }}</a></td>
+                        </tr>
+                    {% endfor %}
+                </table>
+        </div>
+    {% endif %}
     <style>
         table tr:nth-child(odd) {
         background-color: #f6f6f6;
