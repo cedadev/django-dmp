@@ -21,9 +21,9 @@
     {% for contact in summary %}
         <tr>
             {% if contact.first_name %}
-                <td>{{ contact.first_name }} {{ contact.last_name }}</td>
+                <td><a href="{% url 'todo_list_filter' contact.username %}">{{ contact.first_name }} {{ contact.last_name }}</a></td>
             {% else %}
-                <td>{{ contact.username }}</td>
+                <td><a href="{% url 'todo_list_filter' contact.username %}">{{ contact.username }}</a></td>
             {% endif %}
             <td class="expired-text">{{ contact.expired }}</td>
             <td class="active-text">{{ contact.active }}</td>
