@@ -59,7 +59,7 @@
     </div>
     {% if new_proj %}
         <div>
-            <div class="block-head">
+            <div class="block-head info">
                 <h2>Newly Assigned Projects<span class="todo-badge">{{ new_proj | length }}</span></h2>
             </div>
                 <h3>You have been assigned these projects in the last week.</h3>
@@ -101,6 +101,10 @@
 
     .active {
         background-color: #fcf8e3;
+    }
+
+    .info {
+        background-color: rgba(0, 202, 255, 0.38);
     }
 
 

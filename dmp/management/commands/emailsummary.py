@@ -39,6 +39,7 @@ class Command(BaseCommand):
                 # List of newly assigned projects
                 new_proj = Project.objects.filter(reassigned=True).filter(sciSupContact=contact)
 
+
                 # Set projects reassigned status to false
                 for proj in new_proj:
                     proj.reassigned = False
@@ -51,6 +52,7 @@ class Command(BaseCommand):
                     "expired": expired,
                     "active": active,
                     "contact": contact,
+                    "new_proj": new_proj,
                     "server_name": server_name
                 }
 
