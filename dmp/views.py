@@ -770,6 +770,7 @@ def mail_template(request, project_id):
                        })
 @login_required
 def grant_uploader(request):
+    """ Renders the empty form to allow the user to upload a file to be processed."""
     opts = Grant()._meta
     form = GrantUploadForm() #empty unbound form
 
@@ -777,7 +778,10 @@ def grant_uploader(request):
 
 @login_required
 def grant_upload_confirm(request):
-    '''Processes the form and if the user has uploaded a file, presents the user with a list of the pending changes.'''
+    '''
+    Processes the form and if the user has uploaded a file, presents the user with a list of the pending changes.
+    User has to confirm the changes before they will be applied.
+    '''
 
     opts = Grant()._meta
 
@@ -1627,6 +1631,7 @@ def todolist_summary(request):
             contact.upcoming = upcoming
             contact.total = expired + active + upcoming
             contact.other = others
+            contact.active_proj = Project.objects.filter(sciSupContact=contact).filter(Q(status="Active") | Q(status="EndedWithDataToCome")).count()
             summary.append(contact)
 
     return render(request,'dmp/todolist_summary.html', {"summary": summary})

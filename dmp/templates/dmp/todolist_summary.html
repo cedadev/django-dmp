@@ -18,6 +18,7 @@
      <th>Upcoming Reminders</th>
      <th>Total Reminders</th>
      <th>Projects Without Reminders</th>
+     <th>Total Active Projects</th>
     {% for contact in summary %}
         <tr>
             {% if contact.first_name %}
@@ -30,6 +31,7 @@
             <td class="upcoming-text">{{ contact.upcoming }}</td>
             <td style="font-weight: bold;">{{ contact.total }}</td>
             <td style="color: #aaaaaa">{{ contact.other }}</td>
+            <td>{{ contact.active_proj }}</td>
         </tr>
     {% endfor %}
 
