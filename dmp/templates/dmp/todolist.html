@@ -60,7 +60,8 @@
 
     <table style="width: 100%;">
         <th style="width: 20%">Reminder Description</th>
-        <th style="width: 60%">Project Name</th>
+        <th style="width: 50%">Project Name</th>
+        <th style="width: 10%">Project End Date</th>
         <th style="width: 10%">Reminder Due Date</th>
         <th style="width: 10%;">Actions</th>
         {% for reminder in expired %}
@@ -68,6 +69,7 @@
                 <td>{{ reminder.description }}</td>
                 <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a>
                 </td>
+                <td>{{ reminder.project.enddate }}</td>
                 <td>{{ reminder.due_date }}</td>
                 <td>
                     <a class="complete" onclick="showModal('completeModal','reminder',{{ reminder.id }})"
@@ -101,7 +103,8 @@
 
     <table style="width: 100%;">
         <th style="width: 20%">Reminder Description</th>
-        <th style="width: 60%">Project Name</th>
+        <th style="width: 50%">Project Name</th>
+        <th style="width: 10%">Project End Date</th>
         <th style="width: 10%">Reminder Due Date</th>
         <th style="width: 10%;">Actions</th>
         {% for reminder in active %}
@@ -109,6 +112,7 @@
                 <td>{{ reminder.description }}</td>
                 <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a>
                 </td>
+                <td>{{ reminder.project.enddate }}</td>
                 <td>{{ reminder.due_date }}</td>
                 <td>
                     <a class="complete" onclick="showModal('completeModal','reminder',{{ reminder.id }})"
@@ -143,7 +147,8 @@
 
     <table style="width: 100%;">
         <th style="width: 20%">Reminder Description</th>
-        <th style="width: 60%">Project Name</th>
+        <th style="width: 50%">Project Name</th>
+        <th style="width: 10%">Project End Date</th>
         <th style="width: 10%">Reminder Due Date</th>
         <th style="width: 10%;">Actions</th>
         {% for reminder in upcoming %}
@@ -151,6 +156,7 @@
                 <td>{{ reminder.description }}</td>
                 <td><a href="{% url 'admin:dmp_project_change' reminder.project.id %}">{{ reminder.project.title }}</a>
                 </td>
+                <td>{{ reminder.project.enddate }}</td>
                 <td>{{ reminder.due_date }}</td>
                 <td>
                     <a class="complete" onclick="showModal('completeModal','reminder',{{ reminder.id }})"

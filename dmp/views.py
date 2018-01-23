@@ -28,10 +28,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.utils.html import strip_tags
 
-
 import requests
 import datetime
-import dateutil.relativedelta
+from dateutil.relativedelta import relativedelta
 import re
 import string
 import time
@@ -39,6 +38,7 @@ import os
 import csv
 import json
 
+import view_functions
 
 # set http proxy for wget calls
 # os.environ["http_proxy"] = "http://wwwcache.rl.ac.uk:8080"
@@ -635,6 +635,8 @@ def gotw_scrape(request, id):
         location=p
     ).save()
 
+    view_functions.init_reminders(p)
+
     # conect grant number to project
     grant.project = p
     grant.save()
@@ -1174,33 +1176,35 @@ def grant_upload_complete(request):
                 new_proj.save()
                 p_added += 1
 
-                # Add basic reminders to project.
-                # Initial contact reminder
-                Reminder(
-                    project=new_proj,
-                    description="Send initial email",
-                    reminder="custom",
-                    due_date= new_proj.startdate + relativedelta(months=1),
-                    state="Open"
-                ).save()
-
-                # Dmp upload reminder
-                Reminder(
-                    project=new_proj,
-                    description="Make and upload DMP",
-                    reminder="custom",
-                    due_date= new_proj.startdate + relativedelta(months=3),
-                    state="Open"
-                ).save()
-
-                # Project nearing end date, check for data
-                Reminder(
-                    project=new_proj,
-                    description="Project nearing end date",
-                    reminder="custom",
-                    due_date= new_proj.enddate + relativedelta(months=-3),
-                    state="Open"
-                ).save()
+                view_functions.init_reminders(new_proj)
+                #
+                # # Add basic reminders to project.
+                # # Initial contact reminder
+                # Reminder(
+                #     project=new_proj,
+                #     description="Send initial email",
+                #     reminder="custom",
+                #     due_date= new_proj.startdate + relativedelta(months=1),
+                #     state="Open"
+                # ).save()
+                #
+                # # Dmp upload reminder
+                # Reminder(
+                #     project=new_proj,
+                #     description="Make and upload DMP",
+                #     reminder="custom",
+                #     due_date= new_proj.startdate + relativedelta(months=3),
+                #     state="Open"
+                # ).save()
+                #
+                # # Project nearing end date, check for data
+                # Reminder(
+                #     project=new_proj,
+                #     description="Project nearing end date",
+                #     reminder="custom",
+                #     due_date= new_proj.enddate + relativedelta(months=-3),
+                #     state="Open"
+                # ).save()
 
                 # Link grant and new project
                 current_grant_obj.project = new_proj
