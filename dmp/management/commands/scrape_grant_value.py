@@ -20,10 +20,11 @@ class Command(BaseCommand):
             url = 'http://gotw.nerc.ac.uk/list_full.asp?pcode={}'.format(grant.number)
             response = requests.get(url).text
             match = re.search(pattern,response)
-            grant_value = int(match.group(1).replace(',',''))
+            if match:
+                grant_value = int(match.group(1).replace(',',''))
 
-            grant.grant_value = grant_value
-            grant.save()
+                grant.grant_value = grant_value
+                grant.save()
 
             self.stdout.write('{}'.format(i))
 

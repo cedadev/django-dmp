@@ -1414,7 +1414,8 @@ def DOG_report(request):
 
         # Get all grants for each project and total value of grants
         for grant in project.grants():
-            total += grant.grant_value
+            if grant.grant_value:
+                ßtotal += grant.grant_value
 
         # Difference between the dates
         diff = relativedelta(project.enddate, project.startdate)
