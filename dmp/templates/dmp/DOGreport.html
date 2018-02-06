@@ -1,8 +1,10 @@
 {% extends 'admin/base_site.html' %}
-{% load static i18n %}
+{% load static i18n humanize %}
 
 {% block extrahead %}{{ block.super }}
     <link rel="stylesheet" href="{% static 'css/dogreport.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
             function openTab(evt, tabName) {
@@ -50,12 +52,13 @@
     <ul class="tab">
         <li><a id="defaultOpen" href="javascript:void(0)" class="tablinks" onclick="openTab(event,'dog-report')" >DOG Report</a></li>
         <li><a href="javascript:void(0)" class="tablinks" onclick="openTab(event,'snapshot')">Current Statistics</a></li>
+        <li><a href="javascript:void(0)" class="tablinks" onclick="openTab(event,'project_group_values')">Project Group Values</a></li>
     </ul>
 
     <div id="dog-report" class="tabcontent">
         <h1>New Grants: April 2014 - Present</h1>
         <div style="border: groove">
-                    <table style="width:98%">
+                    <table style="width:98%" class="table table-striped">
 
                         <tr>
                             <th>Date</th>
@@ -84,7 +87,7 @@
                         {% endfor %}
                     </table>
                     <div style="width:99%; height:420px;" >
-                        <table style="width:98%; height: 98%">
+                        <table style="width:98%; height: 98%" class="table table-striped">
                             <tr>
                                 <td><div id="NewGrant_Chart1_div" style="height:100%;width: 100%"></div></td>
                                 <td><div id="NewGrant_Chart2_div" style="height:100%;width: 100%"></div></td>
@@ -95,7 +98,7 @@
 
         <h1>Legacy Grants: January 2010 - April 2014</h1>
         <div style="border: groove">
-            <table style="width:98%">
+            <table style="width:98%" class="table table-striped">
                 <tr>
                     <th>Date</th>
                     <th>Active</th>
@@ -129,7 +132,7 @@
 
         <h1>New Grants: April 2014 - Present</h1>
         <div style="border: groove">
-            <table>
+            <table class="table table-striped">
                 <tr>
                     <th>Active</th>
                     <th>Contacted</th>
@@ -149,7 +152,7 @@
 
         <h1>Legacy Grants: January 2010 - April 2014</h1>
         <div style="border: groove">
-            <table>
+            <table class="table table-striped">
                 <tr>
                     <th>Active</th>
                     <th>No Data</th>
@@ -164,6 +167,34 @@
                 </tr>
             </table>
         </div>
+    </div>
+
+    <div id="project_group_values" class="tabcontent">
+        <table class="table table-striped">
+            <tr>
+                <th>Project Group</th>
+                {% for year in years_covered %}
+                    {% if year == current_year %}
+                        <th style="color: red">{{ year }}</th>
+                    {% else %}
+                        <th>{{ year }}</th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% for group_id, group in project_groups.iteritems %}
+
+                <tr>
+                <td>{{ group.name }}</td>
+                    {% for k,value in group.values.iteritems %}
+                        {% if k == current_year %}
+                            <td style="color: red">{{ value | floatformat:"0" | intcomma }}</td>
+                        {% else %}
+                            <td>{{ value | floatformat:"0" | intcomma }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
     </div>
 
 

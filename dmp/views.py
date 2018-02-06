@@ -16,7 +16,7 @@ from oauth2client import GOOGLE_TOKEN_URI, GOOGLE_REVOKE_URI, GOOGLE_AUTH_URI
 from oauth2client.client import HttpAccessTokenRefreshError
 import tempfile
 from contextlib import contextmanager
-
+from collections import OrderedDict
 
 
 
@@ -575,7 +575,9 @@ def gotw_scrape(request, id):
             return redirect('/admin/dmp/project/%s' % grant.project.pk)
 
     # read grant info from lead grant
-    if not grant.number: redirect('/admin/dmp/grant/%s' % id)
+    if not grant.number:
+        redirect('/admin/dmp/grant/%s' % id)
+
     url = 'http://gotw.nerc.ac.uk/list_full.asp?pcode=%s&cookieConsent=A' % lead_number
     content = requests.get(url).text
     pi = ''
@@ -622,10 +624,14 @@ def gotw_scrape(request, id):
     if m:
         programme = str(m.group(1))
 
+    # guess ODMP url
+    ODMP_URL = "https://systems.apps.nerc.ac.uk/grants/datamad/Outline%20DMPs/" + grant.number.replace(
+        "/", "_") + "%20DMP.pdf"
+
     # make project and save
     p = Project(startdate=start_date, enddate=end_date, PI=pi,
                 title=title, desc=filtered_desc,
-                status="Active", sciSupContact=scisupcontact)
+                status="Active", sciSupContact=scisupcontact, ODMP_URL=ODMP_URL)
     p.save()
 
     # make note for project
@@ -1375,10 +1381,90 @@ def DOG_report(request):
                      report.complete_grants, report.ended_with_outstanding_data, report.total_grants])
     legacy_grant_report = data
 
+    # Generate Data for Project Group Values
+    project_group_data = OrderedDict()
+    project_groups = ProjectGroup.objects.all().order_by('name')
+
+    # Get all active projects with grants attached and which have a start and enddate
+    projects = Project.objects.filter(status='Active', grant__isnull=False, startdate__isnull=False, enddate__isnull=False)
+
+    # Retrieve start and end year
+    min_year = projects.order_by('startdate')[0].startdate.year
+    max_year = projects.order_by('-enddate')[0].enddate.year
+
+    # Pre-load project group dictionaries with 0 values
+    for pg in project_groups:
+        annual_value = OrderedDict()
+        year = min_year
+        while year <= max_year:
+            annual_value[year] = 0
+            year +=1
+
+        project_group_data[pg.id] = {
+            'name': pg.name,
+            'values': annual_value
+        }
+
+
+    for project in projects:
+        start_year = project.startdate.year
+        end_year = project.enddate.year
+        project_length_years = end_year-start_year
+        total = 0
+
+        # Get all grants for each project and total value of grants
+        for grant in project.grants():
+            total += grant.grant_value
+
+        # Difference between the dates
+        diff = relativedelta(project.enddate, project.startdate)
+
+        # +1 because counting the first and last month in the calculation
+        months = (diff.years * 12) + diff.months + 1
+
+        # If the end day < start day, will lose an extra month in the diff calc which needs to be added back in unless
+        # both dates are at the end of the month where one months finishes on the 30th and the other on the 31st. In
+        # this instance, we don't need to add an extra month.
+        if project.enddate.day < project.startdate.day and not \
+                (view_functions.end_of_month(project.startdate) and view_functions.end_of_month(project.enddate)):
+            months += 1
+
+        # Distribute the value over the length of the project
+        month_cash = float(total)/months
+
+        # Load project specific project groups
+        project_groups_project = project.project_groups()
+
+        # For each of the project groups attached to a project, distribute the funds. Where there is more that one
+        # project group, split the money between the groups evenly.
+        for pg in project_groups_project:
+            if project_length_years > 0:
+
+                # Add start year
+                project_group_data[pg.id]['values'][start_year] += ((13 - project.startdate.month) * month_cash) / len(
+                    project_groups_project)
+
+                # Add end year
+                project_group_data[pg.id]['values'][end_year] += (project.enddate.month * month_cash) / len(
+                    project_groups_project)
+
+                # Cover any remaining years
+                year = start_year + 1
+                while year < end_year:
+                    project_group_data[pg.id]['values'][year] += (month_cash * 12) / len(project_groups_project)
+                    year += 1
+            else:
+                # Project starts and ends in same year. Attribute all money to that year.
+                project_group_data[pg.id]['values'][start_year] += total / len(project_groups_project)
+
+
     return render(request, "dmp/DOGreport.html", {'new_grant_snapshot':new_grant_snapshot,
                                                   'legacy_grant_snapshot':legacy_grant_snapshot,
                                                   'new_grant_report': new_grant_report,
-                                                  'legacy_grant_report':legacy_grant_report
+                                                  'legacy_grant_report':legacy_grant_report,
+                                                  'project_groups': project_group_data,
+                                                  'years_covered': range(min_year,max_year+1),
+                                                  'current_year': datetime.datetime.today().year
                                                   })
 
 @login_required
