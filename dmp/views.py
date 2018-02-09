@@ -1433,9 +1433,10 @@ def grant_value_report(request):
 
         for project in projects:
             for grant in project.grant_set.all():
-                for k, v in view_functions.financial_year(grant.grant_value, project.startdate,
-                                                          project.enddate).iteritems():
-                    grant_programme_data[grant.programme]['values'][k] += v
+                if grant.grant_value:
+                    for k, v in view_functions.financial_year(grant.grant_value, project.startdate,
+                                                              project.enddate).iteritems():
+                        grant_programme_data[grant.programme]['values'][k] += v
 
         years_covered = ['{}/{}'.format(str(year)[-2:], str(year + 1)[-2:]) for year in xrange(min_year, max_year + 1)]
 
