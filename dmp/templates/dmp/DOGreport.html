@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{% static 'css/chosen.min.css' %}">
     <script src="{% static 'js/jquery-1.11.0.min.js' %}"></script>
     <script src="{% static 'js/chosen.jquery.min.js' %}"></script>
+    <script src="{% static 'js/export.js' %}"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
             function openTab(evt, tabName) {
@@ -184,7 +185,7 @@
         <a class="select-status">Select all</a> |
         <a class="deselect-status">Deselect all</a>
         <button  type="button" class="btn btn-primary" id="get_results" typeof="submit">Generate Report</button>
-        <button disabled  type="button" class="btn btn-default" id="download" typeof="submit">Download </button>
+        <button type="button" class="btn btn-default" id="download" onclick="exportResltsToCSV('filterform', '/dmp/project/DOG_report/grant_value_report', 'Grant_Value_Report_{% now "d_m_y" %}.csv')">Download </button>
 
     </form>
 

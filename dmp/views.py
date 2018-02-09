@@ -1386,50 +1386,10 @@ def DOG_report(request):
                                                  grant__isnull=False).values('status').distinct()]
                          )
 
-    # # Generate Data for Project Group Values
-    # project_group_data = OrderedDict()
-    # grant_programme_list = Grant.objects.all().values('programme').distinct()
-    # grant_programmes = sorted([p["programme"] for p in grant_programme_list])
-    #
-    # # Get all active projects with grants attached and which have a start and enddate
-    # projects = Project.objects.filter(status='Active', grant__isnull=False, startdate__isnull=False, enddate__isnull=False)
-    #
-    # # Retrieve start and end year
-    # min_year = projects.order_by('startdate')[0].startdate.year -1 # -1 because financial year for 1 Jan of first year starts in previous year
-    # max_year = projects.order_by('-enddate')[0].enddate.year
-    #
-    # # Pre-load grant programmes dictionaries with 0 values
-    # for gp in grant_programmes:
-    #     annual_value = OrderedDict()
-    #     year = min_year
-    #     while year <= max_year:
-    #         annual_value[year] = 0
-    #         year +=1
-    #
-    #     project_group_data[gp] = {
-    #         'values': annual_value
-    #     }
-    #
-    # for project in projects:
-    #     for grant in project.grants():
-    #         for k,v in view_functions.financial_year(grant.grant_value, project.startdate, project.enddate).iteritems():
-    #             project_group_data[grant.programme]['values'][k] += v
-    #
-    # years_covered = ['{}/{}'.format(str(year)[-2:],str(year+1)[-2:]) for year in xrange(min_year,max_year+1)]
-    #
-    # today = datetime.datetime.today()
-    # if today.month < 4:
-    #     fyear = today.year -1
-    # else:
-    #     fyear = today.year
-
     return render(request, "dmp/DOGreport.html", {'new_grant_snapshot':new_grant_snapshot,
                                                   'legacy_grant_snapshot':legacy_grant_snapshot,
                                                   'new_grant_report': new_grant_report,
                                                   'legacy_grant_report':legacy_grant_report,
-                                                  # 'project_groups': project_group_data,
-                                                  # 'years_covered': years_covered,
-                                                  # 'current_fyear': fyear
                                                   'status_list': status_list
                                                   })
 
@@ -1446,16 +1406,13 @@ def grant_value_report(request):
             return HttpResponse(status=400)
 
         projects = Project.objects.filter(status__in=status_filter, grant__isnull=False, startdate__isnull=False,
-                                          enddate__isnull=False)
+                                          enddate__isnull=False).distinct()
 
         # Generate Data for Project Group Values
-        project_group_data = OrderedDict()
+        grant_programme_data = OrderedDict()
         grant_programme_list = Grant.objects.all().values('programme').distinct()
         grant_programmes = sorted([p["programme"] for p in grant_programme_list])
 
-        # # Get all active projects with grants attached and which have a start and enddate
-        # projects = Project.objects.filter(status='Active', grant__isnull=False, startdate__isnull=False,
-        #                                   enddate__isnull=False)
 
         # Retrieve start and end year
         min_year = projects.order_by('startdate')[
@@ -1470,15 +1427,15 @@ def grant_value_report(request):
                 annual_value[year] = 0
                 year += 1
 
-            project_group_data[gp] = {
+                grant_programme_data[gp] = {
                 'values': annual_value
             }
 
         for project in projects:
-            for grant in project.grants():
+            for grant in project.grant_set.all():
                 for k, v in view_functions.financial_year(grant.grant_value, project.startdate,
                                                           project.enddate).iteritems():
-                    project_group_data[grant.programme]['values'][k] += v
+                    grant_programme_data[grant.programme]['values'][k] += v
 
         years_covered = ['{}/{}'.format(str(year)[-2:], str(year + 1)[-2:]) for year in xrange(min_year, max_year + 1)]
 
@@ -1489,7 +1446,7 @@ def grant_value_report(request):
             fyear = today.year
 
         context = {
-            'project_groups': project_group_data,
+            'project_groups': grant_programme_data,
             'years_covered': years_covered,
             'current_fyear': fyear
         }

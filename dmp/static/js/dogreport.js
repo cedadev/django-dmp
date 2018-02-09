@@ -45,7 +45,6 @@ $('#get_results').click(function () {
     // Get the data from the form
     var datastring = $("#filterform").serialize();
     var target = "/dmp/project/DOG_report/grant_value_report";
-    console.log(datastring)
     $.ajax({
         type: "POST",
         url: target,
@@ -77,7 +76,6 @@ $('#get_results').click(function () {
                 // Build table body
                 var body = ""
                 for (var group in results.project_groups){
-                    console.log(group, results.project_groups[group])
                     var row = "<tr><td>" + group + "</td>"
                     for (var year in results.project_groups[group].values){
                         row = row + "<td>" + numberWithCommas(Math.round(results.project_groups[group].values[year])) + "</td>"

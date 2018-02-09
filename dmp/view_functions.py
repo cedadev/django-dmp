@@ -44,8 +44,7 @@ def end_of_month(date):
 def financial_year(value,start,end):
 
     data={}
-    # for i in xrange(start.year-1, end.year + 1):
-    #     data[i]=0
+
     diff = relativedelta(end, start)
 
     # +1 because counting the first and last month in the calculation
@@ -71,6 +70,7 @@ def financial_year(value,start,end):
     else:
         # Start date is after 1 April of the start year
         data[start.year] = (12-(start.month - 4)) * month_cash
+
         # First financial year taken care of, remove from intervening years list
         if intervening_years:
             del intervening_years[0]
@@ -79,6 +79,7 @@ def financial_year(value,start,end):
     if end.month < 4:
         # End date is before 1 April of the end year
         data[end.year -1] = (9+end.month) * month_cash
+
         # Last financial year taken care of, remove from intervening years list
         if intervening_years:
             del intervening_years[-1]
