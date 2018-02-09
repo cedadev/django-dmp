@@ -19,6 +19,7 @@ urlpatterns = [
      url(r'^$', home, name='index'),
      url(r'^home/$', home, name='home'),
      url(r'^project/DOG_report/$', DOG_report, name="DOG_report"),
+     url(r'project/DOG_report/grant_value_report$', grant_value_report,name="grant_value_report"),
 
      # Send emails to PI
      url(r'^project/email_templates/(?P<project_id>\d+)/$', mail_template, name="email_templates"),

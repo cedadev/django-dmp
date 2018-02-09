@@ -4,7 +4,9 @@
 {% block extrahead %}{{ block.super }}
     <link rel="stylesheet" href="{% static 'css/dogreport.css' %}" type="text/css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="{% static 'css/chosen.min.css' %}">
+    <script src="{% static 'js/jquery-1.11.0.min.js' %}"></script>
+    <script src="{% static 'js/chosen.jquery.min.js' %}"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
             function openTab(evt, tabName) {
@@ -170,33 +172,23 @@
     </div>
 
     <div id="project_group_values" class="tabcontent">
-        <table class="table table-striped">
-            <tr>
-                <th>Project Group</th>
-                {% for year in years_covered %}
-                    {% if year == current_year %}
-                        <th style="color: red">{{ year }}</th>
-                    {% else %}
-                        <th>{{ year }}</th>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-            {% for group_id, group in project_groups.iteritems %}
 
-                <tr>
-                <td>{{ group.name }}</td>
-                    {% for k,value in group.values.iteritems %}
-                        {% if k == current_year %}
-                            <td style="color: red">{{ value | floatformat:"0" | intcomma }}</td>
-                        {% else %}
-                            <td>{{ value | floatformat:"0" | intcomma }}</td>
-                        {% endif %}
-                    {% endfor %}
-                </tr>
+    <form id="filterform" method="POST" action="{% url 'grant_value_report' %}">
+        {% csrf_token %}
+
+        <select multiple class="status" id="status" name="status">
+            {% for status in status_list %}
+                <option>{{ status }}</option>
             {% endfor %}
-        </table>
-    </div>
+        </select>
+        <a class="select-status">Select all</a> |
+        <a class="deselect-status">Deselect all</a>
+        <button  type="button" class="btn btn-primary" id="get_results" typeof="submit">Generate Report</button>
+        <button disabled  type="button" class="btn btn-default" id="download" typeof="submit">Download </button>
 
+    </form>
+
+        <div id="results"></div>
 
 
 {% endblock %}
@@ -303,4 +295,5 @@
         }
 
     </script>
+    <script src="{% static 'js/dogreport.js' %}"></script>
 {% endblock %}

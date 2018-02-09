@@ -292,6 +292,7 @@ class Grant(models.Model):
     pi = models.CharField(max_length=200, blank=True, null=True)
     desc = models.TextField(blank=True, null=True)
     grant_value = models.IntegerField(blank=True, null=True)
+    programme = models.CharField(max_length=200, blank=True, null=True)
     # This is used as a CC  when emails are sent.
     data_email = models.EmailField(blank=True, null=True)
     lead_grant = models.BooleanField(default=False)

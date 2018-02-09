@@ -13,17 +13,24 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        pattern = re.compile('&pound;([0-9,]*)')
+        grant_value_pattern = re.compile('&pound;([0-9,]*)')
+        grant_programme_pattern = re.compile('list_them.asp\?them(.*)<\/a><\/span>')
 
         grants = Grant.objects.all()
         for i,grant in enumerate(grants):
             url = 'http://gotw.nerc.ac.uk/list_full.asp?pcode={}'.format(grant.number)
             response = requests.get(url).text
-            match = re.search(pattern,response)
-            if match:
-                grant_value = int(match.group(1).replace(',',''))
+            value_match = re.search(grant_value_pattern,response)
+            if value_match:
+                grant_value = int(value_match.group(1).replace(',',''))
 
                 grant.grant_value = grant_value
+
+            programme_match = re.search(grant_programme_pattern,response)
+            if programme_match:
+                grant.programme = programme_match.group(1).split('>')[1]
+
+            if value_match or programme_match:
                 grant.save()
 
             self.stdout.write('{}'.format(i))

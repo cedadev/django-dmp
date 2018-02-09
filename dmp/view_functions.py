@@ -39,3 +39,55 @@ def end_of_month(date):
     """
     month_length = [0,31,28,31,30,31,30,31,31,30,31,30,31]
     return date.day == month_length[date.month]
+
+
+def financial_year(value,start,end):
+
+    data={}
+    # for i in xrange(start.year-1, end.year + 1):
+    #     data[i]=0
+    diff = relativedelta(end, start)
+
+    # +1 because counting the first and last month in the calculation
+    months = (diff.years * 12) + diff.months + 1
+
+    # If the end day < start day, will lose an extra month in the diff calc which needs to be added back in unless
+    # both dates are at the end of the month where one months finishes on the 30th and the other on the 31st. In
+    # this instance, we don't need to add an extra month.
+    if end.day < start.day and not \
+            (end_of_month(start) and end_of_month(end)):
+        months += 1
+
+    # Set up intervening years list
+    intervening_years = range(start.year, end.year)
+
+    # Cash per month
+    month_cash = float(value)/months
+
+    # Add start year
+    if start.month < 4:
+        # Start date is before 1 April of the start year
+        data[start.year - 1] = (4 - start.month) * month_cash
+    else:
+        # Start date is after 1 April of the start year
+        data[start.year] = (12-(start.month - 4)) * month_cash
+        # First financial year taken care of, remove from intervening years list
+        if intervening_years:
+            del intervening_years[0]
+
+    # Add end year
+    if end.month < 4:
+        # End date is before 1 April of the end year
+        data[end.year -1] = (9+end.month) * month_cash
+        # Last financial year taken care of, remove from intervening years list
+        if intervening_years:
+            del intervening_years[-1]
+    else:
+        # End date is after 1 April of the end year
+        data[end.year] = (end.month - 3) * month_cash
+
+    # Add data to intervening years
+    for year in intervening_years:
+        data[year] = 12 * month_cash
+
+    return data
