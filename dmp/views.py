@@ -1433,67 +1433,70 @@ def DOG_report(request):
                                                   'status_list': status_list
                                                   })
 
+@login_required
 def grant_value_report(request):
 
-    filter = dict(request.POST.lists())
-    print filter
+    if request.is_ajax() and request.POST:
+        filter = dict(request.POST.lists())
 
-    try:
-        status_filter = filter["status"]
-    except KeyError:
-        # User has not made a selection for one of the filters. Return bad request code.
-        return HttpResponse(status=400)
+        try:
+            status_filter = filter["status"]
+        except KeyError:
+            # User has not made a selection for one of the filters. Return bad request code.
+            return HttpResponse(status=400)
 
-    projects = Project.objects.filter(status__in=status_filter, grant__isnull=False, startdate__isnull=False,
-                                      enddate__isnull=False)
+        projects = Project.objects.filter(status__in=status_filter, grant__isnull=False, startdate__isnull=False,
+                                          enddate__isnull=False)
 
-    # Generate Data for Project Group Values
-    project_group_data = OrderedDict()
-    grant_programme_list = Grant.objects.all().values('programme').distinct()
-    grant_programmes = sorted([p["programme"] for p in grant_programme_list])
+        # Generate Data for Project Group Values
+        project_group_data = OrderedDict()
+        grant_programme_list = Grant.objects.all().values('programme').distinct()
+        grant_programmes = sorted([p["programme"] for p in grant_programme_list])
 
-    # # Get all active projects with grants attached and which have a start and enddate
-    # projects = Project.objects.filter(status='Active', grant__isnull=False, startdate__isnull=False,
-    #                                   enddate__isnull=False)
+        # # Get all active projects with grants attached and which have a start and enddate
+        # projects = Project.objects.filter(status='Active', grant__isnull=False, startdate__isnull=False,
+        #                                   enddate__isnull=False)
 
-    # Retrieve start and end year
-    min_year = projects.order_by('startdate')[
-                   0].startdate.year - 1  # -1 because financial year for 1 Jan of first year starts in previous year
-    max_year = projects.order_by('-enddate')[0].enddate.year
+        # Retrieve start and end year
+        min_year = projects.order_by('startdate')[
+                       0].startdate.year - 1  # -1 because financial year for 1 Jan of first year starts in previous year
+        max_year = projects.order_by('-enddate')[0].enddate.year
 
-    # Pre-load grant programmes dictionaries with 0 values
-    for gp in grant_programmes:
-        annual_value = OrderedDict()
-        year = min_year
-        while year <= max_year:
-            annual_value[year] = 0
-            year += 1
+        # Pre-load grant programmes dictionaries with 0 values
+        for gp in grant_programmes:
+            annual_value = OrderedDict()
+            year = min_year
+            while year <= max_year:
+                annual_value[year] = 0
+                year += 1
 
-        project_group_data[gp] = {
-            'values': annual_value
+            project_group_data[gp] = {
+                'values': annual_value
+            }
+
+        for project in projects:
+            for grant in project.grants():
+                for k, v in view_functions.financial_year(grant.grant_value, project.startdate,
+                                                          project.enddate).iteritems():
+                    project_group_data[grant.programme]['values'][k] += v
+
+        years_covered = ['{}/{}'.format(str(year)[-2:], str(year + 1)[-2:]) for year in xrange(min_year, max_year + 1)]
+
+        today = datetime.datetime.today()
+        if today.month < 4:
+            fyear = today.year - 1
+        else:
+            fyear = today.year
+
+        context = {
+            'project_groups': project_group_data,
+            'years_covered': years_covered,
+            'current_fyear': fyear
         }
 
-    for project in projects:
-        for grant in project.grants():
-            for k, v in view_functions.financial_year(grant.grant_value, project.startdate,
-                                                      project.enddate).iteritems():
-                project_group_data[grant.programme]['values'][k] += v
-
-    years_covered = ['{}/{}'.format(str(year)[-2:], str(year + 1)[-2:]) for year in xrange(min_year, max_year + 1)]
-
-    today = datetime.datetime.today()
-    if today.month < 4:
-        fyear = today.year - 1
-    else:
-        fyear = today.year
-
-    context = {
-        'project_groups': project_group_data,
-        'years_covered': years_covered,
-        'current_fyear': fyear
-    }
-
-    return HttpResponse(json.dumps(context), content_type='application/json')
+        return HttpResponse(json.dumps(context), content_type='application/json')
+    # Return access denied if attempted via non-ajax call
+    return HttpResponse(status=403)
 
 
 
