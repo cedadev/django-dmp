@@ -43,6 +43,7 @@ class Project(models.Model):
     dmp_agreed = models.DateField(blank=True, null=True, verbose_name="DMP Agreed",help_text="Date format dd/mm/yyyy")
     initial_contact = models.DateField(blank=True, null=True, verbose_name="Initial Contact",help_text="Date format dd/mm/yyyy")
     sciSupContact = models.ForeignKey(Person, help_text="CEDA person contact for this Project", blank=True, null=True)
+    sciSupContact2 = models.ForeignKey(Person, help_text="CEDA person contact for this Project", blank=True, null=True, related_name="sciSupContact2s")
     PI = models.CharField(max_length=200, blank=True, null=True)
     PIemail = models.EmailField(max_length=200, blank=True, null=True)
     PIinst = models.CharField(max_length=200, blank=True, null=True)
