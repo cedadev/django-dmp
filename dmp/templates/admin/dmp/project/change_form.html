@@ -117,6 +117,8 @@
         <ul class="object-tools">
             {% block object-tools-items %}
                 {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+                <li><a id="newconv" href="https://secure.helpscout.net/mailbox/7b0c55db545d4969/new-ticket/1952553/" class="historylink">New Conversation</a></li>
+                <li><a id="listconv" href="https://secure.helpscout.net/search/?query={-hash-}DMPProjectID:{{ object_id }}" class="historylink">Previous Conversations</a></li>
                 <li><a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a></li>
                 <li><a href="/dmp/myprojects" class="historylink">My projects</a></li>
                 {#                <li><a href="/dmp/projectsvis?listall=1&show={{ object_id }}" class="historylink">Vis</a></li>#}
