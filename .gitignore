@@ -4,3 +4,6 @@
 #ignore subversion tracking files
 *.svn-base
 *.svn*
+
+# pycharm
+.idea
