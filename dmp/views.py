@@ -307,7 +307,8 @@ def dmp_draft(request, project_id):
                                                                     'refresh_token':token.refresh_token,
                                                                     'grant_type':'refresh_token'})
         if r.status_code != 200:
-            google_user=None
+            request.session['project_id'] = project_id
+            return redirect('google_authorise')
         else:
             token.access_token = json.loads(r.text)['access_token']
             token.save()
