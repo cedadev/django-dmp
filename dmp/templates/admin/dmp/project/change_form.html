@@ -28,67 +28,67 @@
     </script>
     <script type="text/javascript">
         (function () {
-                // This function modifies the django admin inline form for reminders. It resets the "remind in" value to
-                // "-----" on page load to limit confusion.
-                // setDueDate() is used to calculate the due date from the input value to dynamically set the due date field.
+            // This function modifies the django admin inline form for reminders. It resets the "remind in" value to
+            // "-----" on page load to limit confusion.
+            // setDueDate() is used to calculate the due date from the input value to dynamically set the due date field.
 
 
-                // reset "remind in" value
-                var i
-                var reminder = $('[id^=id_reminder_set][id$=-reminder]')
-                for (i=0; i < reminder.length; i++){
-                    reminder[i].value = ''
+            // reset "remind in" value
+            var i
+            var reminder = $('[id^=id_reminder_set][id$=-reminder]')
+            for (i = 0; i < reminder.length; i++) {
+                reminder[i].value = ''
+            }
+
+            function setDueDate() {
+                // Dynamically fills the Due Date field based on the input in the "remind in" field.
+
+                function dateFormatter(date) {
+                    // Takes a date string and toggles beween dd/mm/yyyy and mm/dd/yyyy //
+
+                    if (date === '') {
+                        return ''
+                    }
+                    var dateparts = date.split("/");
+                    return dateparts[1] + "/" + dateparts[0] + "/" + dateparts[2]
                 }
 
-                function setDueDate(){
-                    // Dynamically fills the Due Date field based on the input in the "remind in" field.
+                var id = this.id
+                var value = this.value
+                var dueDateInput = document.getElementById(id.replace("-reminder", "-due_date"))
+                var today = new Date();
+                var endDate = new Date(dateFormatter(document.getElementById("id_enddate").value));
+                var dueDate = new Date()
 
-                    function dateFormatter(date) {
-                        // Takes a date string and toggles beween dd/mm/yyyy and mm/dd/yyyy //
-
-                        if (date === ''){
-                            return ''
-                        }
-                        var dateparts = date.split("/");
-                        return dateparts[1] + "/" + dateparts[0] + "/" + dateparts[2]
-                    }
-
-                    var id = this.id
-                    var value = this.value
-                    var dueDateInput = document.getElementById(id.replace("-reminder","-due_date"))
-                    var today = new Date();
-                    var endDate = new Date(dateFormatter(document.getElementById("id_enddate").value));
-                    var dueDate = new Date()
-
-                    var delay_periods = {
-                        '1_week': 86400*7*1000,     // 1 week in milliseconds
-                        '2_weeks': 86400*14*1000,   // 2 weeks in milliseconds
-                        '1_month': 1,
-                        '3_months': 3,
-                        '6_months': 6,
-                        '-6_months': -6,
-                        '-3_months': -3,
-                        '-1_month': -1
-                    }
-
-                    if (value === 'custom' || value === ''){
-                        dueDate = ''
-
-                    } else if (value.includes('-')) {
-                        endDate.setMonth(endDate.getMonth() + delay_periods[value])
-                        dueDate = endDate.toLocaleDateString('en-UK')
-
-                    } else if (value.includes('month')) {
-                        dueDate.setMonth(today.getMonth() + delay_periods[value])
-                        dueDate = dueDate.toLocaleDateString('en-UK')
-
-                    } else {
-                        dueDate.setTime(today.getTime() + delay_periods[value])
-                        dueDate = dueDate.toLocaleDateString('en-UK')
-
-                    }
-                    dueDateInput.value = dateFormatter(dueDate)
+                var delay_periods = {
+                    '1_week': 86400 * 7 * 1000,     // 1 week in milliseconds
+                    '2_weeks': 86400 * 14 * 1000,   // 2 weeks in milliseconds
+                    '1_month': 1,
+                    '3_months': 3,
+                    '6_months': 6,
+                    '-6_months': -6,
+                    '-3_months': -3,
+                    '-1_month': -1
                 }
+
+                if (value === 'custom' || value === '') {
+                    dueDate = ''
+
+                } else if (value.includes('-')) {
+                    endDate.setMonth(endDate.getMonth() + delay_periods[value])
+                    dueDate = endDate.toLocaleDateString('en-UK')
+
+                } else if (value.includes('month')) {
+                    dueDate.setMonth(today.getMonth() + delay_periods[value])
+                    dueDate = dueDate.toLocaleDateString('en-UK')
+
+                } else {
+                    dueDate.setTime(today.getTime() + delay_periods[value])
+                    dueDate = dueDate.toLocaleDateString('en-UK')
+
+                }
+                dueDateInput.value = dateFormatter(dueDate)
+            }
 
             $('#reminder_set-group').on('change', '[id^=id_reminder_set][id$=-reminder]', setDueDate)
         })(django.jquery)
@@ -117,11 +117,30 @@
         <ul class="object-tools">
             {% block object-tools-items %}
                 {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
-                <li><a id="newconv" href="https://secure.helpscout.net/mailbox/7b0c55db545d4969/new-ticket/?email={{original.PIemail}}&subject={{original.title}}"
-                       class="historylink">New Conversation</a></li>
-                <li><a id="listconv" href="https://secure.helpscout.net/search/?query={-hash-}DMPProjectID:{{ object_id }}" class="historylink">Previous Conversations</a></li>
-                <li><a href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a></li>
-                <li><a href="/dmp/myprojects" class="historylink">My projects</a></li>
+                <li>
+                    <a id="newconv"
+                       href="https://secure.helpscout.net/mailbox/7b0c55db545d4969/new-ticket/?email={{ original.PIemail }}&subject={{ original.title }}"
+                       class="historylink"
+                       target="_blank">
+                        New Conversation
+                    </a>
+                </li>
+                <li>
+                    <a id="listconv"
+                       href="https://secure.helpscout.net/search/?query={-hash-}DMPProjectID:{{ object_id }}"
+                       class="historylink"
+                       target="_blank">
+                        Previous Conversations
+                    </a>
+                </li>
+                <li>
+                    <a href="{% add_preserved_filters history_url %}" class="historylink">
+                        {% trans "History" %}
+                    </a>
+                </li>
+                <li>
+                    <a href="/dmp/myprojects" class="historylink">My projects</a>
+                </li>
                 {#                <li><a href="/dmp/projectsvis?listall=1&show={{ object_id }}" class="historylink">Vis</a></li>#}
                 {% for g in original.grants %}
                     <li>{{ g.gotw|safe }}</li>
