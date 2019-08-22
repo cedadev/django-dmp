@@ -2,22 +2,17 @@ from django.db import models
 
 # Create your models here.
 
-from django.db import models
-
 import datetime
 from datetime import datetime, timedelta, date
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.fields import PositiveIntegerField
-from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 
 import re
 from dateutil.relativedelta import relativedelta
 
 # import users 
 from django.contrib.auth.models import *
-#from cedainfoapp.models import *
 from sizefield.models import FileSizeField
 from picklefield.fields import PickledObjectField
 
@@ -248,7 +243,6 @@ class Project(models.Model):
 #-----
 
 class DataProduct(models.Model):
-
     # Data products are data streams produced by projects
 
     title = models.CharField(max_length=200)
@@ -260,22 +254,38 @@ class DataProduct(models.Model):
     contact1 = models.CharField(max_length=200, blank=True, null=True)
     contact2 = models.CharField(max_length=200, blank=True, null=True)
     deliverydate = models.DateField(blank=True, null=True)
-    preservation_plan = models.CharField(max_length=200, blank=True, 
-              null=True, choices=( ("KeepIndefinitely","Keep Indefinitely"),
-                 ("KeepAsIs","Keep as is - Even if obsolete"),
-                 ("Dispose5years ","Review for disposal 5 years after project completes"),
-                 ("ManageInProject","Don't Archive - manage the data within the project"),
-                 ("Subset","Plan to keep a subset of the data indefinitely"),
-                 ("TBD","TBD")))
+    preservation_plan = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        choices=(
+            ("Reference", "Reference data with principal use to provide evidence for publication"),
+            ("Structured","Structured data with set format and metadata conventions"),
+            ("Interoperable", "Interoperable data with formats and metadata conventions for specific community tools"),
+            ("InProject", "Data management within the project only. No archive involvement"),
+            ("OtherRepositories", "Other Non-NERC repositories"),
+            ("BODC", "British Oceanographic Data Centre"),
+            ("EIDC", "Environmental Information Data Centre "),
+            ("PDC", "Polar Data Centre"),
+            ("NGDC", "National Geoscience Data Centre"),
+            ("OtherDMP", "This data is planned within another project DMP"),
+            ("KeepIndefinitely", "Keep Indefinitely"),
+            ("KeepAsIs", "Keep as is - Even if obsolete"),
+            ("Dispose5years ", "Review for disposal 5 years after project completes"),
+            ("ManageInProject", "Don't Archive - manage the data within the project"),
+            ("Subset", "Plan to keep a subset of the data indefinitely"),
+            ("TBD", "TBD")
+        )
+    )
     added = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     review_date = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=200, blank=True, null=True,
-            choices=( ("WithProjectTeam","With Project Team"),
-                 ("Ingesting","Ingesting"),
-                 ("Archived","Archived and complete"),
-                 ("Defaulted","Defaulted - not archived due to project not supplying data"),
-                 ("NotArchived","Not going to archive - planned")))
+                              choices=(("WithProjectTeam", "With Project Team"),
+                                       ("Ingesting", "Ingesting"),
+                                       ("Archived", "Archived and complete"),
+                                       ("Defaulted", "Defaulted - not archived due to project not supplying data"),
+                                       ("NotArchived", "Not going to archive - planned")))
     data_URL = models.URLField(blank=True, null=True)
 
 
