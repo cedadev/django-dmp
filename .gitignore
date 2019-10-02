@@ -7,3 +7,6 @@
 
 # pycharm
 .idea
+
+# Distribution/packaging
+*.egg-info/

@@ -61,6 +61,12 @@ class Project(models.Model):
                  ("Unresponsive", "Unresponsive"),
                  ("MergedProject/HandledElsewhere", "Merged Project/Handled Elsewhere"),
                      ))
+    project_status = models.CharField(max_length=200, blank=True, null=True,
+            choices=(("InitialContact", "Initial contact"),
+                 ("DMPComms","DMP comms"),
+                 ("Progress","Progress"),
+                 ("DataDelivery", "Data delivery"),
+                     ))
     modified = models.DateTimeField(auto_now=True)
     third_party_data = models.ManyToManyField('DataProduct', related_name='requirements+', 
                         blank=True, null=True)

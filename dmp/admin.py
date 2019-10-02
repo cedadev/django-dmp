@@ -69,9 +69,9 @@ admin.site.register(DataProduct, DataProductAdmin)
 class ProjectAdmin(admin.ModelAdmin):
     save_on_top = True
 
-    list_display = ('title', 'project_groups_links', 'startdate', 'enddate', 'initial_contact', 'dmp_agreed', 'status', 'ndata','sciSupContact','grant_links')
+    list_display = ('title', 'project_groups_links', 'startdate', 'enddate', 'initial_contact', 'dmp_agreed', 'status', 'project_status', 'ndata','sciSupContact','grant_links')
     search_fields = ('title', 'desc', 'PI', 'Contact1', 'Contact2')
-    list_filter = ('status', 'sciSupContact', 'date_added')
+    list_filter = ('status', 'sciSupContact', 'date_added') #, 'project_status')
     filter_horizontal = ('third_party_data',)
     form = ProjectAdminForm
     fieldsets = (
@@ -80,7 +80,7 @@ class ProjectAdmin(admin.ModelAdmin):
         }),
         ('', {
             'fields': (
-            ('startdate', 'enddate'), ('initial_contact','dmp_agreed'),
+            ('startdate', 'enddate'), 'project_status', ('initial_contact', 'dmp_agreed'),
             ('sciSupContact', 'sciSupContact2', 'status'),
             ('primary_dataCentre','other_dataCentres'),
             'dmp_URL','ODMP_URL','moles_URL', 'helpscout_url')
