@@ -1715,7 +1715,14 @@ def todolist_summary(request):
             contact.upcoming = upcoming
             contact.total = expired + active + upcoming
             contact.other = others
-            contact.active_proj = Project.objects.filter(sciSupContact=contact).filter(Q(status="Active") | Q(status="EndedWithDataToCome")).count()
+
+            projects = Project.objects.filter(sciSupContact=contact).filter(Q(status="Active") | Q(status="EndedWithDataToCome"))
+
+            contact.active_proj = projects.count()
+            contact.initial_contact = projects.filter(project_status="InitialContact").count()
+            contact.dmp_comms = projects.filter(project_status="DMPComms").count()
+            contact.progress = projects.filter(project_status="Progress").count()
+            contact.data_delivery = projects.filter(project_status="DataDelivery").count()
             summary.append(contact)
 
     return render(request,'dmp/todolist_summary.html', {"summary": summary})
