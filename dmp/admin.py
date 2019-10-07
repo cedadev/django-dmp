@@ -71,7 +71,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
     list_display = ('title', 'project_groups_links', 'startdate', 'enddate', 'initial_contact', 'dmp_agreed', 'status', 'project_status', 'ndata','sciSupContact','grant_links')
     search_fields = ('title', 'desc', 'PI', 'Contact1', 'Contact2')
-    list_filter = ('status', 'sciSupContact', 'date_added') #, 'project_status')
+    list_filter = ('status', 'sciSupContact', 'date_added')
     filter_horizontal = ('third_party_data',)
     form = ProjectAdminForm
     fieldsets = (
