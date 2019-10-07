@@ -1176,7 +1176,6 @@ def grant_upload_complete(request):
                     startdate=start_date,
                     enddate=end_date,
                     status='Active',
-                    project_status = 'Initial contact',
                     sciSupContact=request.user,
                     primary_dataCentre=grants[lead_grant]['Assigned Data Centre'],
                     other_dataCentres=grants[lead_grant]["Other DC's Expecting Datasets"],
