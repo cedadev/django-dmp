@@ -17,6 +17,7 @@ from oauth2client.client import HttpAccessTokenRefreshError
 import tempfile
 from contextlib import contextmanager
 from collections import OrderedDict
+from django.conf import settings
 
 
 
