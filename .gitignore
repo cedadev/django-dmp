@@ -10,3 +10,5 @@
 
 # Distribution/packaging
 *.egg-info/
+
+db.sqlite3
