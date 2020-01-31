@@ -2,7 +2,7 @@ apiclient==1.0.3
 certifi==2017.7.27.1
 chardet==3.0.4
 Django==1.10.5
-django-dmp==1.7.0
+
 django-extensions==1.7.5
 django-multiselectfield==0.1.5
 django-picklefield==1.0.0
