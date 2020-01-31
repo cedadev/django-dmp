@@ -1,0 +1,14 @@
+# ignore pyc files
+*.pyc
+
+#ignore subversion tracking files
+*.svn-base
+*.svn*
+
+# pycharm
+../.idea
+
+# Distribution/packaging
+*.egg-info/
+
+db.sqlite3
