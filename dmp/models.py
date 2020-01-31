@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 
 # import users 
 from django.contrib.auth.models import *
+from django.contrib.auth.models import User
 from sizefield.models import FileSizeField
 from picklefield.fields import PickledObjectField
 
@@ -20,6 +21,7 @@ from picklefield.fields import PickledObjectField
 
 class Person(User):
     class Meta:
+
         proxy = True
         ordering = ('username',)
 
