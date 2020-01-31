@@ -1,0 +1,54 @@
+Metadata-Version: 1.1
+Name: django-dmp
+Version: 1.7.0
+Summary: A Django app to help data management planning.
+Home-page: http://www.ceda.ac.uk/
+Author: Sam Pepler
+Author-email: sam.pepler@stfc.ac.uk
+License: my License
+Description: =====
+        dmp
+        =====
+        
+        dmp is a Django app to facilitate data management projects.
+        
+        Quick start
+        -----------
+        
+        1. Build the dmp pip installable from the source code::
+        
+           python setup.py sdist (from inside the django-dmp directory)
+        
+        2. Install the dmp into your virtual env::
+        
+           pip install --user django-dmp/dist/django-dmp-0.1.tar.gz
+        
+        3. Add "dmp" to your INSTALLED_APPS setting like this::
+        
+            INSTALLED_APPS = (
+                ...
+                'dmp',
+            )
+        
+        4. Include the 'dmp' URLconf in your project urls.py like this::
+        
+            url(r'^dmp/', include('dmp.urls')),
+        
+        5. Run `python manage.py migrate` to create the dmp models.
+        
+        6. Start the development server and visit http://127.0.0.1:8000/admin/
+           to launch cedainfo admin interface (you'll need the Admin app enabled).
+        
+        
+Platform: UNKNOWN
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content

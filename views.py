@@ -1,18 +1,16 @@
 from dmp.models import *
-from django.shortcuts import redirect, render_to_response, get_object_or_404, render
+from django.shortcuts import redirect, get_object_or_404, render
 from django.http.response import HttpResponse
 from dmp.forms import *
-from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 
 # upload draft dmp to google
-import cStringIO as StringIO
 from httplib2 import Http
 from apiclient.discovery import build
 from apiclient.http import BatchHttpRequest
-from oauth2client import file, client
-from oauth2client import GOOGLE_TOKEN_URI, GOOGLE_REVOKE_URI, GOOGLE_AUTH_URI
+from oauth2client import client
+from oauth2client import GOOGLE_TOKEN_URI
 from oauth2client.client import HttpAccessTokenRefreshError
 import tempfile
 from contextlib import contextmanager
