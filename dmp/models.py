@@ -26,6 +26,9 @@ class Person(User):
         app_label = 'dmp'
 
 class Project(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
 
     # Projects are activities under funding programmes that are examined
     # for their data management needs.
