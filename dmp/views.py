@@ -45,7 +45,7 @@ import view_functions
 
 def home(request):
     # Home page view
-    return render(request, 'dmp/home.html', {'user': request.user})
+    return render(request, 'home.html', {'user': request.user})
 
 
 def google_drive_upload(request, project_id):
