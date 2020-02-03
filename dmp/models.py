@@ -254,6 +254,9 @@ class Project(models.Model):
 #-----
 
 class DataProduct(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
     # Data products are data streams produced by projects
 
     title = models.CharField(max_length=200)
@@ -344,6 +347,10 @@ class Grant(models.Model):
 
 
 class ProjectGroup(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
+
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     projects = models.ManyToManyField('Project', blank=True, null=True)
@@ -356,6 +363,7 @@ class Note(models.Model):
     class Meta:
         verbose_name_plural = "Notes"
         ordering = ["added"]
+        app_label = 'dmp'
 
     added = models.DateTimeField(auto_now_add=True)
     creator = models.ForeignKey(Person, null=True, blank=True)
@@ -366,6 +374,9 @@ class Note(models.Model):
     location = GenericForeignKey('content_type', 'object_id')
 
 class MetadataForm(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
     modified = models.DateTimeField(auto_now_add=True,verbose_name="last modified")
     form_type = models.CharField(max_length=200, blank=True, null=True,
             choices=( ("projectForm","Project Form"),
@@ -385,6 +396,9 @@ class MetadataForm(models.Model):
         return super(MetadataForm, self).save(*args,**kwargs)
 
 class EmailTemplate(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
     template_name = models.CharField(max_length=200)
     template_ref = models.CharField(max_length=200, null=True, verbose_name="Short Name")
     last_edited = models.DateField(auto_now_add=True)
@@ -393,6 +407,9 @@ class EmailTemplate(models.Model):
 
 
 class DOGstats(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
     '''table of statistics for monthly DOG snapshots'''
     date = models.DateTimeField()
     stat_type = models.CharField(max_length=200)
@@ -412,6 +429,7 @@ class draftDmp(models.Model):
 
     class Meta():
         verbose_name_plural = 'Draft DMP'
+        app_label = 'dmp'
 
 
 class OAuthToken(models.Model):
@@ -422,6 +440,7 @@ class OAuthToken(models.Model):
     """
     class Meta:
         verbose_name = 'OAuth Token'
+        app_label = 'dmp'
 
     user = models.OneToOneField(User,
                                 models.CASCADE, related_name = 'oauth_token')
@@ -432,11 +451,18 @@ class OAuthToken(models.Model):
 
 class GrantFile(models.Model):
     '''when user uploads a file using the grant uploader, temporarily store the contents for use later'''
+    class Meta:
+
+        app_label = 'dmp'
+
     file_contents = PickledObjectField()
     added = models.DateTimeField(auto_now_add=True)
 
 
 class Reminder(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
 
     project = models.ForeignKey(Project)
     description = models.CharField(max_length=200, null=True)
