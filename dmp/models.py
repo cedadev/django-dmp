@@ -23,6 +23,7 @@ class Person(User):
 
         proxy = True
         ordering = ('username',)
+        app_label = 'dmp'
 
 class Project(models.Model):
 
