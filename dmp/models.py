@@ -311,6 +311,9 @@ class DataProduct(models.Model):
         return Projects.objects.filter(third_party_data=self)
 
 class Grant(models.Model):
+    class Meta:
+        app_label = 'dmp'
+
     project = models.ForeignKey('Project', blank=True, null=True)
     number = models.CharField(max_length=200)
     title = models.CharField(max_length=800, blank=True, null=True)
