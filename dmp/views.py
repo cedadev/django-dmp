@@ -45,7 +45,7 @@ import view_functions
 
 def home(request):
     # Home page view
-    return render(request, 'dmp/home.html', {'user': request.user})
+    return render(request, 'dmp-templates/home.html', {'user': request.user})
 
 
 def google_drive_upload(request, project_id):
@@ -271,7 +271,7 @@ def render_template(request, project_id, template_id):
         data = json.dumps(data)
         return HttpResponse(data, content_type='aplication/json')
     else:
-        return redirect('/dmp/project/%s' % project_id)
+        return redirect('/dmp-templates/project/%s' % project_id)
 
 
 
@@ -325,7 +325,7 @@ def dmp_draft(request, project_id):
     DMPtemplates = draftDmp.objects.all()
 
     return render(request,
-                  'dmp/dmp_draft.html',
+                  'dmp-templates/dmp_draft.html',
                   {
                       'DMPtemplates': DMPtemplates,
                       'project': project,
@@ -382,7 +382,7 @@ def my_projects(request):
 
     projects = projects.order_by('modified')
 
-    return render(request, 'dmp/my_projects.html',
+    return render(request, 'dmp-templates/my_projects.html',
                               {'projects': projects, 'user': user, 'listall': listall,
                                'modchecktime': datetime.datetime.now()-datetime.timedelta(days=90)})
 
@@ -396,7 +396,7 @@ def datamad_update(request):
         projects = projects.order_by(*order)
         order = ','.join(order)
     
-    return render(request, 'dmp/datamad_update.html',
+    return render(request, 'dmp-templates/datamad_update.html',
                               {'projects': projects, 'order': order,
                                'modchecktime': datetime.datetime.now()-datetime.timedelta(days=90)})
 
@@ -457,7 +457,7 @@ def link_grant_to_project(request, grant_id):
     context = {'projectscores': topprojectscores, 'grant': grant, 'user': user,
                'search': searchstring}
     
-    return render(request, 'dmp/link_grant_to_project.html', context)
+    return render(request, 'dmp-templates/link_grant_to_project.html', context)
 
 
 def projects_by_person(request):
@@ -484,7 +484,7 @@ def projects_by_person(request):
                 if pg not in summary[username][1]:
                     summary[username][1].append(pg)
 
-    return render(request, 'dmp/projects_by_person.html', {'summary': summary})
+    return render(request, 'dmp-templates/projects_by_person.html', {'summary': summary})
 
 
 def projects_vis(request):
@@ -520,7 +520,7 @@ def projects_vis(request):
     for p in projects:
         p.alert_type, p.alert_text = p.alerts()
 
-    return render(request,'dmp/projects_vis.html',
+    return render(request,'dmp-templates/projects_vis.html',
                               {'projects': projects, 'user': user,
                                'listall': listall, 'show': show,
                                'modchecktime': datetime.datetime.now()-datetime.timedelta(days=90)})
@@ -529,7 +529,7 @@ def projects_vis(request):
 def showproject(request, project_id):
     # a summary of a single project
     project = get_object_or_404(Project, pk=project_id)
-    return render(request,'dmp/showproject.html', {'project': project})
+    return render(request,'dmp-templates/showproject.html', {'project': project})
 
 
 def gotw_scrape(request, id):
@@ -709,7 +709,7 @@ def mail_template(request, project_id):
                                                                          'data_products':data_products}))
         message.fields['template_type'].initial = type
 
-        return render(request, 'dmp/select_email_template.html',
+        return render(request, 'dmp-templates/select_email_template.html',
                       {
                        'opts': opts,
                        'project': project,
@@ -754,7 +754,7 @@ def mail_template(request, project_id):
 
             return redirect("/admin/dmp/project/%s/change" % project_id)
 
-        return render(request, "dmp/select_email_template.html",
+        return render(request, "dmp-templates/select_email_template.html",
                       {
                       'opts': opts,
                         'project':project,
@@ -770,7 +770,7 @@ def mail_template(request, project_id):
         type_select = EmailTemplateSelectorForm()
         message = EmailMessageForm()
 
-        return render(request,'dmp/select_email_template.html',
+        return render(request,'dmp-templates/select_email_template.html',
                       {'project': project,
                        'opts': opts,
                        'form_select':type_select,
@@ -782,7 +782,7 @@ def grant_uploader(request):
     opts = Grant()._meta
     form = GrantUploadForm() #empty unbound form
 
-    return render(request,"dmp/grant_uploader.html",{'form':form, 'opts':opts, 'user':request.user})
+    return render(request,"dmp-templates/grant_uploader.html",{'form':form, 'opts':opts, 'user':request.user})
 
 @login_required
 def grant_upload_confirm(request):
@@ -831,7 +831,7 @@ def grant_upload_confirm(request):
                 else:
                     messages.error(request,"Text provided does not contain grant numbers")
 
-                return render(request, 'dmp/grant_uploader.html', {"form":form, "opts":opts} )
+                return render(request, 'dmp-templates/grant_uploader.html', {"form":form, "opts":opts} )
 
             else:
                 # User has uploaded a DataMad file
@@ -872,7 +872,7 @@ def grant_upload_confirm(request):
                     if errors:
                         for e in errors:
                             messages.error(request, 'Unexpected or missing column name in input file, was expecting "' + e +'". Correct header and retry.' )
-                        return render(request,'dmp/grant_uploader.html',{'form':form, 'opts':opts})
+                        return render(request,'dmp-templates/grant_uploader.html',{'form':form, 'opts':opts})
 
                 # Perform dry run to create a list of the changes which will be made for approval.
                 # Task dictionaries
@@ -976,7 +976,7 @@ def grant_upload_confirm(request):
                 # If there are no changes, escape the process.
                 if not any([new_grants, new_projects, link_projects, field_updates]):
                     messages.success(request,"There are no changes to be made.")
-                    return render(request, 'dmp/grant_uploader.html',{"form":form, "opts":opts})
+                    return render(request, 'dmp-templates/grant_uploader.html',{"form":form, "opts":opts})
 
                 changes = {
                     "new_grants":new_grants,
@@ -991,11 +991,11 @@ def grant_upload_confirm(request):
                 id = file_to_db.pk
 
 
-                return render(request, 'dmp/grant_uploader_changes.html', {"temporary_id": id, "opts":opts, "changes":changes})
+                return render(request, 'dmp-templates/grant_uploader_changes.html', {"temporary_id": id, "opts":opts, "changes":changes})
 
         # If form is not valid, return to grant uploader page and display errors.
         else:
-            return render(request, 'dmp/grant_uploader.html', {"form":form, "opts":opts})
+            return render(request, 'dmp-templates/grant_uploader.html', {"form":form, "opts":opts})
 
 
 @login_required
@@ -1314,7 +1314,7 @@ def grant_upload_complete(request):
         temp_file = GrantFile.objects.get(pk=request.POST['pk'])
         temp_file.delete()
 
-        return render(request, 'dmp/grant_uploader.html', {'form': form, 'opts': opts})
+        return render(request, 'dmp-templates/grant_uploader.html', {'form': form, 'opts': opts})
     else:
         messages.error(request, 'No file submitted')
         return redirect('/dmp/grant/grant_upload/')
@@ -1386,7 +1386,7 @@ def DOG_report(request):
                                                  grant__isnull=False).values('status').distinct()]
                          )
 
-    return render(request, "dmp/DOGreport.html", {'new_grant_snapshot':new_grant_snapshot,
+    return render(request, "dmp-templates/DOGreport.html", {'new_grant_snapshot':new_grant_snapshot,
                                                   'legacy_grant_snapshot':legacy_grant_snapshot,
                                                   'new_grant_report': new_grant_report,
                                                   'legacy_grant_report':legacy_grant_report,
@@ -1471,7 +1471,7 @@ def email_help(request):
         print (project.name)
 
 
-    return render(request,"dmp/email_template_info.html")
+    return render(request,"dmp-templates/email_template_info.html")
 
 
 @login_required
@@ -1525,7 +1525,7 @@ def todo_list(request, scisupcontact=None):
         'scisupcontacts': scisupcontacts,
         'filter_value' : filter,
     }
-    return render(request, "dmp/todolist.html", context)
+    return render(request, "dmp-templates/todolist.html", context)
 
 def return_reminder(request, object_type, object_id):
     '''AJAX request to populate modal'''
@@ -1723,4 +1723,4 @@ def todolist_summary(request):
             contact.data_delivery = projects.filter(project_status="DataDelivery").count()
             summary.append(contact)
 
-    return render(request,'dmp/todolist_summary.html', {"summary": summary})
+    return render(request,'dmp-templates/todolist_summary.html', {"summary": summary})
