@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'dmp.apps.DmpConfig',
+    'dmp',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
