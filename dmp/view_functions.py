@@ -1,4 +1,4 @@
-from models import Reminder
+from .models import Reminder
 from dateutil.relativedelta import relativedelta
 
 def init_reminders(project):
@@ -58,7 +58,7 @@ def financial_year(value,start,end):
         months += 1
 
     # Set up intervening years list
-    intervening_years = range(start.year, end.year)
+    intervening_years = list(range(start.year, end.year))
 
     # Cash per month
     month_cash = float(value)/months

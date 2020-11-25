@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% load i18n static %}
 
-{%  block title %}{{ title }} | {% trans 'DMP Administration' %}{% endblock %}
+{% block title %}{{ title }} | {% trans 'DMP Administration' %}{% endblock %}
 
 
 {% block branding %}
@@ -9,13 +9,15 @@
 {% endblock %}
 
 {% block extrahead %}{{ block.super }}
-<link rel="stylesheet" href="{% static 'css/navbar.css' %}" type="text/css"/>
+<link rel="stylesheet" href="{% static 'dmp/css/navbar.css' %}" type="text/css"/>
 {% endblock %}
 
-{% block nav-global %}
 
+{% block nav-global %}
     <ul class="nav-bar">
-        <li class="nav-bar"><a class="navbar-text" href="{% url 'admin:index' %}">Home</a></li>
+        <li class="dropdown">
+            <a class="navbar-text" href="{% url 'admin:index' %}">Home</a>
+        </li>
         <li class="dropdown">
             <a href="{% url 'admin:dmp_project_changelist' %}" class="dropbtn navbar-text">Projects</a>
             <div class="dropdown-content">
@@ -32,7 +34,6 @@
             </div>
         </li>
     </ul>
-
 {% endblock %}
 
 {% block usertools %}
@@ -55,6 +56,8 @@
             <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
         {% endif %}
         <a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a>
-        </div>
+</div>
     {% endblock %}
 {% endblock %}
+</div>
+</div>

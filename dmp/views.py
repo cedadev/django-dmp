@@ -1,18 +1,16 @@
 from dmp.models import *
-from django.shortcuts import redirect, render_to_response, get_object_or_404, render
+from django.shortcuts import redirect, get_object_or_404, render
 from django.http.response import HttpResponse
 from dmp.forms import *
-from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 
 # upload draft dmp to google
-import cStringIO as StringIO
 from httplib2 import Http
 from apiclient.discovery import build
 from apiclient.http import BatchHttpRequest
-from oauth2client import file, client
-from oauth2client import GOOGLE_TOKEN_URI, GOOGLE_REVOKE_URI, GOOGLE_AUTH_URI
+from oauth2client import client
+from oauth2client import GOOGLE_TOKEN_URI
 from oauth2client.client import HttpAccessTokenRefreshError
 import tempfile
 from contextlib import contextmanager
@@ -39,7 +37,7 @@ import os
 import csv
 import json
 
-import view_functions
+from . import view_functions
 
 # set http proxy for wget calls
 # os.environ["http_proxy"] = "http://wwwcache.rl.ac.uk:8080"
@@ -335,14 +333,14 @@ def dmp_draft(request, project_id):
                       'form': form,
                       'google_user': google_user,
                       'start_year': start_year,
-                      'token':token.access_token
+                      'token': token.access_token
                   }
                   )
 
 
 def add_dataproduct(request, project_id):
     # add a data product to a project
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
     else:
         user = None
@@ -362,7 +360,7 @@ def add_dataproduct(request, project_id):
 
 def my_projects(request):
     # list projects for logged in user
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
     else:
         user = None
@@ -599,7 +597,7 @@ def gotw_scrape(request, id):
     m = re.search('<p class="small"><b>Abstract:</b> (.*?)</p>', content, re.S)
     if m:
         desc = m.group(1)
-        filtered_desc = ''.join(filter(lambda x: x in string.printable, desc))
+        filtered_desc = ''.join([x for x in desc if x in string.printable])
 
     # find pi
     m = re.search('<b>Principal Investigator</b>: <a href="list_med_pi.asp\?pi=.*?">(.*?)</a>', content)
@@ -853,7 +851,7 @@ def grant_upload_confirm(request):
                         grants[row[0]] = row_dict
 
                 # check arbitary grant ref to make sure that the necessary headers are in place
-                if grants.keys()[0]:
+                if list(grants.keys())[0]:
                     errors = []
                     # Check necessary keys are in dictionary and flag errors
                     keys = (
@@ -867,7 +865,7 @@ def grant_upload_confirm(request):
                     )
                     for k in keys:
                         try:
-                            grants[grants.keys()[0]][k]
+                            grants[list(grants.keys())[0]][k]
                         except KeyError:
                             errors.append(k)
 
@@ -1124,7 +1122,7 @@ def grant_upload_complete(request):
                 if grants[grant]['Parent Grant']:
                     lead_grant = grants[grant]['Parent Grant']
 
-                    if lead_grant in grants.keys():
+                    if lead_grant in list(grants.keys()):
                         pi = grants[lead_grant]['Grant Holder']
                         pi_email = grants[lead_grant]['Data Contact Email']
 
@@ -1138,7 +1136,7 @@ def grant_upload_complete(request):
                 m = re.search('<p class="small"><b>Abstract:</b> (.*?)</p>', content, re.S)
                 if m:
                     desc = m.group(1)
-                    filtered_desc = ''.join(filter(lambda x: x in string.printable, desc))
+                    filtered_desc = ''.join([x for x in desc if x in string.printable])
 
                 # start date
                 m = re.search('<span class="detailsText">(\d{1,2} \w{3} \d{4})', content)
@@ -1345,8 +1343,8 @@ def DOG_report(request):
         {}
     ]
 
-    new_grant_dates = [datetime.date(2014,04,01),todays_date ]
-    legacy_grant_dates = [datetime.date(2010,01,01),datetime.date(2014,03,31)]
+    new_grant_dates = [datetime.date(2014,0o4,0o1),todays_date ]
+    legacy_grant_dates = [datetime.date(2010,0o1,0o1),datetime.date(2014,0o3,31)]
 
     def grant_summary_counter(timerange, statistic):
         total = 0
@@ -1437,10 +1435,10 @@ def grant_value_report(request):
             for grant in project.grant_set.all():
                 if grant.grant_value:
                     for k, v in view_functions.financial_year(grant.grant_value, project.startdate,
-                                                              project.enddate).iteritems():
+                                                              project.enddate).items():
                         grant_programme_data[grant.programme]['values'][k] += v
 
-        years_covered = ['{}/{}'.format(str(year)[-2:], str(year + 1)[-2:]) for year in xrange(min_year, max_year + 1)]
+        years_covered = ['{}/{}'.format(str(year)[-2:], str(year + 1)[-2:]) for year in range(min_year, max_year + 1)]
 
         today = datetime.datetime.today()
         if today.month < 4:
@@ -1470,7 +1468,7 @@ def email_help(request):
     fields = []
 
     for project in project_fields:
-        print (project.name)
+        print((project.name))
 
 
     return render(request,"dmp/email_template_info.html")

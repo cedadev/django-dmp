@@ -2,10 +2,10 @@
 {% load i18n admin_modify static admin_urls %}
 
 {% block extrahead %}{{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/dmp.css' %}" type="text/css"/>
-    <link rel="stylesheet" href="{% static 'js/jquery-ui-1.12.1-datepicker/jquery-ui.min.css' %}" type="text/css"/>
-    <script src="{% static 'js/jquery-1.11.0.min.js' %}" type="text/javascript"></script>
-    <script src="{% static 'js/jquery-ui-1.12.1-datepicker/jquery-ui.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'dmp/css/dmp.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'dmp/js/jquery-ui-1.12.1-datepicker/jquery-ui.min.css' %}" type="text/css"/>
+    <script src="{% static 'dmp/js/jquery-1.11.0.min.js' %}" type="text/javascript"></script>
+    <script src="{% static 'dmp/js/jquery-ui-1.12.1-datepicker/jquery-ui.min.js' %}"></script>
 
 {% endblock %}
 {% block admin_change_form_document_ready %}
@@ -110,7 +110,7 @@
 {% block object-tools %}
 
 
-    <img style="height:40px; align:right" src="/static/projecticon.jpg"/>
+    <img style="height:40px; align:right" src="{% static 'dmp/projecticon.jpg' %}"/>
 
 
     {% if change %}{% if not is_popup %}

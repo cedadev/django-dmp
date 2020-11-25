@@ -28,8 +28,8 @@ class Command(BaseCommand):
             {}
         ]
 
-        new_grant_dates = [datetime.date(2014, 04, 01), todays_date]
-        legacy_grant_dates = [datetime.date(2010, 01, 01), datetime.date(2014, 03, 31)]
+        new_grant_dates = [datetime.date(2014, 0o4, 0o1), todays_date]
+        legacy_grant_dates = [datetime.date(2010, 0o1, 0o1), datetime.date(2014, 0o3, 31)]
 
         def grant_summary_counter(timerange, statistic):
             total = 0

@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static%}
 {% block extrahead %}{{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/dmp.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'dmp/css/dmp.css' %}" type="text/css"/>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -116,7 +116,7 @@
         <p>Do you want to apply these changes? </p>
         <table>
             <td style="border: none"><input style="background-color: #d31a1a" onclick="show('loading')" type="submit" value="Yes, I accept the changes" href=""></td>
-            <td style="border: none; vertical-align: middle; visibility: hidden" id="loading"><img src="{% static 'loading.gif' %}"></td>
+            <td style="border: none; vertical-align: middle; visibility: hidden" id="loading"><img src="{% static 'dmp/loading.gif' %}"></td>
             <td style="border: none"><input type="submit" value="No, take me back" name="cancel">
         </table>
     </form>

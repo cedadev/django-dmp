@@ -1,5 +1,4 @@
-from django.forms.widgets import Widget
-from django.forms.extras import widgets
+# from django.forms.widgets import Widget
 from django.forms.utils import flatatt
 from django.utils.html import format_html
 from django import forms
@@ -10,13 +9,13 @@ from django.core.validators import validate_email
 from dmp.fields import ListTextWidget
 
 
-class ReadOnlyInput(Widget):
-    def render(self, name, value, attrs=None):
-        if value is None:
-            value = ''
-        final_attrs = self.build_attrs(attrs, type='hidden',
-                                       name=name, value=value)
-        return format_html('<input{} />{}', flatatt(final_attrs), value)
+# class ReadOnlyInput(Widget):
+#     def render(self, name, value, attrs=None, renderer=None):
+#         if value is None:
+#             value = ''
+#         final_attrs = self.build_attrs(attrs, renderer, type='hidden',
+#                                        name=name, value=value)
+#         return format_html('<input{} />{}', flatatt(final_attrs), value)
 
 class NotesForm(forms.ModelForm):
     class Meta:
@@ -34,7 +33,7 @@ class ProjectAdminForm(forms.ModelForm):
 
 def validate_file_extension(value):
     if not value.name.endswith('.csv'):
-        raise ValidationError(u'Please upload a csv')
+        raise ValidationError('Please upload a csv')
 
 
 class GrantUploadForm(forms.Form):
@@ -45,7 +44,7 @@ class GrantUploadForm(forms.Form):
     def clean(self):
         cleaned_data = super(GrantUploadForm, self).clean()
         form_empty = True
-        for field_value in cleaned_data.itervalues():
+        for field_value in cleaned_data.values():
             # Check for None or '', so IntegerFields with 0 or similar things don't seem empty.
             if field_value:
                 form_empty = False

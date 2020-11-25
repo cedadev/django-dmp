@@ -7,8 +7,8 @@
         visual: false,
     });
     </script>
-    <script src="{% static 'js/jquery-1.11.0.min.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'css/dmp.css' %}" type="text/css"/>
+    <script src="{% static 'dmp/js/jquery-1.11.0.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'dmp/css/dmp.css' %}" type="text/css"/>
 
 {% endblock %}
 
@@ -83,7 +83,7 @@
         <table>
             <tr>
                 <td style="padding-left: 0px; border-bottom: none"><input type="submit" onclick="show('loading')" value="Upload to Google Docs"></td>
-                <td style="vertical-align: middle; border-bottom: none"><img id="loading" style="visibility: hidden" src="{% static 'loading.gif' %}"></td>
+                <td style="vertical-align: middle; border-bottom: none"><img id="loading" style="visibility: hidden" src="{% static 'dmp/loading.gif' %}"></td>
             </tr>
         </table>
 

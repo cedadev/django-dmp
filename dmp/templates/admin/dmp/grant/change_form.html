@@ -1,5 +1,5 @@
 {% extends "admin/change_form.html" %}
-{% load i18n admin_modify admin_urls %}
+{% load i18n admin_modify admin_urls static %}
 
 <!--
 {#% block extrastyle %#}
@@ -9,7 +9,7 @@
 
 {% block object-tools %}
 
-<img style="height:30px; align:right" src="/static/granticon.jpg"/>
+<img style="height:30px; align:right" src="{% static 'dmp/granticon.jpg' %}"/>
 
     {% if change %}{% if not is_popup %}
         <ul class="object-tools">
