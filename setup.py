@@ -32,10 +32,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     install_requires=[
-        'django'
+        'django',
     ],
-    python_requires=[
-        '>=3.5',
-        '<4'
-    ]
+    python_requires='>=3.5,<4',
 )
