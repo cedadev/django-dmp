@@ -1,12 +1,4 @@
-# ignore pyc files
+db.sqlite3
+settings_local.py
+__pycache__
 *.pyc
-
-#ignore subversion tracking files
-*.svn-base
-*.svn*
-
-# pycharm
-.idea
-
-# Distribution/packaging
-*.egg-info/

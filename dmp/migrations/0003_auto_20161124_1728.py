@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='note',
             name='creator',
-            field=models.ForeignKey(null=True, blank=True, to=settings.AUTH_USER_MODEL)),
+            field=models.ForeignKey(null=True, blank=True, to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
 
         # Migrate model data from notes textfield to new model.
         migrations.RunPython(migrate_project_notes),

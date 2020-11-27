@@ -3,10 +3,10 @@
 {% load static %}
 
 {% block extrahead %}{{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/todo_list.css' %}" type="text/css"/>
-    <link rel="stylesheet" href="{% static 'js/jquery-ui-1.12.1-datepicker/jquery-ui.min.css' %}" type="text/css"/>
-    <script type="text/javascript" src="{% static 'js/jquery-1.11.0.min.js' %}"></script>
-    <script src="{% static 'js/jquery-ui-1.12.1-datepicker/jquery-ui.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'dmp/css/todo_list.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'dmp/js/jquery-ui-1.12.1-datepicker/jquery-ui.min.css' %}" type="text/css"/>
+    <script type="text/javascript" src="{% static 'dmp/js/jquery-1.11.0.min.js' %}"></script>
+    <script src="{% static 'dmp/js/jquery-ui-1.12.1-datepicker/jquery-ui.min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -73,13 +73,13 @@
                 <td>{{ reminder.due_date }}</td>
                 <td>
                     <a class="complete" onclick="showModal('completeModal','reminder',{{ reminder.id }})"
-                       title="Mark Complete"><img class="icon" src="{% static 'icons/tick.png' %}"></a>
+                       title="Mark Complete"><img class="icon" src="{% static 'dmp/icons/tick.png' %}"></a>
                     <button class="action-button" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
-                            title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
+                            title="Edit reminder"><img class="icon" src="{% static 'dmp/icons/edit.png' %}"></button>
                     <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
-                            title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
+                            title="Delete reminder"><img class="icon" src="{% static 'dmp/icons/trash.png' %}"></button>
                     <button class="action-button" onclick="showModal('addModal','project', {{ reminder.project.id }})"
-                            title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
+                            title="Add new reminder"><img class="icon" src="{% static 'dmp/icons/add.png' %}"></button>
                 </td>
             </tr>
         {% endfor %}
@@ -116,13 +116,13 @@
                 <td>{{ reminder.due_date }}</td>
                 <td>
                     <a class="complete" onclick="showModal('completeModal','reminder',{{ reminder.id }})"
-                       title="Mark Complete"><img class="icon" src="{% static 'icons/tick.png' %}"></a>
+                       title="Mark Complete"><img class="icon" src="{% static 'dmp/icons/tick.png' %}"></a>
                     <button class="action-button" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
-                            title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
+                            title="Edit reminder"><img class="icon" src="{% static 'dmp/icons/edit.png' %}"></button>
                     <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
-                            title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
+                            title="Delete reminder"><img class="icon" src="{% static 'dmp/icons/trash.png' %}"></button>
                     <button class="action-button" onclick="showModal('addModal','project', {{ reminder.project.id }})"
-                            title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
+                            title="Add new reminder"><img class="icon" src="{% static 'dmp/icons/add.png' %}"></button>
                 </td>
             </tr>
         {% endfor %}
@@ -160,13 +160,13 @@
                 <td>{{ reminder.due_date }}</td>
                 <td>
                     <a class="complete" onclick="showModal('completeModal','reminder',{{ reminder.id }})"
-                       title="Mark Complete"><img class="icon" src="{% static 'icons/tick.png' %}"></a>
+                       title="Mark Complete"><img class="icon" src="{% static 'dmp/icons/tick.png' %}"></a>
                     <button class="action-button" onclick="showModal('postponeModal','reminder', {{ reminder.id }})"
-                            title="Edit reminder"><img class="icon" src="{% static 'icons/edit.png' %}"></button>
+                            title="Edit reminder"><img class="icon" src="{% static 'dmp/icons/edit.png' %}"></button>
                     <button class="delete" onclick="showModal('deleteModal','reminder',{{ reminder.id }})"
-                            title="Delete reminder"><img class="icon" src="{% static 'icons/trash.png' %}"></button>
+                            title="Delete reminder"><img class="icon" src="{% static 'dmp/icons/trash.png' %}"></button>
                     <button class="action-button" onclick="showModal('addModal','project', {{ reminder.project.id }})"
-                            title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
+                            title="Add new reminder"><img class="icon" src="{% static 'dmp/icons/add.png' %}"></button>
                 </td>
             </tr>
         {% endfor %}
@@ -195,7 +195,7 @@
                     <td> --</td>
                     <td>
                         <button class="action-button" onclick="showModal('addModal','project', {{ project.id }})"
-                                title="Add new reminder"><img class="icon" src="{% static 'icons/add.png' %}"></button>
+                                title="Add new reminder"><img class="icon" src="{% static 'dnp/icons/add.png' %}"></button>
                     </td>
                 </tr>
             {% endfor %}

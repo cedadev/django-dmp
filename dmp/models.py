@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.safestring import mark_safe
 
 # Create your models here.
 
@@ -12,7 +13,7 @@ import re
 from dateutil.relativedelta import relativedelta
 
 # import users 
-from django.contrib.auth.models import *
+from django.contrib.auth.models import User
 from sizefield.models import FileSizeField
 from picklefield.fields import PickledObjectField
 
@@ -20,10 +21,15 @@ from picklefield.fields import PickledObjectField
 
 class Person(User):
     class Meta:
+
         proxy = True
         ordering = ('username',)
+        app_label = 'dmp'
 
 class Project(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
 
     # Projects are activities under funding programmes that are examined
     # for their data management needs.
@@ -37,8 +43,8 @@ class Project(models.Model):
     enddate = models.DateField(blank=True, null=True,verbose_name="End Date",help_text="Date format dd/mm/yyyy")
     dmp_agreed = models.DateField(blank=True, null=True, verbose_name="DMP Agreed",help_text="Date format dd/mm/yyyy")
     initial_contact = models.DateField(blank=True, null=True, verbose_name="Initial Contact",help_text="Date format dd/mm/yyyy")
-    sciSupContact = models.ForeignKey(Person, help_text="CEDA person contact for this Project", blank=True, null=True)
-    sciSupContact2 = models.ForeignKey(Person, help_text="CEDA person contact for this Project", blank=True, null=True, related_name="sciSupContact2s")
+    sciSupContact = models.ForeignKey(Person, help_text="CEDA person contact for this Project", blank=True, null=True, on_delete=models.CASCADE)
+    sciSupContact2 = models.ForeignKey(Person, help_text="CEDA person contact for this Project", blank=True, null=True, related_name="sciSupContact2s", on_delete=models.CASCADE)
     PI = models.CharField(max_length=200, blank=True, null=True)
     PIemail = models.EmailField(max_length=200, blank=True, null=True)
     PIinst = models.CharField(max_length=200, blank=True, null=True)
@@ -88,7 +94,7 @@ class Project(models.Model):
         elif not self.status: return True
         else: return False
 	
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.title
 
     def ndata(self):
@@ -127,14 +133,14 @@ class Project(models.Model):
         if m: pi = m.group(1)
         else: pi = pi
         
-        return "%s %s"% (acronym, pi)
+        return mark_safe("%s %s"% (acronym, pi))
 
     def project_groups_links(self):
         output = ''
         for g in self.projectgroup_set.all():
             output += '<a href="/admin/dmp/projectgroup/%s">%s</a> ' % (g.id, g.name)
-        return output
-    project_groups_links.allow_tags = True    
+        return mark_safe(output)
+
 
     def project_groups(self):
         return ProjectGroup.objects.filter(projects=self)   
@@ -146,8 +152,8 @@ class Project(models.Model):
         output = ''
         for g in self.grants():
             output += '<a href="/admin/dmp/grant/%s">%s</a> ' % (g.id, g.number)
-        return output
-    grant_links.allow_tags = True    
+        return mark_safe(output)
+
 
     def alerts(self):
         # produce alert flag (red, amber, green) and alert text to show needed actions.
@@ -207,7 +213,7 @@ class Project(models.Model):
             flag = max(flag, 1)
             text += 'Needs a status. '  
             
-        print flag, text    
+        print(flag, text)    
         flag = ('green', 'ambar', 'red')[flag]
         return (flag, text)              
 
@@ -249,14 +255,17 @@ class Project(models.Model):
 #-----
 
 class DataProduct(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
     # Data products are data streams produced by projects
 
     title = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     notes = GenericRelation("Note")
     datavol = FileSizeField(default=0)
-    project = models.ForeignKey(Project, help_text="Project producing this data", blank=True, null=True)
-    sciSupContact = models.ForeignKey(User, help_text="CEDA person contact for this data", blank=True, null=True)
+    project = models.ForeignKey(Project, help_text="Project producing this data", blank=True, null=True, on_delete=models.CASCADE)
+    sciSupContact = models.ForeignKey(User, help_text="CEDA person contact for this data", blank=True, null=True, on_delete=models.CASCADE)
     contact1 = models.CharField(max_length=200, blank=True, null=True)
     contact2 = models.CharField(max_length=200, blank=True, null=True)
     deliverydate = models.DateField(blank=True, null=True)
@@ -296,14 +305,17 @@ class DataProduct(models.Model):
 
 
     
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.title
 
     def projects_where_thirdparty(self): 
         return Projects.objects.filter(third_party_data=self)
 
 class Grant(models.Model):
-    project = models.ForeignKey('Project', blank=True, null=True)
+    class Meta:
+        app_label = 'dmp'
+
+    project = models.ForeignKey(Project, blank=True, null=True, on_delete=models.CASCADE)
     number = models.CharField(max_length=200)
     title = models.CharField(max_length=800, blank=True, null=True)
     pi = models.CharField(max_length=200, blank=True, null=True)
@@ -314,7 +326,7 @@ class Grant(models.Model):
     data_email = models.EmailField(blank=True, null=True)
     lead_grant = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         if not self.title: return "%s" % self.number
         elif len(self.title) > 100: return "%s: %s..." % (self.number, self.title[0:100])
         else: return "%s: %s" % (self.number, self.title)
@@ -322,28 +334,31 @@ class Grant(models.Model):
     def gotw(self):
         if self.number:
             if self.lead_grant:
-                return '<a style="color:white; background-color:#b70019" href="http://gotw.nerc.ac.uk/list_full.asp?pcode=%s">%s</a>' % (self.number, self.number)
+                return mark_safe('<a style="color:white; background-color:#b70019" href="http://gotw.nerc.ac.uk/list_full.asp?pcode=%s">%s</a>' % (self.number, self.number))
             else:
-                return '<a style="color:red; background-color:lightblue; border:2px blue dashed; padding: 1px 12px 1px 12px" href="http://gotw.nerc.ac.uk/list_full.asp?pcode=%s">%s</a>' %(self.number, self.number)
+                return mark_safe('<a style="color:red; background-color:lightblue; border:2px blue dashed; padding: 1px 12px 1px 12px" href="http://gotw.nerc.ac.uk/list_full.asp?pcode=%s">%s</a>' %(self.number, self.number))
         else:
-            return '-'
-    gotw.allow_tags = True    
+            return mark_safe('-')
 
     def scrape_project(self):
         if not self.project:
-            return '<a style="color:green; background-color:red; border:2px blue" href="/dmp/grant/%s/scrape">Scrape Project</a>' % self.pk
+            return mark_safe('<a style="color:green; background-color:red; border:2px blue" href="/dmp/grant/%s/scrape">Scrape Project</a>' % self.pk)
         else:
-            return '-'
-    scrape_project.allow_tags = True
+            return mark_safe('-')
+
 
 
 
 class ProjectGroup(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
+
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     projects = models.ManyToManyField('Project', blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % self.name
 
 
@@ -351,16 +366,20 @@ class Note(models.Model):
     class Meta:
         verbose_name_plural = "Notes"
         ordering = ["added"]
+        app_label = 'dmp'
 
     added = models.DateTimeField(auto_now_add=True)
-    creator = models.ForeignKey(Person, null=True, blank=True)
+    creator = models.ForeignKey(Person, null=True, blank=True, on_delete=models.CASCADE)
     notes = models.TextField(blank=True, null=True)
 
-    content_type = models.ForeignKey(ContentType, null=True, blank=True)
+    content_type = models.ForeignKey(ContentType, null=True, blank=True, on_delete=models.CASCADE)
     object_id = PositiveIntegerField(null=True)
     location = GenericForeignKey('content_type', 'object_id')
 
 class MetadataForm(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
     modified = models.DateTimeField(auto_now_add=True,verbose_name="last modified")
     form_type = models.CharField(max_length=200, blank=True, null=True,
             choices=( ("projectForm","Project Form"),
@@ -370,7 +389,7 @@ class MetadataForm(models.Model):
                       ))
     form_link = models.URLField(blank=True,null=True)
 
-    content_type = models.ForeignKey(ContentType, null=True, blank=True)
+    content_type = models.ForeignKey(ContentType, null=True, blank=True, on_delete=models.CASCADE)
     object_id = PositiveIntegerField(null=True)
     location = GenericForeignKey('content_type', 'object_id')
 
@@ -380,14 +399,20 @@ class MetadataForm(models.Model):
         return super(MetadataForm, self).save(*args,**kwargs)
 
 class EmailTemplate(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
     template_name = models.CharField(max_length=200)
     template_ref = models.CharField(max_length=200, null=True, verbose_name="Short Name")
     last_edited = models.DateField(auto_now_add=True)
-    edited_by = models.ForeignKey(User,null=True)
+    edited_by = models.ForeignKey(User,null=True, on_delete=models.CASCADE)
     content = models.TextField(blank=True)
 
 
 class DOGstats(models.Model):
+    class Meta:
+
+        app_label = 'dmp'
     '''table of statistics for monthly DOG snapshots'''
     date = models.DateTimeField()
     stat_type = models.CharField(max_length=200)
@@ -407,6 +432,7 @@ class draftDmp(models.Model):
 
     class Meta():
         verbose_name_plural = 'Draft DMP'
+        app_label = 'dmp'
 
 
 class OAuthToken(models.Model):
@@ -417,9 +443,10 @@ class OAuthToken(models.Model):
     """
     class Meta:
         verbose_name = 'OAuth Token'
+        app_label = 'dmp'
 
     user = models.OneToOneField(User,
-                                models.CASCADE, related_name = 'oauth_token')
+                                models.CASCADE, related_name='oauth_token')
 
     token_expiry=  models.DateTimeField()
     access_token=models.CharField(max_length=200)
@@ -427,13 +454,20 @@ class OAuthToken(models.Model):
 
 class GrantFile(models.Model):
     '''when user uploads a file using the grant uploader, temporarily store the contents for use later'''
+    class Meta:
+
+        app_label = 'dmp'
+
     file_contents = PickledObjectField()
     added = models.DateTimeField(auto_now_add=True)
 
 
 class Reminder(models.Model):
+    class Meta:
 
-    project = models.ForeignKey(Project)
+        app_label = 'dmp'
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     description = models.CharField(max_length=200, null=True)
     reminder = models.CharField(max_length=200, blank=True, verbose_name="Remind in",
         choices=(('custom','Custom Date'),
