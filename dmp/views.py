@@ -26,6 +26,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.utils.html import strip_tags
+from django.utils import timezone
 
 import requests
 import datetime
@@ -299,7 +300,7 @@ def dmp_draft(request, project_id):
     token = request.user.oauth_token
 
     # If the token has expired, refresh the token.
-    if token.token_expiry < datetime.datetime.now():
+    if token.token_expiry < timezone.now():
 
         r = requests.post("https://www.googleapis.com/oauth2/v4/token",{'client_id':settings.DMP_AUTH['OAUTH']['CLIENT_ID'],
                                                                     'client_secret': settings.DMP_AUTH['OAUTH']['CLIENT_SECRET'],
