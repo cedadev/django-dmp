@@ -265,9 +265,6 @@ class Project(models.Model):
                 ).save()
                 self.reassigned = True
 
-            if past.migrated:
-                raise
-
         return super(Project, self).save(*args, **kwargs)
 
 
