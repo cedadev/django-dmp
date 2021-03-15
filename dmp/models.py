@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, date
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.fields import PositiveIntegerField
+from django.core.exceptions import ValidationError
 
 import re
 from dateutil.relativedelta import relativedelta
@@ -86,6 +87,7 @@ class Project(models.Model):
     project_usergroup = models.CharField(max_length=200, blank=True, null=True, help_text="Group name for registration for this group")
     metadata_form = GenericRelation("MetadataForm")
     reassigned = models.BooleanField(default=False)
+    migrated = models.BooleanField(default=False)
 
 
     def active(self):
@@ -237,6 +239,20 @@ class Project(models.Model):
             if gws.path.find("cems") != -1: return True
         return False
 
+    def clean(self):
+        super().clean()
+
+        if Project.objects.filter(pk=self.pk).exists():
+            migrated = Project.objects.get(pk=self.pk).migrated
+
+            if migrated:
+                reference = self.grant_set.first().number
+                reference = reference.replace('/', '\u002f')
+                raise ValidationError('This project has been migrated to JIRA. Please make all edits in JIRA. '
+                                      f'You can find this project using \"project = CEDA AND resolution = Unresolved '
+                                      f'AND "NERC Reference" ~ {reference} AND issuetype = 10602 ORDER BY priority '
+                                      f'DESC, updated DESC\" as a search string')
+
     def save(self, *args,**kwargs):
         # If the project is an existing one and the sciSupContact has changed. Save a note to describe the change and
         # set the flag so the newly assigned person knows they have a new project.
@@ -248,6 +264,9 @@ class Project(models.Model):
                     location=self
                 ).save()
                 self.reassigned = True
+
+            if past.migrated:
+                raise
 
         return super(Project, self).save(*args, **kwargs)
 
